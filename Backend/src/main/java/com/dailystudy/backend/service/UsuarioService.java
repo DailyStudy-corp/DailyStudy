@@ -16,7 +16,7 @@ public class UsuarioService {
 
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public void registrarNovoUsuario(UsuarioRegistro dto) {
+    public void registroUsuario(UsuarioRegistro dto) {
 
         if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new RuntimeException("Esse email já existe");
