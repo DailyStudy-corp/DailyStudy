@@ -1,5 +1,6 @@
 package com.dailystudy.backend.controller;
 
+import com.dailystudy.backend.dto.LoginDTO;
 import com.dailystudy.backend.dto.UsuarioRegistro;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
@@ -24,5 +25,11 @@ public class UsuarioController {
         usuarioService.registroUsuario(dto);
 
         return ResponseEntity.ok("Usuário registrado com sucesso!");
+    }
+
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO dto) {
+        String token = usuarioService.autenticar(dto);
+
+        return ResponseEntity.ok(token);
     }
 }
