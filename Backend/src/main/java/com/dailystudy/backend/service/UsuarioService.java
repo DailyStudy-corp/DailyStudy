@@ -1,29 +1,46 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.dto.LoginDTO;
 import com.dailystudy.backend.dto.UsuarioRegistro;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final TokenService tokenService;
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private final UsuarioRepository usuarioRepository;
 
-    public Usuario registroUsuario(UsuarioRegistro dto) {
-        Usuario username = new Usuario();
-        username.setUsername(dto.getUsername());
-        username.setEmail(dto.getEmail());
+    private final BCryptPasswordEncoder passwordEncoder;
 
-        String cipherText = passwordEncoder.encode(dto.getSenha());
-        username.setSenha(cipherText);
+    public void registroUsuario(UsuarioRegistro dto) {
 
-        return usuarioRepository.save(username);
+        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
+            return;
+        }
+
+        Usuario novoUsuario = new Usuario();
+        novoUsuario.setUsername(dto.getUsername());
+        novoUsuario.setEmail(dto.getEmail());
+        novoUsuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+
+        usuarioRepository.save(novoUsuario);
+    }
+
+    public String autenticar(LoginDTO dto){
+        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuário ou senha inválidos"));
+
+        if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {
+            throw new RuntimeException("Usuário ou senha inválidos");
+        }
+
+        return tokenService.gerarToken(usuario);
+
     }
 }
