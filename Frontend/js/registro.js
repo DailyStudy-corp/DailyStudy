@@ -1,5 +1,3 @@
-// register.js - Código com teste de confirmação de salvamento
-
 document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     const emailInput = document.getElementById('emailRegistro');
@@ -7,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mensagemSucesso = document.getElementById('mensagemSucesso');
     const mensagemErro = document.getElementById('mensagemErroRegistro');
 
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => { 
         e.preventDefault();
 
         const email = emailInput.value.trim();
@@ -18,37 +16,58 @@ document.addEventListener('DOMContentLoaded', () => {
             mensagemErro.style.display = 'block';
             return;
         }
-
-        // 1. Salva as credenciais no localStorage
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('userPassword', senha); 
-        
-        // --- INÍCIO DO TESTE DE CONFIRMAÇÃO ---
-        const senhaSalvaTeste = localStorage.getItem('userPassword');
-        const emailSalvoTeste = localStorage.getItem('userEmail');
-        
-        console.log("--- TESTE DE REGISTRO LOCALSTORAGE ---");
-        console.log(`E-mail Salvo: ${emailSalvoTeste}`);
-        console.log(`Senha Salva: ${senhaSalvaTeste}`);
-        console.log("--------------------------------------");
-        
-        if (senhaSalvaTeste === senha) {
-            console.log("SUCESSO: As credenciais foram salvas corretamente no localStorage.");
-        } else {
-            console.error("FALHA: O localStorage NÃO salvou as credenciais corretamente.");
-        }
-        // --- FIM DO TESTE DE CONFIRMAÇÃO ---
-        
-
-        // 2. Limpa e exibe sucesso
+          
         mensagemErro.style.display = 'none';
-        mensagemSucesso.style.display = 'block';
-        registerForm.reset();
-        
-        // 3. Redireciona para o login
-        setTimeout(() => {
-            mensagemSucesso.style.display = 'none';
-            window.location.href = 'login.html'; 
-        }, 1500);
-    });
-});
+        if (mensagemSucesso) mensagemSucesso.style.display = 'none';
+
+        try {
+            // 1. Monta os dados exatamente como o RegistroDTO.java espera no backend
+            const dadosRegistro = {
+                email: email,
+                senha: senha
+            };
+
+            // --- INÍCIO DO TESTE DE CONFIRMAÇÃO ---
+            // Nota: Se o front rodar em porta diferente do back (ex: 5173 e 8080), lembre de usar a URL completa 'http://localhost:8080/api/usuarios/register'
+            const response = await fetch('/api/usuarios/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosRegistro)
+            });
+            
+            // Se a resposta for OK (Status 200 a 299)
+            if (response.ok) {
+                console.log("---------------------------------------------------");
+                console.log("Sucesso: os dados foram enviados e salvos no banco de dados.");
+                console.log("---------------------------------------------------");
+
+                // Exibe mensagem de sucesso visual na tela
+                if (mensagemSucesso) mensagemSucesso.style.display = 'block';
+                registerForm.reset();
+                
+                // Redireciona para o login apos 1.5 segundos
+                setTimeout(() => {
+                    if (mensagemSucesso) mensagemSucesso.style.display = 'none';
+                    window.location.href = 'login.html'; 
+                }, 1500);
+
+            } else {
+                // Caso o banco recuse o registro (ex: email já existe), o backend retorna status de erro (ex: 400)
+                console.log("FALHA: O backend retornou um erro durante o registro.");
+                
+                const erroServidor = await response.json();
+                console.error('Erro do servidor:', erroServidor);
+                
+                mensagemErro.textContent = erroServidor.message || 'Erro ao registrar. Tente novamente.';
+                mensagemErro.style.display = 'block';
+            }
+
+        } catch (error) {
+            console.error('Erro de rede ou servidor offline:', error);
+            mensagemErro.textContent = 'Não foi possível conectar ao servidor. O backend está rodando?';
+            mensagemErro.style.display = 'block';
+        }
+    }); // Fim do addEventListener
+}); // Fim do DOMContentLoaded
