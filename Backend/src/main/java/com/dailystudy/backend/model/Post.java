@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.List;
+import java.awt.*;
 import java.time.LocalDateTime;
 
 @Document(collection = "posts")
@@ -14,8 +16,9 @@ import java.time.LocalDateTime;
 public class Post {
     @Id
     private String id;
-    private String texto;
-    private String urlImagem;
+    private String content;
+    private List<String> mediaRefs;
+    private String visibility;
     private LocalDateTime dataCriacao;
-    private String autor;
+    private String autorId;
 }
