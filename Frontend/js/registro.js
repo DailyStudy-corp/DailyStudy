@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- INÍCIO DO TESTE DE CONFIRMAÇÃO ---
             // Nota: Se o front rodar em porta diferente do back (ex: 5173 e 8080), lembre de usar a URL completa 'http://localhost:8080/api/usuarios/register'
-            const response = await fetch('/api/usuarios/register', {
+            const response = await fetch('http://localhost:8080/api/usuarios/registro', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
