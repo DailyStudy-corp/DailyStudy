@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 2. Faz a requisição HTTP POST para o endpoint de login do seu amigo
             // Nota: Confirme com ele se a rota é exatamente '/api/usuarios/login' ou '/api/login'
-            const response = await fetch('/api/usuarios/login', {
+            const response = await fetch('http://localhost:8080/api/usuarios/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
