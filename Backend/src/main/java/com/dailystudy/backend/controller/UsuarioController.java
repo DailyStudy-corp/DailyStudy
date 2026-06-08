@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/usuarios")
@@ -27,10 +29,10 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login (@Valid @RequestBody LoginDTO dto) {
+    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto) {
         String token = usuarioService.autenticar(dto);
 
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
 }
