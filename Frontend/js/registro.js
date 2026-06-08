@@ -4,25 +4,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const senhaInput = document.getElementById('senhaRegistro');
     const mensagemSucesso = document.getElementById('mensagemSucesso');
     const mensagemErro = document.getElementById('mensagemErroRegistro');
+    const usernameInput = document.getElementById('usernameRegistro'); // NOVA LINHA PARA O CAMPO DE USERNAME
 
     registerForm.addEventListener('submit', async (e) => { 
         e.preventDefault();
-
-        const email = emailInput.value.trim();
+    // 2. CAPTURA E TRATAMENTO DOS VALORES DOS INPUTS
+        const username = usernameInput ? usernameInput.value.trim() : '';  //LINHA NOVA DA SOLUCAO DE REGISTRO
         const senha = senhaInput.value.trim();
+        const email = emailInput.value.trim();
+    
+        // ALTERAÇÃO 2: TRATAMENTO DO E-MAIL (.toLowerCase)
+        // Converte o e-mail para letras minúsculas antes de enviar ao banco.
+        // Isso evita que a Regex rígida do Java (@Email) rejeite letras maiúsculas.
 
-        if (!email || !senha) {
-            mensagemErro.textContent = 'Preencha todos os campos obrigatórios.';
+        //ALTERAÇÃO 3: ATUALIZAÇÃO DA VALIDAÇÃO NO FRONTEND
+        // Agora o 'username' também é obrigatório. Também adicionamos uma trava 
+        // prévia para o tamanho da senha, poupando requisições desnecessárias.
+
+
+        if (!username || !email || !senha) {
+            mensagemErro.textContent = 'Preencha todos os campos obrigatórios (Usuário, E-mail e Senha).';
             mensagemErro.style.display = 'block';
             return;
         }
           
+        if (senha.length < 8) {
+            mensagemErro.textContent = 'A senha deve ter no mínimo 8 caracteres.';
+            mensagemErro.style.display = 'block';
+            return;
+        }
+         
+        // Limpa mensagens anteriores antes de tentar um novo envio
         mensagemErro.style.display = 'none';
         if (mensagemSucesso) mensagemSucesso.style.display = 'none';
 
+        
         try {
             // 1. Monta os dados exatamente como o RegistroDTO.java espera no backend
             const dadosRegistro = {
+                username: username, // CORRECAO DOS NOMES DOS CAMPOS PARA REGISTRO 
                 email: email,
                 senha: senha
             };
