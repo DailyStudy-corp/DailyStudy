@@ -27,7 +27,8 @@ const Storage = (() => {
 
   // Perfil padrão exibido na primeira vez que o app é aberto
   const DEFAULT_PROFILE = {
-    name:      'João da Silva',
+    name:      'Usuário',
+    role:      'Estudante · Daily Study',
     bio:       'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
     avatarUrl: null,
     bannerUrl: null,

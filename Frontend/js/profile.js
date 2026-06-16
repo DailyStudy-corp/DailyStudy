@@ -78,12 +78,15 @@ const Profile = (() => {
       profile.avatarUrl
     );
 
-    // Nome e bio
+    // Nome, cargo e bio
     const nameEl = document.getElementById('pName');
     const bioEl  = document.getElementById('pBio');
     if (nameEl) nameEl.textContent = profile.name;
     if (bioEl)  bioEl.textContent  = profile.bio || '';
-
+    //Sincroniza  o cargo (p-role) na tela inicial puxando o objeto do perfil
+    const roleEl = document.getElementById('pRole');
+    if (roleEl) roleEl.textContent = profile.role || 'Estudante · Daily Study';
+  
     // Banner: mostra a imagem se existir, esconde se não existir
     const bannerImg = document.getElementById('bannerImg');
     if (bannerImg) {
@@ -106,6 +109,11 @@ const Profile = (() => {
 
     document.getElementById('eName').value = profile.name;
     document.getElementById('eBio').value  = profile.bio || '';
+    //Carrega o cargo atual ou o valor padrão no campo de edição
+    const eRoleInput = document.getElementById('eRole');
+    if (eRoleInput) {
+      eRoleInput.value = profile.role || 'Estudante · Daily Study';
+    }
 
     document.getElementById('editForm').classList.remove('hidden');
     document.getElementById('btnEditP').style.display = 'none';
@@ -123,6 +131,8 @@ const Profile = (() => {
   function saveEditForm() {
     const name = document.getElementById('eName').value.trim();
     const bio  = document.getElementById('eBio').value.trim();
+//  Captura o valor digitado no input do cargo
+    const role = document.getElementById('eRole')? document.getElementById('eRole').value.trim() : '';
 
     if (!name) {
       UI.showToast('O nome não pode estar vazio.', 'err');
@@ -130,7 +140,7 @@ const Profile = (() => {
       return;
     }
 
-    Storage.patchProfile({ name, bio });
+    Storage.patchProfile({ name, role, bio });
     syncUI();
     closeEditForm();
 
