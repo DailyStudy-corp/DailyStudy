@@ -35,11 +35,20 @@ public class Usuario implements UserDetails {
     private String senha;
 
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UsuarioRole role;
+
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
+        if (this.role == UsuarioRole.ADM){
+            return List.of(
+                    new SimpleGrantedAuthority("ROLE_ADM"),
+                    new SimpleGrantedAuthority("ROLE_USER")
+            );
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
@@ -50,7 +59,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email;
+        return this.username;
     }
 
     @Override
