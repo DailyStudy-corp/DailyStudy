@@ -1,5 +1,6 @@
 package com.dailystudy.backend.controller;
 
+import com.dailystudy.backend.dto.ImagemPerfil;
 import com.dailystudy.backend.dto.LoginDTO;
 import com.dailystudy.backend.dto.UsuarioRegistro;
 import com.dailystudy.backend.dto.UsuarioResponseDTO;
@@ -42,6 +43,17 @@ public class UsuarioController {
         }
 
         return ResponseEntity.ok(new UsuarioResponseDTO(usuarioLogado));
+    }
+
+    @PutMapping("/me/img_perfil")
+    public ResponseEntity<Void> uploadImagemPerfil(@AuthenticationPrincipal Usuario usuariologado, @RequestBody ImagemPerfil dto){
+        if (usuariologado == null){
+            return ResponseEntity.status(401).build();
+        }
+
+        usuarioService.atualizarImgPerfil(usuariologado.getId(), dto);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
