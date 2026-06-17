@@ -30,14 +30,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Atualiza o perfil no armazenamento local com o nome vindo do banco.
         Storage.saveProfile({name: userData.username});
       } else {
+       // Alteracao 1 - Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
+       console.warn("Sessão recusada pela Daily Study. Redirecionando...");
         // Se o token for inválido ou expirado, limpa o estado de autenticado. 
         localStorage.removeItem('token');
+        localstorage.Storage.removeItem('isAuthenticated');
+        window.location.href = 'login.html';
       } 
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
         }
+  } else {
+    // Alteracao 2 - Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
+    window.location.href = 'login.html';
+    return;
   }
-
   // ── Inicialização ────────────────────────────────────────────
   // Carrega os dados salvos e renderiza o estado inicial da página.
 
