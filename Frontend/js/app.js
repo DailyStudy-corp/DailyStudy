@@ -11,7 +11,32 @@
     storage.js → profile.js → posts.js → ui.js → search.js → app.js
 */
 
+// Adicionado 'async' para permitir o uso de 'await' na verificação de identidade antes da renderização.
 document.addEventListener('DOMContentLoaded', async () => {
+
+  // Resolve o problema de autenticação antes de renderizar a página.
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+       const response = await fetch('http://localhost:8080/api/usuarios/me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } 
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        // Atualiza o perfil no armazenamento local com o nome vindo do banco.
+        Storage.saveProfile({name: userData.username});
+      } else {
+        // Se o token for inválido ou expirado, limpa o estado de autenticado. 
+        localStorage.removeItem('token');
+      } 
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+        }
+  }
 
   // ── Inicialização ────────────────────────────────────────────
   // Carrega os dados salvos e renderiza o estado inicial da página.
