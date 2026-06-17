@@ -2,15 +2,15 @@ package com.dailystudy.backend.controller;
 
 import com.dailystudy.backend.dto.LoginDTO;
 import com.dailystudy.backend.dto.UsuarioRegistro;
+import com.dailystudy.backend.dto.UsuarioResponseDTO;
+import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -33,6 +33,15 @@ public class UsuarioController {
         String token = usuarioService.autenticar(dto);
 
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioResponseDTO> obterUsuarioLogado(@AuthenticationPrincipal Usuario usuarioLogado){
+        if (usuarioLogado == null){
+            return ResponseEntity.status(401).build();
+        }
+
+        return ResponseEntity.ok(new UsuarioResponseDTO(usuarioLogado));
     }
 
 }
