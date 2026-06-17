@@ -11,7 +11,7 @@
     storage.js → profile.js → posts.js → ui.js → search.js → app.js
 */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Inicialização ────────────────────────────────────────────
   // Carrega os dados salvos e renderiza o estado inicial da página.
