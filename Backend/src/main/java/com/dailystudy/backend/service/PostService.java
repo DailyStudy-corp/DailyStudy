@@ -26,7 +26,7 @@ public class PostService {
         atividade.setAutorId(emailAutor);
         atividade.setStatus("POSTED");
         atividade.setObjetoId(postSalvo.getId());
-        atividade.setLocalDateTime(LocalDateTime.now());
+        atividade.setDataCriacao(LocalDateTime.now());
 
         atividade.getMetadata().put("autorId", nomeAutor);
         atividade.getMetadata().put("snippet", extrairSnippet(postSalvo.getContent()));

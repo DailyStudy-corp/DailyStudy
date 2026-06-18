@@ -11,8 +11,40 @@
     storage.js → profile.js → posts.js → ui.js → search.js → app.js
 */
 
-document.addEventListener('DOMContentLoaded', () => {
+// Adicionado 'async' para permitir o uso de 'await' na verificação de identidade antes da renderização.
+document.addEventListener('DOMContentLoaded', async () => {
 
+  // Resolve o problema de autenticação antes de renderizar a página.
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+       const response = await fetch('http://localhost:8080/api/usuarios/me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } 
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        // Atualiza o perfil no armazenamento local com o nome vindo do banco.
+        Storage.saveProfile({name: userData.username});
+      } else {
+       // Alteracao 1 - Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
+       console.warn("Sessão recusada pela Daily Study. Redirecionando...");
+        // Se o token for inválido ou expirado, limpa o estado de autenticado. 
+        localStorage.removeItem('token');
+        localstorage.Storage.removeItem('isAuthenticated');
+        window.location.href = 'login.html';
+      } 
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+        }
+  } else {
+    // Alteracao 2 - Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
+    window.location.href = 'login.html';
+    return;
+  }
   // ── Inicialização ────────────────────────────────────────────
   // Carrega os dados salvos e renderiza o estado inicial da página.
 

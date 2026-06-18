@@ -63,6 +63,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Sucesso: os dados foram enviados e salvos no banco de dados.");
                 console.log("---------------------------------------------------");
 
+            // ALTERACAO 1 - Monta o perfil inicial usando o username fornecido no registro
+            const  novoPerfilInicial = {
+                name: username, 
+                role: 'Estudante · Daily Study', 
+                bio: 'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
+                avatarUrl: null,
+                bannerUrl: null
+
+            };
+
+            //Salva o objeto transformado em texto na chave 'ds_profile' do localStorage, para que o perfil já apareça com o name do usuário registrado
+            localStorage.setItem('ds_profile', JSON.stringify(novoPerfilInicial));
+
                 // Exibe mensagem de sucesso visual na tela
                 if (mensagemSucesso) mensagemSucesso.style.display = 'block';
                 registerForm.reset();

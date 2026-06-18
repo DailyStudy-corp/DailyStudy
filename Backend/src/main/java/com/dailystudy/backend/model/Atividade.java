@@ -25,6 +25,6 @@ public class Atividade {
 
     //Aqui ele inicia o map para retornar os dados rapidos do Banco relacional sem que tenha que fazer uma completa
     private Map<String, Object> metadata = new HashMap<>();
-    private LocalDateTime localDateTime;
+    private LocalDateTime dataCriacao;
 
 }
