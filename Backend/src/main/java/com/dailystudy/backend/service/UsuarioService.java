@@ -53,4 +53,12 @@ public class UsuarioService {
 
         usuarioRepository.save(usuario);
     }
+
+    public void atualizarBannerPerfil(Long id, ImagemPerfil dto){
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        usuario.setBanner_perfil(dto.banner_perfil());
+
+        usuarioRepository.save(usuario);
+    }
 }

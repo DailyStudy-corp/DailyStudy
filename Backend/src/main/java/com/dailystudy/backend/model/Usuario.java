@@ -37,6 +37,9 @@ public class Usuario implements UserDetails {
     @Column
     private String img_perfil;
 
+    @Column
+    private String banner_perfil;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
