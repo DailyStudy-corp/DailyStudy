@@ -34,6 +34,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
+    @Column
+    private String img_perfil;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

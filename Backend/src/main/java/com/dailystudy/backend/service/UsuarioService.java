@@ -1,10 +1,12 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.dto.ImagemPerfil;
 import com.dailystudy.backend.dto.LoginDTO;
 import com.dailystudy.backend.dto.UsuarioRegistro;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,5 +44,13 @@ public class UsuarioService {
 
         return tokenService.gerarToken(usuario);
 
+    }
+
+    public void atualizarImgPerfil(Long id, ImagemPerfil dto) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        usuario.setImg_perfil(dto.img_perfil());
+
+        usuarioRepository.save(usuario);
     }
 }
