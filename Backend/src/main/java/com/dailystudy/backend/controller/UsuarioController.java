@@ -52,6 +52,7 @@ public class UsuarioController {
         }
 
         usuarioService.atualizarImgPerfil(usuariologado.getId(), dto);
+        usuarioService.atualizarBannerPerfil(usuariologado.getId(), dto);
 
         return ResponseEntity.noContent().build();
     }
