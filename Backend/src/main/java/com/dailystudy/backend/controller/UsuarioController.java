@@ -1,9 +1,6 @@
 package com.dailystudy.backend.controller;
 
-import com.dailystudy.backend.dto.ImagemPerfil;
-import com.dailystudy.backend.dto.LoginDTO;
-import com.dailystudy.backend.dto.UsuarioRegistro;
-import com.dailystudy.backend.dto.UsuarioResponseDTO;
+import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
@@ -46,13 +43,23 @@ public class UsuarioController {
     }
 
     @PutMapping("/me/img_perfil")
-    public ResponseEntity<Void> uploadImagemPerfil(@AuthenticationPrincipal Usuario usuariologado, @RequestBody ImagemPerfil dto){
-        if (usuariologado == null){
+    public ResponseEntity<Void> uploadImagemPerfil(@AuthenticationPrincipal Usuario usuarioLogado, @RequestBody ImagemPerfil dto){
+        if (usuarioLogado == null){
             return ResponseEntity.status(401).build();
         }
 
-        usuarioService.atualizarImgPerfil(usuariologado.getId(), dto);
-        usuarioService.atualizarBannerPerfil(usuariologado.getId(), dto);
+        usuarioService.atualizarImgPerfil(usuarioLogado.getId(), dto);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me/perfil")
+    public ResponseEntity<Void> editarPerfil(@AuthenticationPrincipal Usuario usuarioLogado, @RequestBody DadosPerfil dto){
+        if (usuarioLogado == null){
+            return ResponseEntity.status(401).build();
+        }
+
+        usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
 
         return ResponseEntity.noContent().build();
     }
