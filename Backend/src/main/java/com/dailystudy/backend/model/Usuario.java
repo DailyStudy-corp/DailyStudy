@@ -37,6 +37,15 @@ public class Usuario implements UserDetails {
     @Column
     private String img_perfil;
 
+    @Column
+    private String banner_perfil;
+
+    @Column(nullable = false, length = 60)
+    private String cargo;
+
+    @Column(nullable = false,length = 200)
+    private String bio;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
