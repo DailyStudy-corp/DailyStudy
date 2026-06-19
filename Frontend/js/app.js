@@ -27,10 +27,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (response.ok) {
         const userData = await response.json();
-        // Atualiza o perfil no armazenamento local com o nome vindo do banco.
-        Storage.saveProfile({name: userData.username});
+        // Atualiza o perfil no armazenamento local com o nome vindo do banco.   --NOVA  ALTERACAO FT IMAGEM PERFIL E BANNER
+        Storage.saveProfile({
+          name: userData.username,
+          role: userData.cargo || 'Estudante · Daily Study',
+          bio: userData.bio || '',
+          avatarUrl: userData.img_perfil,   // Traduz snake_case para camelCase
+          bannerUrl: userData.banner_perfil // Traduz snake_case para camelCase
+        });
+
       } else {
-       // Alteracao 1 - Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
+       //  Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
        console.warn("Sessão recusada pela Daily Study. Redirecionando...");
         // Se o token for inválido ou expirado, limpa o estado de autenticado. 
         localStorage.removeItem('token');
@@ -41,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Erro ao verificar autenticação:', error);
         }
   } else {
-    // Alteracao 2 - Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
+    //- Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
     window.location.href = 'login.html';
     return;
   }
