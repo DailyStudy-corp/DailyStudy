@@ -83,7 +83,8 @@ const Profile = (() => {
     const bioEl  = document.getElementById('pBio');
     if (nameEl) nameEl.textContent = profile.name;
     if (bioEl)  bioEl.textContent  = profile.bio || '';
-    //Sincroniza  o cargo (p-role) na tela inicial puxando o objeto do perfil
+    
+    // Sincroniza o cargo (p-role) na tela inicial puxando o objeto do perfil
     const roleEl = document.getElementById('pRole');
     if (roleEl) roleEl.textContent = profile.role || 'Estudante · Daily Study';
   
@@ -109,7 +110,8 @@ const Profile = (() => {
 
     document.getElementById('eName').value = profile.name;
     document.getElementById('eBio').value  = profile.bio || '';
-    //Carrega o cargo atual ou o valor padrão no campo de edição
+    
+    // Carrega o cargo atual ou o valor padrão no campo de edição
     const eRoleInput = document.getElementById('eRole');
     if (eRoleInput) {
       eRoleInput.value = profile.role || 'Estudante · Daily Study';
@@ -128,27 +130,54 @@ const Profile = (() => {
   }
 
   // Valida e salva as alterações de nome e bio.
-  function saveEditForm() {
+  async function saveEditForm() {
     const name = document.getElementById('eName').value.trim();
     const bio  = document.getElementById('eBio').value.trim();
-//  Captura o valor digitado no input do cargo
-    const role = document.getElementById('eRole')? document.getElementById('eRole').value.trim() : '';
+    // Captura o valor digitado no input do cargo
+    const role = document.getElementById('eRole') ? document.getElementById('eRole').value.trim() : '';
 
     if (!name) {
       UI.showToast('O nome não pode estar vazio.', 'err');
       document.getElementById('eName').focus();
       return;
     }
+    
+    UI.showToast('Salvando alterações…');
+    
+    try {
+      const token = localStorage.getItem('token');
+      // Adicionado await para esperar a resposta da API corretamente
+      const response = await fetch('http://localhost:8080/api/usuarios/meu-perfil', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Padronizado o 'Authorization' com 'A' maiúsculo
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          username: name,  
+          cargo: role, 
+          bio: bio
+        })
+      });
 
-    Storage.patchProfile({ name, role, bio });
-    syncUI();
-    closeEditForm();
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar o perfil no servidor.');
+      }
 
-    // Re-renderiza posts para atualizar o nome do autor nos cards
-    Posts.renderFeed();
-    Posts.renderProfilePosts();
+      Storage.patchProfile({ name, role, bio });
+      syncUI();
+      closeEditForm();
 
-    UI.showToast('Perfil atualizado!', 'ok');
+      // Re-renderiza posts para atualizar o nome do autor nos cards
+      Posts.renderFeed();
+      Posts.renderProfilePosts();
+
+      UI.showToast('Perfil updated!', 'ok');
+
+    } catch (err) {
+      console.error('Erro ao salvar o formulário:', err);
+      UI.showToast(err.message || 'Erro ao sincronizar com o servidor.', 'err');
+    }
   }
 
 
@@ -168,13 +197,34 @@ const Profile = (() => {
 
     try {
       const dataUrl = await readFileAsDataUrl(file);
+      const token = localStorage.getItem('token'); // Corrigido para 'localStorage' com S maiúsculo
+      const currentProfile = Storage.getProfile();
+           
+      // Corrigida a estrutura do payload que estava solta no código anterior
+      const payload = {
+        img_perfil: type === 'avatar' ? dataUrl : currentProfile.avatarUrl,
+        banner_perfil: type === 'banner' ? dataUrl : currentProfile.bannerUrl
+      };
+      
+      const response = await fetch('http://localhost:8080/api/usuarios/meu-perfil/imagem', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar a imagem no servidor.');
+      }
+      
       if (type === 'avatar') {
         Storage.patchProfile({ avatarUrl: dataUrl });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
       } else {
         Storage.patchProfile({ bannerUrl: dataUrl });
-        UI.showToast('Banner atualizado! 🖼️', 'ok');
+        UI.showToast('Banner updated! 🖼️', 'ok');
       }
 
       syncUI();
