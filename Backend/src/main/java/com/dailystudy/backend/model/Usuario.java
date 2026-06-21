@@ -40,10 +40,10 @@ public class Usuario implements UserDetails {
     @Column
     private String banner_perfil;
 
-    @Column(nullable = false, length = 60)
+    @Column(length = 60)
     private String cargo;
 
-    @Column(nullable = false,length = 200)
+    @Column(length = 200)
     private String bio;
 
 

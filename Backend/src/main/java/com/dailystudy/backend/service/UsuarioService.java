@@ -5,6 +5,7 @@ import com.dailystudy.backend.dto.ImagemPerfil;
 import com.dailystudy.backend.dto.LoginDTO;
 import com.dailystudy.backend.dto.UsuarioRegistro;
 import com.dailystudy.backend.model.Usuario;
+import com.dailystudy.backend.model.UsuarioRole;
 import com.dailystudy.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,6 +32,7 @@ public class UsuarioService {
         novoUsuario.setUsername(dto.getUsername());
         novoUsuario.setEmail(dto.getEmail());
         novoUsuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        novoUsuario.setRole(UsuarioRole.USER);
 
         usuarioRepository.save(novoUsuario);
     }
