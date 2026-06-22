@@ -147,7 +147,7 @@ const Profile = (() => {
     try {
       const token = localStorage.getItem('token');
       // Adicionado await para esperar a resposta da API corretamente
-      const response = await fetch('http://localhost:8080/api/usuarios/meu-perfil', {
+      const response = await fetch('http://localhost:8080/api/usuarios/me/perfil', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`, // Padronizado o 'Authorization' com 'A' maiúsculo
