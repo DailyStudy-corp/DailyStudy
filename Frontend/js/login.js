@@ -24,8 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 senha: senhaDigitada
             };
 
-            // 2. Faz a requisição HTTP POST para o endpoint de login do seu amigo
-            // Nota: Confirme com ele se a rota é exatamente '/api/usuarios/login' ou '/api/login'
+            // 2. Faz a requisição HTTP POST para o endpoint de login do seu amigo.
             const response = await fetch('http://localhost:8080/api/usuarios/login', {
                 method: 'POST',
                 headers: {
@@ -60,4 +59,28 @@ document.addEventListener('DOMContentLoaded', () => {
             mensagemErro.style.display = 'block';
         }
     });
-});
+
+    // ── LÓGICA DO OLHINHO ADICIONADA AQUI ──
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    if (togglePasswordBtn && senhaInput && eyeIcon) {
+        // Definição dos caminhos internos de cada estado do SVG
+        const eyeOpenPaths = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        const eyeClosedPaths = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+
+        togglePasswordBtn.addEventListener('click', () => {
+            if (senhaInput.type === 'password') {
+                senhaInput.type = 'text';
+                eyeIcon.innerHTML = eyeClosedPaths; // Desenha o risco
+                togglePasswordBtn.style.color = 'var(--marrom-claro)'; // Dá o destaque visual na cor ativa
+            } else {
+                senhaInput.type = 'password';
+                eyeIcon.innerHTML = eyeOpenPaths; // Volta para o olho aberto normal
+                togglePasswordBtn.style.color = '#ccc';
+            }
+        });
+    }
+    // ─ FIM DA LÓGICA DO OLHINHO ─
+
+}); // fim do DOMContentLoaded

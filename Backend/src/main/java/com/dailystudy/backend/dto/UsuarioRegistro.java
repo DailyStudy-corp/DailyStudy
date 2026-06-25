@@ -18,7 +18,7 @@ public class UsuarioRegistro {
 
     @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
     @NotBlank(message = "A senha é obrigatória")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$",
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+=.,<>?])(?=\\S+$).{8,}$",
                 message = "A senha deve conter letras maiúsculas, minúsculas, números e caracteres especiais")
     private String senha;
 }

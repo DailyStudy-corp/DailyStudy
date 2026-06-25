@@ -11,9 +11,20 @@
         <h1>Daily study</h1>
         <h2>Acesso ao Sistema</h2>
         
+
         <form id="loginForm">
             <input type="email" id="email" placeholder="E-mail" required>
-            <input type="password" id="senha" placeholder="Senha" required>
+            
+            <div class="password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                <input type="password" id="senha" placeholder="Senha" required style="padding-right: 40px; width: 100%;">
+                
+                <button type="button" id="togglePassword" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: #ccc; display: flex; align-items: center; padding: 0; z-index: 2;">
+                    <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+            </div>
             <button type="submit" id="btn-login" class="submit-button">Entrar</button>
             <p id="mensagemErro" class="error-message"></p>
         </form>
@@ -23,9 +34,5 @@
     </div>
 
     <script src="../js/login.js"></script>
-
-
-    
- 
-
+</body>
 </html>

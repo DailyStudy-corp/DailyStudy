@@ -27,21 +27,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (response.ok) {
         const userData = await response.json();
-        // Atualiza o perfil no armazenamento local com o nome vindo do banco.
-        Storage.saveProfile({name: userData.username});
+        // Atualiza o perfil no armazenamento local com o nome vindo do banco.   --NOVA  ALTERACAO FT IMAGEM PERFIL E BANNER
+        Storage.saveProfile({
+          name: userData.username,
+          role: userData.cargo || 'Estudante · Daily Study',
+          bio: userData.bio || '',
+          avatarUrl: userData.img_perfil,   // Traduz snake_case para camelCase 
+          bannerUrl: userData.banner_perfil // Traduz snake_case para camelCase
+        });
+
       } else {
-       // Alteracao 1 - Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
+       //  Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
        console.warn("Sessão recusada pela Daily Study. Redirecionando...");
-        // Se o token for inválido ou expirado, limpa o estado de autenticado. 
+        // ALTERACAO 7 - CORRECAO NA LIMPEAA DO ESTADO DE AUTH QND EXPIRA
         localStorage.removeItem('token');
-        localstorage.Storage.removeItem('isAuthenticated');
-        window.location.href = 'login.html';
+        localStorage.removeItem('isAuthenticated'); 
+        
+        window.location.href = 'login.html'
       } 
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
         }
   } else {
-    // Alteracao 2 - Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
+    //- Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
     window.location.href = 'login.html';
     return;
   }
@@ -175,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('avatarInput').addEventListener('change', event => {
     const file = event.target.files[0];
-    if (file) Profile.handleImageUpload(file, 'avatar');
+    if (file) Profile.handleImageUpload(file, 'img_perfil');
     event.target.value = '';  // permite selecionar o mesmo arquivo novamente
   });
 
@@ -192,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('bannerInput').addEventListener('change', event => {
     const file = event.target.files[0];
-    if (file) Profile.handleImageUpload(file, 'banner');
+    if (file) Profile.handleImageUpload(file, 'banner_perfil');
     event.target.value = '';
   });
 
@@ -214,7 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const file = event.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
-      Profile.handleImageUpload(file, 'banner');
+      Profile.handleImageUpload(file, 'banner_perfil');
     } else if (file) {
       UI.showToast('Por favor, solte apenas imagens.', 'err');
     }

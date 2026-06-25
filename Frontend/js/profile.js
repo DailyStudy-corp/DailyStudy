@@ -14,7 +14,7 @@ const Profile = (() => {
   // ── Funções auxiliares ───────────────────────────────────────
 
   // Gera as iniciais do nome para usar como fallback do avatar.
-  // Ex: "João da Silva" → "JS" | "Ana" → "A"
+  // Ex: "User"  
   function getInitials(name) {
     const words = (name || 'U').trim().split(/\s+/).filter(Boolean);
 
@@ -30,7 +30,7 @@ const Profile = (() => {
   // Preenche um elemento de avatar com foto ou iniciais.
   // Se tiver foto, insere uma <img> dentro do elemento.
   // Se não tiver, coloca o texto com as iniciais.
-  function fillAvatar(element, name, imageUrl) {
+  function fillimg_perfil(element, name, imageUrl) {
     if (!element) return;
 
     element.innerHTML = '';  // limpa conteúdo anterior
@@ -64,18 +64,18 @@ const Profile = (() => {
   function syncUI() {
     const profile = Storage.getProfile();
 
-    // Avatar no compose box
-    fillAvatar(
+    // Imagem no compose box
+    fillimg_perfil(
       document.getElementById('composeAva'),
       profile.name,
-      profile.avatarUrl
+      profile.img_perfil
     );
 
     // Avatar grande na aba de perfil
-    fillAvatar(
+    fillimg_perfil(
       document.getElementById('profileAvaBig'),
       profile.name,
-      profile.avatarUrl
+      profile.img_perfil
     );
 
     // Nome, cargo e bio
@@ -83,19 +83,20 @@ const Profile = (() => {
     const bioEl  = document.getElementById('pBio');
     if (nameEl) nameEl.textContent = profile.name;
     if (bioEl)  bioEl.textContent  = profile.bio || '';
-    //Sincroniza  o cargo (p-role) na tela inicial puxando o objeto do perfil
+    
+    // Sincroniza o cargo (p-role) na tela inicial puxando o objeto do perfil
     const roleEl = document.getElementById('pRole');
     if (roleEl) roleEl.textContent = profile.role || 'Estudante · Daily Study';
   
     // Banner: mostra a imagem se existir, esconde se não existir
-    const bannerImg = document.getElementById('bannerImg');
-    if (bannerImg) {
-      if (profile.bannerUrl) {
-        bannerImg.src = profile.bannerUrl;
-        bannerImg.classList.remove('hidden');
+    const banner_perfil = document.getElementById('banner_perfil');
+    if (banner_perfil) {
+      if (profile.banner_perfil) {
+        banner_perfil.src = profile.banner_perfil;
+        banner_perfil.classList.remove('hidden');
       } else {
-        bannerImg.src = '';
-        bannerImg.classList.add('hidden');
+        banner_perfil.src = '';
+        banner_perfil.classList.add('hidden');
       }
     }
   }
@@ -109,7 +110,8 @@ const Profile = (() => {
 
     document.getElementById('eName').value = profile.name;
     document.getElementById('eBio').value  = profile.bio || '';
-    //Carrega o cargo atual ou o valor padrão no campo de edição
+    
+    // Carrega o cargo atual ou o valor padrão no campo de edição
     const eRoleInput = document.getElementById('eRole');
     if (eRoleInput) {
       eRoleInput.value = profile.role || 'Estudante · Daily Study';
@@ -128,27 +130,54 @@ const Profile = (() => {
   }
 
   // Valida e salva as alterações de nome e bio.
-  function saveEditForm() {
+  async function saveEditForm() {
     const name = document.getElementById('eName').value.trim();
     const bio  = document.getElementById('eBio').value.trim();
-//  Captura o valor digitado no input do cargo
-    const role = document.getElementById('eRole')? document.getElementById('eRole').value.trim() : '';
+    // Captura o valor digitado no input do cargo
+    const role = document.getElementById('eRole') ? document.getElementById('eRole').value.trim() : '';
 
     if (!name) {
       UI.showToast('O nome não pode estar vazio.', 'err');
       document.getElementById('eName').focus();
       return;
     }
+    
+    UI.showToast('Salvando alterações…');
+    
+    try {
+      const token = localStorage.getItem('token');
+      // Adicionado await para esperar a resposta da API corretamente
+      const response = await fetch('http://localhost:8080/api/usuarios/me/perfil', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Padronizado o 'Authorization' com 'A' maiúsculo
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          username: name,  
+          cargo: role, 
+          bio: bio
+        })
+      });
 
-    Storage.patchProfile({ name, role, bio });
-    syncUI();
-    closeEditForm();
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar o perfil no servidor.');
+      }
 
-    // Re-renderiza posts para atualizar o nome do autor nos cards
-    Posts.renderFeed();
-    Posts.renderProfilePosts();
+      Storage.patchProfile({ name, role, bio });
+      syncUI();
+      closeEditForm();
 
-    UI.showToast('Perfil atualizado!', 'ok');
+      // Re-renderiza posts para atualizar o nome do autor nos cards
+      Posts.renderFeed();
+      Posts.renderProfilePosts();
+
+      UI.showToast('Perfil updated!', 'ok');
+
+    } catch (err) {
+      console.error('Erro ao salvar o formulário:', err);
+      UI.showToast(err.message || 'Erro ao sincronizar com o servidor.', 'err');
+    }
   }
 
 
@@ -166,15 +195,38 @@ const Profile = (() => {
 
     UI.showToast('Carregando imagem…');
 
+
+    //ALTERACAO 6 - CAPTURA DE IMAGEM E  PAYLOAD UNIFICADO PARA AVATAR E BANNER
     try {
       const dataUrl = await readFileAsDataUrl(file);
+      const token = localStorage.getItem('token');
+      const currentProfile = Storage.getProfile();
+           
+      // Monta o payload respeitando o record img perfil 
+      const payload = {
+        img_perfil: type === 'avatar' ? dataUrl : currentProfile.img_perfil,
+        banner_perfil: type === 'banner' ? dataUrl : currentProfile.banner_perfil
+      };
+                                      //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
+      const response = await fetch('http://localhost:8080/api/usuarios/me/img_perfil', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar a imagem no servidor.');
+      }
+      
       if (type === 'avatar') {
-        Storage.patchProfile({ avatarUrl: dataUrl });
+        Storage.patchProfile({ img_perfil: dataUrl });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
       } else {
-        Storage.patchProfile({ bannerUrl: dataUrl });
-        UI.showToast('Banner atualizado! 🖼️', 'ok');
+        Storage.patchProfile({ banner_perfil: dataUrl });
+        UI.showToast('Banner updated! 🖼️', 'ok');
       }
 
       syncUI();
@@ -192,7 +244,7 @@ const Profile = (() => {
     get:               Storage.getProfile,
     getInitials,
     readFileAsDataUrl,
-    fillAvatar,
+    fillimg_perfil,
     syncUI,
     openEditForm,
     closeEditForm,
