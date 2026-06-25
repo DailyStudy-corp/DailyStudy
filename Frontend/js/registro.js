@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mensagemSucesso) mensagemSucesso.style.display = 'none';
 
         try {
-            // 1. Monta os dados exatamente como o RegistroDTO.java espera no backend
+            // 1. Monta os dados exatamente como o RegistroDTO.java espera no backend.
             const dadosRegistro = {
                 username: username, // CORRECAO DOS NOMES DOS CAMPOS PARA REGISTRO 
                 email: email,

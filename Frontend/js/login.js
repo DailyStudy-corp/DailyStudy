@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 senha: senhaDigitada
             };
 
-            // 2. Faz a requisição HTTP POST para o endpoint de login do seu amigo
+            // 2. Faz a requisição HTTP POST para o endpoint de login do seu amigo.
             const response = await fetch('http://localhost:8080/api/usuarios/login', {
                 method: 'POST',
                 headers: {
