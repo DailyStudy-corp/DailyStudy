@@ -244,7 +244,7 @@ const Profile = (() => {
     get:               Storage.getProfile,
     getInitials,
     readFileAsDataUrl,
-    fillAvatar,
+    fillimg_perfil,
     syncUI,
     openEditForm,
     closeEditForm,
