@@ -14,7 +14,17 @@
         <form id="registerForm">
             <input type="text" id="usernameRegistro" placeholder="Nome de Usuário" required>
             <input type="email" id="emailRegistro" placeholder="E-mail" required>
-            <input type="password" id="senhaRegistro" placeholder="Senha" required>
+            
+            <div class="password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                <input type="password" id="senhaRegistro" placeholder="Senha" required style="padding-right: 40px; width: 100%;">
+            
+                <button type="button" id="togglePasswordRegister" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: #ccc; display: flex; align-items: center; padding: 0; z-index: 2;">
+                    <svg id="eyeIconRegister" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </button>
+            </div>
             <button type="submit" class="submit-button">Registrar</button>
             <p id="mensagemSucesso" style="color: lightgreen; margin-top: 15px; display: none;">Registro realizado com sucesso!</p>
             <p id="mensagemErroRegistro" class="error-message" style="display: none;"></p>
@@ -25,6 +35,5 @@
     </div>
 
     <script src="/Frontend/js/registro.js"></script>
-   
 </body>
 </html>
