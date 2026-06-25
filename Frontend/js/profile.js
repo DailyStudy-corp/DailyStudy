@@ -207,7 +207,7 @@ const Profile = (() => {
         img_perfil: type === 'avatar' ? dataUrl : currentProfile.img_perfil,
         banner_perfil: type === 'banner' ? dataUrl : currentProfile.banner_perfil
       };
-                                      //localhost:8080/api/usuarios/me
+                                      //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
       const response = await fetch('http://localhost:8080/api/usuarios/me/img_perfil', {
         method: 'PUT',
         headers: {
