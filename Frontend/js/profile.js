@@ -30,7 +30,7 @@ const Profile = (() => {
   // Preenche um elemento de avatar com foto ou iniciais.
   // Se tiver foto, insere uma <img> dentro do elemento.
   // Se não tiver, coloca o texto com as iniciais.
-  function fillAvatar(element, name, imageUrl) {
+  function fillimg_perfil(element, name, imageUrl) {
     if (!element) return;
 
     element.innerHTML = '';  // limpa conteúdo anterior
@@ -64,18 +64,18 @@ const Profile = (() => {
   function syncUI() {
     const profile = Storage.getProfile();
 
-    // Avatar no compose box
-    fillAvatar(
+    // Imagem no compose box
+    fillimg_perfil(
       document.getElementById('composeAva'),
       profile.name,
-      profile.avatarUrl
+      profile.img_perfil
     );
 
     // Avatar grande na aba de perfil
-    fillAvatar(
+    fillimg_perfil(
       document.getElementById('profileAvaBig'),
       profile.name,
-      profile.avatarUrl
+      profile.img_perfil
     );
 
     // Nome, cargo e bio
@@ -89,14 +89,14 @@ const Profile = (() => {
     if (roleEl) roleEl.textContent = profile.role || 'Estudante · Daily Study';
   
     // Banner: mostra a imagem se existir, esconde se não existir
-    const bannerImg = document.getElementById('bannerImg');
-    if (bannerImg) {
-      if (profile.bannerUrl) {
-        bannerImg.src = profile.bannerUrl;
-        bannerImg.classList.remove('hidden');
+    const banner_perfil = document.getElementById('banner_perfil');
+    if (banner_perfil) {
+      if (profile.banner_perfil) {
+        banner_perfil.src = profile.banner_perfil;
+        banner_perfil.classList.remove('hidden');
       } else {
-        bannerImg.src = '';
-        bannerImg.classList.add('hidden');
+        banner_perfil.src = '';
+        banner_perfil.classList.add('hidden');
       }
     }
   }
@@ -195,18 +195,20 @@ const Profile = (() => {
 
     UI.showToast('Carregando imagem…');
 
+
+    //ALTERACAO 6 - CAPTURA DE IMAGEM E  PAYLOAD UNIFICADO PARA AVATAR E BANNER
     try {
       const dataUrl = await readFileAsDataUrl(file);
-      const token = localStorage.getItem('token'); // Corrigido para 'localStorage' com S maiúsculo
+      const token = localStorage.getItem('token');
       const currentProfile = Storage.getProfile();
            
-      // Corrigida a estrutura do payload que estava solta no código anterior
+      // Monta o payload respeitando o record img perfil 
       const payload = {
-        img_perfil: type === 'avatar' ? dataUrl : currentProfile.avatarUrl,
-        banner_perfil: type === 'banner' ? dataUrl : currentProfile.bannerUrl
+        img_perfil: type === 'avatar' ? dataUrl : currentProfile.img_perfil,
+        banner_perfil: type === 'banner' ? dataUrl : currentProfile.banner_perfil
       };
-      
-      const response = await fetch('http://localhost:8080/api/usuarios/meu-perfil/imagem', {
+                                      ///api/usuarios/me/img_perfil
+      const response = await fetch('/api/usuarios/me/img_perfil', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -220,10 +222,10 @@ const Profile = (() => {
       }
       
       if (type === 'avatar') {
-        Storage.patchProfile({ avatarUrl: dataUrl });
+        Storage.patchProfile({ img_perfil: dataUrl });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
       } else {
-        Storage.patchProfile({ bannerUrl: dataUrl });
+        Storage.patchProfile({ banner_perfil: dataUrl });
         UI.showToast('Banner updated! 🖼️', 'ok');
       }
 
