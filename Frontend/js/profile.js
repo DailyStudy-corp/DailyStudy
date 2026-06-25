@@ -14,7 +14,7 @@ const Profile = (() => {
   // ── Funções auxiliares ───────────────────────────────────────
 
   // Gera as iniciais do nome para usar como fallback do avatar.
-  // Ex: "João da Silva" → "JS" | "Ana" → "A"
+  // Ex: "User"  
   function getInitials(name) {
     const words = (name || 'U').trim().split(/\s+/).filter(Boolean);
 
