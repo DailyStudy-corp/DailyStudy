@@ -13,13 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const senha = senhaInput.value.trim();
         const email = emailInput.value.trim();
     
-        // ALTERAÇÃO 2: TRATAMENTO DO E-MAIL (.toLowerCase)
-        // Converte o e-mail para letras minúsculas antes de enviar ao banco.
-        // Isso evita que a Regex rígida do Java (@Email) rejeite letras maiúsculas.
-
-        //ALTERAÇÃO 3: ATUALIZAÇÃO DA VALIDAÇÃO NO FRONTEND
-        // Agora o 'username' também é obrigatório. Também adicionamos uma trava 
-        // prévia para o tamanho da senha, poupando requisições desnecessárias.
+        
 
         if (!username || !email || !senha) {
             mensagemErro.textContent = 'Preencha todos os campos obrigatórios (Usuário, E-mail e Senha).';

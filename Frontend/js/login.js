@@ -81,6 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    // ── FIM DA LÓGICA DO OLHINHO ──
+    // ─ FIM DA LÓGICA DO OLHINHO ─
 
 }); // fim do DOMContentLoaded
