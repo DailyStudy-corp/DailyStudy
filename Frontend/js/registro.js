@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Agora o 'username' também é obrigatório. Também adicionamos uma trava 
         // prévia para o tamanho da senha, poupando requisições desnecessárias.
 
-
         if (!username || !email || !senha) {
             mensagemErro.textContent = 'Preencha todos os campos obrigatórios (Usuário, E-mail e Senha).';
             mensagemErro.style.display = 'block';
@@ -33,12 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
             mensagemErro.style.display = 'block';
             return;
         }
-         
+          
         // Limpa mensagens anteriores antes de tentar um novo envio
         mensagemErro.style.display = 'none';
         if (mensagemSucesso) mensagemSucesso.style.display = 'none';
 
-        
         try {
             // 1. Monta os dados exatamente como o RegistroDTO.java espera no backend
             const dadosRegistro = {
@@ -48,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // --- INÍCIO DO TESTE DE CONFIRMAÇÃO ---
-            // Nota: Se o front rodar em porta diferente do back (ex: 5173 e 8080), lembre de usar a URL completa 'http://localhost:8080/api/usuarios/register'
             const response = await fetch('http://localhost:8080/api/usuarios/registro', {
                 method: 'POST',
                 headers: {
@@ -63,18 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("Sucesso: os dados foram enviados e salvos no banco de dados.");
                 console.log("---------------------------------------------------");
 
-            // ALTERACAO 1 - Monta o perfil inicial usando o username fornecido no registro
-            const  novoPerfilInicial = {
-                name: username, 
-                role: 'Estudante · Daily Study', 
-                bio: 'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
-                avatarUrl: null,
-                bannerUrl: null
+                // ── ALTERACAO 1: Perfil inicial ajustado com as novas chaves snake_case ──
+                const novoPerfilInicial = {
+                    name: username, 
+                    role: 'Estudante · Daily Study', 
+                    bio: 'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
+                    img_perfil: null,
+                    banner_perfil: null
+                };
 
-            };
-
-            //Salva o objeto transformado em texto na chave 'ds_profile' do localStorage, para que o perfil já apareça com o name do usuário registrado
-            localStorage.setItem('ds_profile', JSON.stringify(novoPerfilInicial));
+                // Salva o objeto transformado em texto na chave 'ds_profile' do localStorage
+                localStorage.setItem('ds_profile', JSON.stringify(novoPerfilInicial));
 
                 // Exibe mensagem de sucesso visual na tela
                 if (mensagemSucesso) mensagemSucesso.style.display = 'block';
@@ -103,4 +99,28 @@ document.addEventListener('DOMContentLoaded', () => {
             mensagemErro.style.display = 'block';
         }
     }); // Fim do addEventListener
+
+    // ── LÓGICA DO OLHINHO ADICIONADA AQUI ──
+    const togglePasswordRegisterBtn = document.getElementById('togglePasswordRegister');
+    const eyeIconRegister = document.getElementById('eyeIconRegister');
+
+    if (togglePasswordRegisterBtn && senhaInput && eyeIconRegister) {
+        // Definição dos caminhos internos de cada estado do SVG
+        const eyeOpenPathsRegister = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+        const eyeClosedPathsRegister = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+
+        togglePasswordRegisterBtn.addEventListener('click', () => {
+            if (senhaInput.type === 'password') {
+                senhaInput.type = 'text';
+                eyeIconRegister.innerHTML = eyeClosedPathsRegister; // Desenha o risco
+                togglePasswordRegisterBtn.style.color = 'var(--marrom-claro)'; 
+            } else {
+                senhaInput.type = 'password';
+                eyeIconRegister.innerHTML = eyeOpenPathsRegister; // Volta ao normal
+                togglePasswordRegisterBtn.style.color = '#ccc';
+            }
+        });
+    }
+    // ── FIM DA LÓGICA DO OLHINHO ──
+
 }); // Fim do DOMContentLoaded
