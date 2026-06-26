@@ -7,6 +7,7 @@ import com.dailystudy.backend.dto.UsuarioRegistro;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.model.UsuarioRole;
 import com.dailystudy.backend.repository.UsuarioRepository;
+import com.dailystudy.backend.exception.UsuarioException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,7 +26,11 @@ public class UsuarioService {
     public void registroUsuario(UsuarioRegistro dto) {
 
         if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
-            return;
+            throw new UsuarioException("Email inválido");
+        }
+
+        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()){
+            throw new UsuarioException("Este nome já esta em uso");
         }
 
         Usuario novoUsuario = new Usuario();
