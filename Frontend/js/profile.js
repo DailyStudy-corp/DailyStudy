@@ -60,55 +60,57 @@ const Profile = (() => {
   // ── Sincronização da UI ──────────────────────────────────────
 
   // Atualiza todos os elementos visuais com os dados atuais do perfil.
-  // Chamada sempre que o perfil muda (editar nome, trocar foto, etc.).
+  
   function syncUI() {
     const profile = Storage.getProfile();
+    if (!profile) return;
 
-    // Imagem no compose box
-    fillimg_perfil(
-      document.getElementById('composeAva'),
-      profile.name,
-      profile.img_perfil
-    );
+    // Alt 1 Isola o elemento do composebox
+     const composeAva = document.getElementById('composeAva');
+     if (composeAva) {
+        fillimg_perfil(composeAva, profile.name || profile.username, profile.img_perfil);
+      }
 
     // Avatar grande na aba de perfil
-    fillimg_perfil(
-      document.getElementById('profileAvaBig'),
-      profile.name,
-      profile.img_perfil
-    );
-
+    const profileAvaBig= document.getElementById('profileAvaBig');
+    if (profileAvaBig) {
+      fillimg_perfil(profileAvaBig, profile.name || profile.username, profile.img_perfil);
+    } 
+  
     // Nome, cargo e bio
     const nameEl = document.getElementById('pName');
     const bioEl  = document.getElementById('pBio');
-    if (nameEl) nameEl.textContent = profile.name;
+
+   // Alt 2 - Carrega o profile.username como fallback na hora de editar o form
+
+    if (nameEl) nameEl.textContent = profile.name || profile.username || '';
     if (bioEl)  bioEl.textContent  = profile.bio || '';
     
     // Sincroniza o cargo (p-role) na tela inicial puxando o objeto do perfil
     const roleEl = document.getElementById('pRole');
     if (roleEl) roleEl.textContent = profile.role || 'Estudante · Daily Study';
   
-    // Banner: mostra a imagem se existir, esconde se não existir
-    const banner_perfil = document.getElementById('banner_perfil');
-    if (banner_perfil) {
+    // Alt 3 - Nova logica para renderizar o banner.
+    const bannerZone = document.getElementById('bannerZone');
+    if (bannerZone) {
       if (profile.banner_perfil) {
-        banner_perfil.src = profile.banner_perfil;
-        banner_perfil.classList.remove('hidden');
+        // Aplica o Base64 direto como fundo do bannerZone
+        bannerZone.style.backgroundImage = `url('${profile.banner_perfil}')`;
+        bannerZone.style.backgroundSize = 'cover';
+        bannerZone.style.backgroundPosition = 'center';
       } else {
-        banner_perfil.src = '';
-        banner_perfil.classList.add('hidden');
-      }
-    }
-  }
-
-
+        // Se não tiver imagem no perfil, remove o fundo para manter o padrão do CSS
+        bannerZone.style.backgroundImage = 'none';  
+     }
+   } 
+  }      
   // ── Formulário de edição ─────────────────────────────────────
 
   // Abre o formulário preenchido com os dados atuais.
   function openEditForm() {
     const profile = Storage.getProfile();
 
-    document.getElementById('eName').value = profile.name;
+    document.getElementById('eName').value = profile.name || profile.username || '';
     document.getElementById('eBio').value  = profile.bio || '';
     
     // Carrega o cargo atual ou o valor padrão no campo de edição
@@ -133,7 +135,6 @@ const Profile = (() => {
   async function saveEditForm() {
     const name = document.getElementById('eName').value.trim();
     const bio  = document.getElementById('eBio').value.trim();
-    // Captura o valor digitado no input do cargo
     const role = document.getElementById('eRole') ? document.getElementById('eRole').value.trim() : '';
 
     if (!name) {
@@ -202,10 +203,10 @@ const Profile = (() => {
       const token = localStorage.getItem('token');
       const currentProfile = Storage.getProfile();
            
-      // Monta o payload respeitando o record img perfil 
+      // alt 5 - Passou de ava e banner para - img perfil e banner_perfil
       const payload = {
-        img_perfil: type === 'avatar' ? dataUrl : currentProfile.img_perfil,
-        banner_perfil: type === 'banner' ? dataUrl : currentProfile.banner_perfil
+        img_perfil: type === 'img_perfil' ? dataUrl : (currentProfile.img_perfil || null),
+        banner_perfil: type === 'banner_perfil' ? dataUrl : (currentProfile.banner_perfil || null)
       };
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
       const response = await fetch('http://localhost:8080/api/usuarios/me/img_perfil', {
@@ -220,11 +221,11 @@ const Profile = (() => {
       if (!response.ok) {
         throw new Error('Falha ao atualizar a imagem no servidor.');
       }
-      
-      if (type === 'avatar') {
+      //Alterado de avatar para img_perfil
+      if (type === 'img_perfil') {
         Storage.patchProfile({ img_perfil: dataUrl });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
-      } else {
+      } else if (type === 'banner_perfil') {
         Storage.patchProfile({ banner_perfil: dataUrl });
         UI.showToast('Banner updated! 🖼️', 'ok');
       }

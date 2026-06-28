@@ -29,11 +29,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userData = await response.json();
         // Atualiza o perfil no armazenamento local com o nome vindo do banco.   --NOVA  ALTERACAO FT IMAGEM PERFIL E BANNER
         Storage.saveProfile({
-          name: userData.username,
+          username: userData.username,
+          name: userData.nome || userData.name || userData.username,
           role: userData.cargo || 'Estudante · Daily Study',
           bio: userData.bio || '',
-          avatarUrl: userData.img_perfil,   // Traduz snake_case para camelCase 
-          bannerUrl: userData.banner_perfil // Traduz snake_case para camelCase
+          img_perfil: userData.img_perfil,   // Traduz snake_case para camelCase 
+          banner_perfil: userData.banner_perfil // Traduz snake_case para camelCase
         });
 
       } else {
