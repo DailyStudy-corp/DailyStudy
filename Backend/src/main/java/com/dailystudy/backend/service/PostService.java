@@ -1,9 +1,11 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.dto.PostFeedDTO;
 import com.dailystudy.backend.model.Atividade;
+import com.dailystudy.backend.model.Curtida;
 import com.dailystudy.backend.model.Post;
-import com.dailystudy.backend.repository.AtividadeRepository;
-import com.dailystudy.backend.repository.PostRepository;
+import com.dailystudy.backend.model.Usuario;
+import com.dailystudy.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -15,34 +17,29 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final AtividadeRepository atividadeRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ComentarioRepository comentarioRepository;
+    private final CurtidaRepository curtidaRepository;
 
-    public Post criarPost(Post post, String emailAutor, String nomeAutor) {
-        post.setAutorId(emailAutor);
+    public Post criarPost(Post post, String autorUsername, String nomeAutor) {
+        post.setAutorId(autorUsername);
         post.setDataCriacao(LocalDateTime.now());
 
-        Post postSalvo = postRepository.save(post);
-
-        Atividade atividade = new Atividade();
-        atividade.setAutorId(emailAutor);
-        atividade.setStatus("POSTED");
-        atividade.setObjetoId(postSalvo.getId());
-        atividade.setDataCriacao(LocalDateTime.now());
-
-        atividade.getMetadata().put("autorId", nomeAutor);
-        atividade.getMetadata().put("snippet", extrairSnippet(postSalvo.getContent()));
-
-        atividadeRepository.save(atividade);
-
-        return postSalvo;
+        return postRepository.save(post);
     }
 
-    public List<Atividade> listarFeed() {
-        return atividadeRepository.findAllByOrderByDataCriacaoDesc();
-    }
+    public List<PostFeedDTO> listarFeed() {
+        List<Post> posts = postRepository.findAllByOrderByDataCriacaoDesc();
+        return posts.stream().map(post -> {
+            Usuario autor = usuarioRepository.findByUsername(post.getAutorId())
+                    .orElse(null);
+            String autorNome = autor != null ? autor.getUsername() : "Usuario removido";
+            String autorFoto = autor != null ? autor.getImg_perfil() : null;
 
-    private String extrairSnippet(String content){
-        if (content == null)
-            return "";
-        return content.length() > 50 ? content.substring(0, 50) + "..." : content;
+            long totalCurtidas = curtidaRepository.countByPostId(post.getId());
+            long totalComentarios = comentarioRepository.countByPostId(post.getId());
+
+            return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios);
+        }).toList();
     }
 }

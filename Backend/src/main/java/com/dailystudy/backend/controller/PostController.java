@@ -1,5 +1,6 @@
 package com.dailystudy.backend.controller;
 
+import com.dailystudy.backend.dto.PostFeedDTO;
 import com.dailystudy.backend.model.Atividade;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.service.PostService;
@@ -32,8 +33,7 @@ public class PostController {
     }
 
     @GetMapping("/feed")
-    public ResponseEntity<List<Atividade>> obterFeed(){
-        List<Atividade> feed = postService.listarFeed();
-        return ResponseEntity.ok(feed);
+    public ResponseEntity<List<PostFeedDTO>> listarPosts(){
+        return ResponseEntity.ok(postService.listarFeed());
     }
 }

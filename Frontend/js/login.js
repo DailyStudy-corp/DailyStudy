@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const token = dadosResponse.token; 
 
                 // Salva o estado de autenticado e o token para usar nas próximas páginas
-                localStorage.setItem('isAuthenticated', 'true');
+                //localStorage.setItem('isAuthenticated', 'true');
                 localStorage.setItem('token', token); // Isso vai ser vital para o feed de posts depois
 
                 // Redireciona para a home (ajuste o nome do arquivo se necessário, ex: home.html)

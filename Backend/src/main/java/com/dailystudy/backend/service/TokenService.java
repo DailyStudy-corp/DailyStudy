@@ -15,7 +15,7 @@ import java.time.ZoneOffset;
 @Service
 public class TokenService {
 
-    @Value("api.security.token.secret")
+    @Value("${api.security.token.secret}")
     private String secret;
 
     public String gerarToken(Usuario usuario) {
@@ -24,7 +24,7 @@ public class TokenService {
 
             return JWT.create()
                     .withIssuer("auth-api")
-                    .withSubject(usuario.getEmail())
+                    .withSubject(usuario.getUsername())
                     .withExpiresAt(gerarDataExpiracao())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
