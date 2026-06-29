@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -22,6 +23,8 @@ import java.util.Arrays;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final SecurityFilter securityFilter;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -43,8 +46,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/post/feed").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/posts/feed").authenticated()
                         .anyRequest().permitAll())
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
