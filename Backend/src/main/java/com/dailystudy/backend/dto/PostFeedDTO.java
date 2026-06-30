@@ -4,7 +4,17 @@ import com.dailystudy.backend.model.Post;
 
 import java.time.LocalDateTime;
 
-public record PostFeedDTO(String id, String content, String mediaUrl, String autorId, String autorUsername, String autorImg, LocalDateTime dataCriacao, long totalCurtidas, long totalComentarios) {
+public record PostFeedDTO(
+        String id,
+        String content,
+        String mediaUrl,
+        String autorId,
+        String autorUsername,
+        String autorImg,
+        LocalDateTime dataCriacao,
+        LocalDateTime dataEdicao,
+        long totalCurtidas,
+        long totalComentarios) {
 
     public PostFeedDTO(Post post, String autorUsername, String autorImg, long totalCurtidas, long totalComentarios){
         this(
@@ -15,6 +25,7 @@ public record PostFeedDTO(String id, String content, String mediaUrl, String aut
                 autorUsername,
                 autorImg,
                 post.getDataCriacao(),
+                post.getDataEdicao(),
                 totalCurtidas,
                 totalComentarios
         );

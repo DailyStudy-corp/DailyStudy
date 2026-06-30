@@ -20,5 +20,6 @@ public class Post {
     private String mediaUrl;
     private String visibility;
     private LocalDateTime dataCriacao;
+    private LocalDateTime dataEdicao;
     private String autorId;
 }

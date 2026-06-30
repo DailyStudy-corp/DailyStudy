@@ -1,8 +1,7 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.dto.EditarPostDTO;
 import com.dailystudy.backend.dto.PostFeedDTO;
-import com.dailystudy.backend.model.Atividade;
-import com.dailystudy.backend.model.Curtida;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.*;
@@ -26,6 +25,33 @@ public class PostService {
         post.setDataCriacao(LocalDateTime.now());
 
         return postRepository.save(post);
+    }
+
+    public Post editarPost(String id, EditarPostDTO dto, String username){
+
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+
+        if(!post.getAutorId().equals(username)){
+            throw new RuntimeException("Não pode editar esse post");
+        }
+
+        post.setContent(dto.content());
+        post.setMediaUrl(dto.mediaUrl());
+        post.setDataEdicao(LocalDateTime.now());
+
+        return postRepository.save(post);
+    }
+
+    public void deletarPost(String id, String username){
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+
+        if (!post.getAutorId().equals(username)){
+           throw new RuntimeException("Não pode deletar esse post");
+        }
+
+        postRepository.deleteById(id);
     }
 
     public List<PostFeedDTO> listarFeed() {
