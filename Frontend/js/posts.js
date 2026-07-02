@@ -58,33 +58,36 @@ const Posts = (() => {
 
   // Cria e retorna o elemento HTML de um único post.
   // Cada card tem: cabeçalho (avatar, nome, data, ações) + texto + imagem + rodapé.
+
+  //curica: Alterei as variaveis para ficar igual do backend, e fui renomeando onde estavam inseridas
   function createPostCard(post) {
-    const profile  = Profile.get();
-    const initials = Profile.getInitials(profile.name);
+    const autorNome  = post.autorUsername; 
+    const autorFoto = post.autorImg;
+    const initials = Profile.getInitials(autorNome);
 
     const card = document.createElement('article');
     card.className  = 'post-card';
     card.dataset.id = post.id;  // usado para encontrar o card no DOM depois
 
     // Monta o HTML do avatar (foto ou iniciais)
-    const avatarHTML = profile.avatarUrl
-      ? `<img src="${profile.avatarUrl}" alt="Foto de ${escapeHTML(profile.name)}"/>`
+    const avatarHTML = autorFoto
+      ? `<img src="${autorFoto}" alt="Foto de ${escapeHTML(autorNome)}"/>`
       : escapeHTML(initials);
 
     // Monta a imagem do post, se houver
-    const imageHTML = post.image
+    const imageHTML = post.mediaUrl
       ? `<div class="post-image">
-           <img src="${post.image}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
+           <img src="${post.mediaUrl}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
          </div>`
       : '';
 
     // Monta a tag "editado", se o post foi modificado
-    const editedHTML = post.editedAt
-      ? `<p class="post-edited-tag">editado ${formatDate(post.editedAt)}</p>`
+    const editedHTML = post.dataEdicao
+      ? `<p class="post-edited-tag">editado ${formatDate(post.dataEdicao)}</p>`
       : '';
 
     // Formata a data completa para o rodapé
-    const fullDate = new Date(post.createdAt).toLocaleString('pt-BR', {
+    const fullDate = new Date(post.dataCriacao).toLocaleString('pt-BR', {
       day: 'numeric', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -93,8 +96,8 @@ const Posts = (() => {
       <div class="post-head">
         <div class="post-ava" data-action="profile">${avatarHTML}</div>
         <div class="post-meta">
-          <div class="post-author">${escapeHTML(profile.name)}</div>
-          <div class="post-date">${formatDate(post.createdAt)}</div>
+          <div class="post-author">${escapeHTML(autorNome)}</div>
+          <div class="post-date">${formatDate(post.dataCriacao)}</div>
         </div>
         <div class="post-actions">
           <button class="pa-btn"     data-action="edit"   title="Editar">
@@ -111,7 +114,7 @@ const Posts = (() => {
           </button>
         </div>
       </div>
-      <p class="post-text">${escapeHTML(post.text)}</p>
+      <p class="post-text">${escapeHTML(post.content)}</p>
       ${imageHTML}
       ${editedHTML}
       <div class="post-footer">
@@ -127,9 +130,9 @@ const Posts = (() => {
 
       const action = button.dataset.action;
 
-      if (action === 'edit')      openEditModal(post.id, post.text);
+      if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    confirmAndDelete(post.id);
-      if (action === 'lightbox')  UI.openLightbox(post.image);
+      if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
       if (action === 'profile')   UI.activateTab('profile');
     });
 
@@ -141,13 +144,29 @@ const Posts = (() => {
 
   // Renderiza todos os posts no feed principal.
   // Chamada ao inicializar, publicar, editar ou excluir.
-  function renderFeed() {
+
+  /*curica: Implementei o endpoint do post, coloquei o token para autorizar
+            o fetch ja vem com metodo GET padrao, entao nao tive que declarar
+  */
+  async function renderFeed() {
     const feedEl   = document.getElementById('feedList');
     const emptyEl  = document.getElementById('feedEmpty');
     const badgeEl  = document.getElementById('postBadge');
-    const posts    = Storage.getPosts();
+    const token = localStorage.getItem('token');
 
     feedEl.innerHTML = '';
+
+    try {
+      const response = await fetch('http://localhost:8080/api/posts', {
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+
+      if (!response.ok) throw new Error('Erro ao carregar feed');
+
+      const posts = await response.json();
+
+      feedEl.innerHTML = '';
+    
 
     if (posts.length === 0) {
       emptyEl.classList.remove('hidden');
@@ -159,25 +178,48 @@ const Posts = (() => {
     badgeEl.textContent = `${posts.length} post${posts.length !== 1 ? 's' : ''}`;
 
     posts.forEach(post => feedEl.appendChild(createPostCard(post)));
+  } catch (err) {
+    feedEl.innerHTML = '';
+    UI.showToast('Erro ao carregar o feed.', 'err')
+  }
   }
 
   // Renderiza os posts na aba de perfil.
   // Funciona da mesma forma que renderFeed, mas em outro container.
-  function renderProfilePosts() {
+
+  //curica: Aqui a mesma coisa que o de cima, porem nao esta funcionando corretamente, tem que revisar
+  async function renderProfilePosts() {
     const container = document.getElementById('profileFeed');
     const emptyEl   = document.getElementById('profileEmpty');
-    const posts     = Storage.getPosts();
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch('http://localhost:8080/api/posts', {
+        headers: {'Authorization': `Bearer ${token}`},
+      });
+
+      if (!response.ok) throw new Error();
+
+      const todosOsPosts = await response.json();
+
+      const meuUsername = Storage.getProfile().name;
+      const meusPosts = todosOsPosts.filter(p => p.autorNome === meuUsername);
+    
 
     container.innerHTML = '';
 
-    if (posts.length === 0) {
+    //curica: aqui nao ta funcionando tambem
+    if (meusPosts.length === 0) {
       emptyEl.classList.remove('hidden');
       return;
     }
 
     emptyEl.classList.add('hidden');
     posts.forEach(post => container.appendChild(createPostCard(post)));
+  } catch {
+    UI.showToast('Erro ao carregar seus posts', 'err');
   }
+}
 
   // Atualiza os números nos cards de estatísticas do perfil.
   function updateStats() {
@@ -198,14 +240,30 @@ const Posts = (() => {
   // ── Ações de post ────────────────────────────────────────────
 
   // Lê o texto e a imagem pendente, cria o post e atualiza a tela.
-  function handlePublish() {
+
+  //curica: aqui é a mesma coisa, tive que apenas colocar o token pra validar e o fetch
+  async function handlePublish() {
     const input = document.getElementById('postInput');
     const text  = input.value.trim();
 
     if (!text) return;
 
+    const token = localStorage.getItem('token');
+
     try {
-      Storage.addPost(text, pendingImageUrl);
+      const response = await fetch ('http://localhost:8080/api/posts', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: text,
+          mediaUrl: pendingImageUrl
+        })
+      });
+
+      if (!response.ok) throw new Error('Erro ao publicar');
 
       // Limpa o compose
       input.value = '';

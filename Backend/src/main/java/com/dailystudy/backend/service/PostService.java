@@ -20,8 +20,8 @@ public class PostService {
     private final ComentarioRepository comentarioRepository;
     private final CurtidaRepository curtidaRepository;
 
-    public Post criarPost(Post post, String autorUsername, String nomeAutor) {
-        post.setAutorId(autorUsername);
+    public Post criarPost(Post post, String username) {
+        post.setAutorId(username);
         post.setDataCriacao(LocalDateTime.now());
 
         return postRepository.save(post);
