@@ -21,11 +21,8 @@ public class PostController {
     @PostMapping
     public ResponseEntity<Post> postar(@RequestBody Post post, Authentication authentication) {
 
-        String emailUsuarioLogado = authentication.getName();
-
-        String nomePost = emailUsuarioLogado.split("@")[0];
-
-        Post novoPost = postService.criarPost(post, emailUsuarioLogado, nomePost);
+        String username = authentication.getName();
+        Post novoPost = postService.criarPost(post, username);
 
         return ResponseEntity.ok(novoPost);
     }
@@ -48,7 +45,7 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/feed")
+    @GetMapping
     public ResponseEntity<List<PostFeedDTO>> listarPosts(){
         return ResponseEntity.ok(postService.listarFeed());
     }
