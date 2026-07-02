@@ -296,7 +296,9 @@ const Posts = (() => {
   }
 
   // Salva o texto editado no modal.
-  function handleSaveEdit() {
+
+  //curica: Coloquei o endpoint, com a variavel do id do post que esta sendo editado
+  async function handleSaveEdit() {
     if (!editingPostId) return;
 
     const textarea = document.getElementById('editTa');
@@ -307,25 +309,55 @@ const Posts = (() => {
       return;
     }
 
-    Storage.editPost(editingPostId, newText);
-    editingPostId = null;
+    const token = localStorage.getItem('token');
 
-    UI.closeModal();
-    renderFeed();
-    renderProfilePosts();
-    UI.showToast('Postagem atualizada!', 'ok');
+    try {
+      const response = await fetch (`http://localhost:8080/api/posts/${editingPostId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: newText })
+      });
+
+      if(!response.ok) throw new Error('Erro ao editar post');
+
+      editingPostId = null;
+      UI.closeModal();
+      await renderFeed();
+      await renderProfilePosts();
+      UI.showToast('Post atualizado!', 'ok');
+
+    } catch (err) {
+      UI.showToast(err.message, 'err');
+    }
   }
 
   // Pede confirmação antes de excluir o post.
-  function confirmAndDelete(postId) {
+
+  //curica: Coloquei o endpoint para excluir um post, com a variavel do id
+  async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
 
-    Storage.deletePost(postId);
-    renderFeed();
-    renderProfilePosts();
-    updateStats();
-    UI.showToast('Postagem excluída.', 'err');
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+
+      if (!response.ok) throw new Error('Erro ao excluir o post');
+
+      await renderFeed();
+      await renderProfilePosts();
+      UI.showToast('Postagem excluída.', 'err');
+
+    } catch (err) {
+      UI.showToast(err.message, 'err');
+    }
   }
 
 
