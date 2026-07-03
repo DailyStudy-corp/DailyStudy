@@ -9,4 +9,5 @@ public interface PostRepository extends MongoRepository<Post, String> {
     // Ordena os posts por data de criacao
     List<Post> findAllByOrderByDataCriacaoDesc();
 
+    List<Post> findByAutorIdOrderByDataCriacaoDesc(String autorId);
 }

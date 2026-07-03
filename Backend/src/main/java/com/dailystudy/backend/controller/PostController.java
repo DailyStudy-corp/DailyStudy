@@ -28,7 +28,7 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> editarPost(@PathVariable String id, @RequestBody EditarPostDTO dto, Authentication authentication){
+    public ResponseEntity<Post> editarPost(@PathVariable String id, @RequestBody EditarPostDTO dto, Authentication authentication) {
 
         String username = authentication.getName();
         Post post = postService.editarPost(id, dto, username);
@@ -37,7 +37,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPost(@PathVariable String id, Authentication authentication){
+    public ResponseEntity<Void> deletarPost(@PathVariable String id, Authentication authentication) {
 
         String username = authentication.getName();
         postService.deletarPost(id, username);
@@ -46,7 +46,16 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostFeedDTO>> listarPosts(){
+    public ResponseEntity<List<PostFeedDTO>> listarPosts() {
         return ResponseEntity.ok(postService.listarFeed());
+    }
+
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<PostFeedDTO>> listarFeedAutor(Authentication authentication) {
+
+        String username = authentication.getName();
+
+        return ResponseEntity.ok(postService.listarFeedAutor(username));
     }
 }

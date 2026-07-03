@@ -188,25 +188,22 @@ const Posts = (() => {
   // Funciona da mesma forma que renderFeed, mas em outro container.
 
   //curica: Aqui a mesma coisa que o de cima, porem nao esta funcionando corretamente, tem que revisar
+  //curica: Atualizacao: Agora tem um endpoint especifico, e a logica nao fica no front
   async function renderProfilePosts() {
     const container = document.getElementById('profileFeed');
     const emptyEl   = document.getElementById('profileEmpty');
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://localhost:8080/api/posts', {
+      const response = await fetch('http://localhost:8080/api/posts/mine', {
         headers: {'Authorization': `Bearer ${token}`},
       });
 
       if (!response.ok) throw new Error();
 
-      const todosOsPosts = await response.json();
+      const meusPosts = await response.json();
 
-      const meuUsername = Storage.getProfile().name;
-      const meusPosts = todosOsPosts.filter(p => p.autorNome === meuUsername);
-    
-
-    container.innerHTML = '';
+      container.innerHTML = '';
 
     //curica: aqui nao ta funcionando tambem
     if (meusPosts.length === 0) {
@@ -215,7 +212,7 @@ const Posts = (() => {
     }
 
     emptyEl.classList.add('hidden');
-    posts.forEach(post => container.appendChild(createPostCard(post)));
+    meusPosts.forEach(post => container.appendChild(createPostCard(post)));
   } catch {
     UI.showToast('Erro ao carregar seus posts', 'err');
   }
