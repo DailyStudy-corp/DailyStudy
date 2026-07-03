@@ -34,8 +34,8 @@
   --warn:       #c47a18;
 
   /* Fontes */
-  --font-ui:    'Outfit', sans-serif;  /* interface, botões, labels */
-  --font-body:  'Lora', serif;         /* texto dos posts */
+  --font-ui:    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+  --font-body:  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* corpo do texto */
 
   /* Espaçamentos */
   --sp-xs:  4px;
