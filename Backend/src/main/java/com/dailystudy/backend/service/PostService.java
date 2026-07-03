@@ -56,9 +56,19 @@ public class PostService {
 
     public List<PostFeedDTO> listarFeed() {
         List<Post> posts = postRepository.findAllByOrderByDataCriacaoDesc();
+
+        return mapearFeedDTO(posts);
+    }
+
+    public List<PostFeedDTO> listarFeedAutor(String username){
+        List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(username);
+
+        return mapearFeedDTO(posts);
+    }
+
+    private List<PostFeedDTO> mapearFeedDTO(List<Post> posts){
         return posts.stream().map(post -> {
-            Usuario autor = usuarioRepository.findByUsername(post.getAutorId())
-                    .orElse(null);
+            Usuario autor = usuarioRepository.findByUsername(post.getAutorId()).orElse(null);
             String autorNome = autor != null ? autor.getUsername() : "Usuario removido";
             String autorFoto = autor != null ? autor.getImg_perfil() : null;
 
