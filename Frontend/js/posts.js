@@ -208,27 +208,27 @@ const Posts = (() => {
     //curica: aqui nao ta funcionando tambem
     if (meusPosts.length === 0) {
       emptyEl.classList.remove('hidden');
-      return;
+    } else {
+      emptyEl.classList.add('hidden');
+    meusPosts.forEach(post => container.appendChild(createPostCard(post)));
     }
 
-    emptyEl.classList.add('hidden');
-    meusPosts.forEach(post => container.appendChild(createPostCard(post)));
+    updateStats(meusPosts);
+
   } catch {
     UI.showToast('Erro ao carregar seus posts', 'err');
   }
 }
 
   // Atualiza os números nos cards de estatísticas do perfil.
-  function updateStats() {
-    const posts = Storage.getPosts();
+  function updateStats(posts) {
 
-    // Total de posts
     const statPostsEl = document.getElementById('statPosts');
     if (statPostsEl) statPostsEl.textContent = posts.length;
 
     // Dias únicos com pelo menos um post
     // Set() elimina datas duplicadas automaticamente
-    const uniqueDays  = new Set(posts.map(p => new Date(p.createdAt).toDateString()));
+    const uniqueDays  = new Set(posts.map(p => new Date(p.dataCriacao).toDateString()));
     const statDaysEl  = document.getElementById('statDays');
     if (statDaysEl) statDaysEl.textContent = uniqueDays.size;
   }

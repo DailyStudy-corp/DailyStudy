@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   Profile.syncUI();      // exibe nome, avatar e banner do perfil
   Posts.renderFeed();    // exibe os posts salvos no feed
-  Posts.updateStats();   // exibe o total de posts e dias ativos
+  Posts.renderProfilePosts();   // exibe o total de posts
 
 
   // ── Navegação entre abas ─────────────────────────────────────

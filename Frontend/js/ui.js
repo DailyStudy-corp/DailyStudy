@@ -33,7 +33,6 @@ const UI = (() => {
     // Ao abrir o perfil, re-renderiza os posts e atualiza estatísticas
     if (tabName === 'profile') {
       Posts.renderProfilePosts();
-      Posts.updateStats();
     }
   }
 
