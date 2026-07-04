@@ -131,7 +131,7 @@ const Posts = (() => {
       const action = button.dataset.action;
 
       if (action === 'edit')      openEditModal(post.id, post.content);
-      if (action === 'delete')    confirmAndDelete(post.id);
+      if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
       if (action === 'profile')   UI.activateTab('profile');
     });
@@ -333,7 +333,49 @@ const Posts = (() => {
 
   // Pede confirmação antes de excluir o post.
 
-  //curica: Coloquei o endpoint para excluir um post, com a variavel do id
+  //curica: Coloquei o endpoint para excluir um post, com a variavel do id // Modal para exclusao do post junto com a logica e o endpoint do bot
+  let postIdToDelete = null;  // ID do post que será excluído
+   
+  function openDeleteModal(postId) {
+    postIdToDelete = postId;
+    const modal = document.getElementById('deleteModalBackdrop');
+    if (modal) {
+      modal.classList.remove('hidden');
+    }
+  }
+    function closeDeleteModal() {
+    postIdToDelete = null;
+    const modal = document.getElementById('deleteModalBackdrop');
+    if (modal) {
+      modal.classList.add('hidden');
+     }
+  } 
+    async function executePostDeletion() {
+      if (!postIdToDelete) return;
+
+      const token = localStorage.getItem('token');
+      try {
+    const response = await fetch(`http://localhost:8080/api/posts/${postIdToDelete}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+   
+    if (!response.ok) throw new Error('Erro ao excluir o post');
+     closeDeleteModal();
+     await renderFeed();
+    await renderProfilePosts();
+    UI.showToast('Postagem excluída.', 'err');
+
+  } catch (err) {
+    UI.showToast(err.message, 'err');
+  }
+}
+
+// 5. Deixe os ouvintes de clique preparados (coloque isso no escopo global do arquivo)
+  document.getElementById('deleteModalCancelBtn')?.addEventListener('click', closeDeleteModal);
+  document.getElementById('deleteModalCloseBtn')?.addEventListener('click', closeDeleteModal);
+   document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
+
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;

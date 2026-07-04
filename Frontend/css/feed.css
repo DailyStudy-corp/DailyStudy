@@ -281,3 +281,167 @@
   font-style: italic;
   margin-top: 10px;
 }
+/* Customização do botão de exclusão do modal de posts */
+#deleteModalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px); /* Desfoque sutil no feed */
+}
+
+/* Caixa do Modal menor e mais arredondada */
+#deleteModalBackdrop .modal {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg, 16px); /* Cantos bem mais suaves e modernos */
+  box-shadow: var(--shadow-md);
+  width: 90%;
+  max-width: 340px; /* Deixou ele bem menorzinho e compacto */
+  padding: var(--sp-md);
+  text-align: center; /* Centraliza os textos e botões */
+}
+
+/* Cabeçalho */
+#deleteModalBackdrop .modal-head {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+#deleteModalBackdrop .modal-head h3 {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Sumir com o botão "X" do topo para focar nos botões de baixo */
+#deleteModalCloseBtn {
+  display: none; 
+}
+
+/* Espaçamento do texto explicativo */
+#deleteModalBackdrop .modal-body p {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  line-height: 1.4;
+  margin: var(--sp-sm) 0 var(--sp-md) 0;
+}
+
+/* Alinhamento dos botões lado a lado */
+#deleteModalBackdrop .modal-foot .modal-actions {
+  display: flex;
+  gap: var(--sp-sm);
+  justify-content: center;
+}
+
+/* Botões menores e no estilo 'pill' */
+/* Fundo escurecido centralizado */
+#deleteModalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+}
+
+/* Caixa do Modal bem pequena e limpa */
+#deleteModalBackdrop .modal {
+  background-color: var(--surface);
+  border: none !important; 
+  border-radius: 24px;
+  box-shadow: var(--shadow-md);
+  width: 85%;
+  max-width: 280px; /* Bem compacto */
+  padding: 24px 20px 20px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Remove rigorosamente as linhas/bordas dos blocos internos */
+#deleteModalBackdrop .modal-head,
+#deleteModalBackdrop .modal-body,
+#deleteModalBackdrop .modal-foot {
+  border: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Título */
+#deleteModalBackdrop .modal-head h3 {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Sumir com o botão "X" do topo */
+#deleteModalCloseBtn {
+  display: none !important; 
+}
+
+/* Texto explicativo central */
+#deleteModalBackdrop .modal-body p {
+  font-size: 0.88rem;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* Container dos botões centralizado e expandido para as laterais */
+#deleteModalBackdrop .modal-foot .modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%; /* Garante que o bloco use a largura total interna */
+  margin-top: 12px;
+  padding: 0 4px; /* Pequeno respiro sutil para não colar 100% na curva do modal */
+}
+
+/* Estilo dos Botões - Flexíveis e mais próximos da borda */
+#deleteModalBackdrop .modal-actions button {
+  flex: 1; /* Faz eles crescerem preenchendo o espaço até perto das bordas */
+  max-width: 120px; /* Limita um tamanho máximo ideal para não exagerar */
+  padding: 10px 0;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: var(--r-pill, 99px);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+#deleteModalCancelBtn {
+  background-color: var(--bg-2);
+  color: var(--ink-2);
+}
+
+#deleteModalCancelBtn:hover {
+  background-color: var(--border);
+}
+
+#deleteModalConfirmBtn {
+  background-color: var(--danger);
+  color: #ffffff;
+}
+
+#deleteModalConfirmBtn:hover {
+  background-color: #b82d2d;
+}

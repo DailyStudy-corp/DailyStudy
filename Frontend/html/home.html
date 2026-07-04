@@ -358,8 +358,6 @@
 
 </div><!-- /app-shell -->
 
-<!-- Area de modais e toasts-->
-
 <!-- Modal de edição de post -->
 <div class="modal-backdrop hidden" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
@@ -373,6 +371,27 @@
       <div class="modal-actions">
         <button class="btn-secondary" id="modalCancelBtn">Cancelar</button>
         <button class="btn-primary"   id="modalSaveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  //Modal para exclusao dos tweets
+  <div class="modal-backdrop hidden" id="deleteModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="deleteModalTitle">Excluir postagem?</h3>
+      <button class="modal-close-btn" id="deleteModalCloseBtn" aria-label="Fechar modal">X</button>
+    </div>
+    
+    <div class="modal-body" style="padding: var(--sp-md) 0; color: var(--ink-2); font-size: 0.95rem;">
+      <p>Esta ação não poderá ser desfeita e o post sumirá do seu feed de estudos.</p>
+    </div>
+    
+    <div class="modal-foot">
+      <div class="modal-actions">
+        <button class="btn-secondary" id="deleteModalCancelBtn">Cancelar</button>
+        <button class="btn-primary" id="deleteModalConfirmBtn" style="background-color: var(--danger, #d43f3f);">Excluir</button>
       </div>
     </div>
   </div>
