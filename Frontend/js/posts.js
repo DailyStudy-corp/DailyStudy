@@ -165,6 +165,8 @@ const Posts = (() => {
 
       const posts = await response.json();
 
+      window.allPosts = posts; //aqui ele guarda na memoria os posts
+
       feedEl.innerHTML = '';
     
 
@@ -202,6 +204,8 @@ const Posts = (() => {
       if (!response.ok) throw new Error();
 
       const meusPosts = await response.json();
+
+      window.meusPosts = meusPosts; //guarda na memoria os nossos posts
 
       container.innerHTML = '';
 
@@ -262,6 +266,8 @@ const Posts = (() => {
 
       if (!response.ok) throw new Error('Erro ao publicar');
 
+      const novoPost = await response.json(); //recebe o post do backend
+
       // Limpa o compose
       input.value = '';
       clearPendingImage();
@@ -269,7 +275,7 @@ const Posts = (() => {
       document.getElementById('btnPost').disabled = true;
 
       renderFeed();
-      updateStats();
+      updateStats(window.meusPosts);
       UI.showToast('Postagem publicada! 🎉', 'ok');
 
       // Scrolla suavemente para o topo do feed para ver o novo post
