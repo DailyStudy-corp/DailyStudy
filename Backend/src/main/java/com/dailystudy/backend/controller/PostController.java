@@ -84,6 +84,7 @@ public class PostController {
         return ResponseEntity.ok(comentario);
     }
 
+    @GetMapping("/{id}/comentarios")
     public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id){
         return ResponseEntity.ok(postService.listarComentarios(id));
     }
