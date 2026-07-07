@@ -7,7 +7,11 @@ import java.util.List;
 public interface PostRepository extends MongoRepository<Post, String> {
 
     // Ordena os posts por data de criacao
-    List<Post> findAllByOrderByDataCriacaoDesc();
+    List<Post> findByComentPostIdIsNullOrderByDataCriacaoDesc();
 
     List<Post> findByAutorIdOrderByDataCriacaoDesc(String autorId);
+
+    List<Post> findByComentPostIdOrderByDataCriacaoDesc(String comentPostId);
+
+    long countByComentarioPostID(String comentPostId);
 }

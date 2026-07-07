@@ -22,4 +22,6 @@ public class Post {
     private LocalDateTime dataCriacao;
     private LocalDateTime dataEdicao;
     private String autorId;
+
+    private String comentPostId;
 }

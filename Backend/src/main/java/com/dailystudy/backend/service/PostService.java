@@ -1,5 +1,6 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.dto.ComentarioDTO;
 import com.dailystudy.backend.dto.EditarPostDTO;
 import com.dailystudy.backend.dto.PostFeedDTO;
 import com.dailystudy.backend.model.Post;
@@ -55,7 +56,7 @@ public class PostService {
     }
 
     public List<PostFeedDTO> listarFeed() {
-        List<Post> posts = postRepository.findAllByOrderByDataCriacaoDesc();
+        List<Post> posts = postRepository.findByComentPostIdIsNullOrderByDataCriacaoDesc();
 
         return mapearFeedDTO(posts);
     }
@@ -64,6 +65,25 @@ public class PostService {
         List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(username);
 
         return mapearFeedDTO(posts);
+    }
+
+    public Post criarComentario(String comentPostId, ComentarioDTO dto, String username){
+        postRepository.findById(comentPostId)
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+
+        Post comentario = new Post();
+        comentario.setContent(dto.content());
+        comentario.setMediaUrl(dto.mediaUrl());
+        comentario.setDataCriacao(LocalDateTime.now());
+        comentario.setComentPostId(comentPostId);
+
+        return postRepository.save(comentario);
+    }
+
+    public List<PostFeedDTO> listarComentarios(String comentPostId){
+        List<Post> comentarios = postRepository.findByComentPostIdOrderByDataCriacaoDesc(comentPostId);
+
+        return mapearFeedDTO(comentarios);
     }
 
     private List<PostFeedDTO> mapearFeedDTO(List<Post> posts){

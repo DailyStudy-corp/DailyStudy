@@ -13,6 +13,7 @@ public record PostFeedDTO(
         String autorImg,
         LocalDateTime dataCriacao,
         LocalDateTime dataEdicao,
+        String comentPostId,
         long totalCurtidas,
         long totalComentarios) {
 
@@ -26,6 +27,7 @@ public record PostFeedDTO(
                 autorImg,
                 post.getDataCriacao(),
                 post.getDataEdicao(),
+                post.getComentPostId(),
                 totalCurtidas,
                 totalComentarios
         );
