@@ -1,12 +1,16 @@
 package com.dailystudy.backend.controller;
 
+import com.dailystudy.backend.dto.ComentarioDTO;
+import com.dailystudy.backend.dto.CurtidaDTO;
 import com.dailystudy.backend.dto.EditarPostDTO;
 import com.dailystudy.backend.dto.PostFeedDTO;
 import com.dailystudy.backend.model.Post;
+import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +21,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final CurtidaService curtidaService;
 
     @PostMapping
     public ResponseEntity<Post> postar(@RequestBody Post post, Authentication authentication) {
@@ -57,5 +62,30 @@ public class PostController {
         String username = authentication.getName();
 
         return ResponseEntity.ok(postService.listarFeedAutor(username));
+    }
+
+    @PostMapping("/{id}/curtida")
+    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
+        String username = authentication.getName();
+        return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
+    }
+
+    @GetMapping("/{id}/curtida")
+    public  ResponseEntity<CurtidaDTO> statusCurtida(@PathVariable String id, Authentication authentication){
+        String username = authentication.getName();
+        return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
+    }
+
+    @PostMapping("/{id}/comentarios")
+    public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
+        String username = authentication.getName();
+        Post comentario = postService.criarComentario(id, dto, username);
+
+        return ResponseEntity.ok(comentario);
+    }
+
+    @GetMapping("/{id}/comentarios")
+    public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id){
+        return ResponseEntity.ok(postService.listarComentarios(id));
     }
 }

@@ -275,7 +275,7 @@ const Posts = (() => {
       document.getElementById('btnPost').disabled = true;
 
       renderFeed();
-      updateStats(window.meusPosts);
+      updateStats(window.meusPosts); //aqui é onde o erro apontava, ele chegava vazio e o post.length dava erro
       UI.showToast('Postagem publicada! 🎉', 'ok');
 
       // Scrolla suavemente para o topo do feed para ver o novo post
