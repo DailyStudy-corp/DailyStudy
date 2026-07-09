@@ -5,6 +5,7 @@
   a um módulo específico:
   - Sistema de abas (Feed, Buscar, Perfil)
   - Modal de edição de post
+  - Modal de visualização/comentários de post
   - Toast de notificação temporária
   - Lightbox de imagem em tela cheia
 
@@ -37,7 +38,7 @@ const UI = (() => {
   }
 
 
-  // ── Modal ─────────────────────────────────────────────────────
+  // ── Modal de Edição Comum ─────────────────────────────────────
 
   // Abre o modal de edição e bloqueia o scroll da página.
   function openModal() {
@@ -54,6 +55,37 @@ const UI = (() => {
   function closeModal() {
     document.getElementById('modalBackdrop').classList.add('hidden');
     document.body.style.overflow = '';
+  }
+
+
+  // ── Modal de Comentários (Post Expandido) ─────────────────────
+
+  // Abre o modal de comentários, limpa inputs anteriores e bloqueia o scroll.
+  function openCommentModal() {
+    const input = document.getElementById('replyPostInput');
+    if (input) {
+      input.value = '';
+      document.getElementById('replyCharCount').textContent = '500';
+      document.getElementById('commentModalSendBtn').disabled = true;
+    }
+
+    document.getElementById('commentModalBackdrop').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Foca no campo de resposta após a transição
+    setTimeout(() => {
+      if (input) input.focus();
+    }, 260);
+  }
+
+  // Fecha o modal de comentários e restaura o scroll.
+  function closeCommentModal() {
+    document.getElementById('commentModalBackdrop').classList.add('hidden');
+    document.body.style.overflow = '';
+    
+    // Limpa os containers internos para não acumular lixo visual
+    document.getElementById('commentModalOriginalPost').innerHTML = '';
+    document.getElementById('commentModalRepliesList').innerHTML = '';
   }
 
 
@@ -104,6 +136,8 @@ const UI = (() => {
     activateTab,
     openModal,
     closeModal,
+    openCommentModal,
+    closeCommentModal,
     showToast,
     openLightbox,
     closeLightbox,

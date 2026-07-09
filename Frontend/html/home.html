@@ -396,7 +396,34 @@
     </div>
   </div>
 </div>
-
+ <!-- Alteracoes - Modal para post e edição -->
+  <div class="modal-backdrop hidden" id="commentModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="commentModalTitle">
+  <div class="modal comment-modal-layout" style="max-width: 600px; width: 90%;">
+    <div class="modal-head">
+      <h3 id="commentModalTitle">Postagem</h3>
+      <button class="modal-close-btn" id="commentModalCloseBtn" aria-label="Fechar modal">✕</button>
+    </div>
+    
+    <div class="modal-body" style="padding: var(--sp-md) 0; max-height: 65vh; overflow-y: auto;">
+      <div id="commentModalOriginalPost"></div>
+      
+      <div style="height: 1px; background: var(--border, #eee); margin: var(--sp-md) 0;"></div>
+      
+      <div id="commentModalRepliesList" style="display: flex; flex-direction: column; gap: var(--sp-md, 16px);"></div>
+    </div>
+    
+    <div class="modal-foot" style="flex-direction: column; gap: var(--sp-sm); border-top: 1px solid var(--border, #eee); padding-top: var(--sp-sm);">
+      <textarea id="replyPostInput" class="modal-ta" placeholder="Escreva sua resposta..." maxlength="500" rows="3" style="width: 100%; min-height: unset;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span class="char-counter" id="replyCharCount" aria-live="polite">500</span>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="commentModalCancelBtn">Cancelar</button>
+          <button class="btn-primary" id="commentModalSendBtn" disabled>Responder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Lightbox: imagem em tela cheia -->
 <div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Visualizador de imagem">
   <button class="lightbox-close" id="lightboxClose" aria-label="Fechar imagem">✕</button>

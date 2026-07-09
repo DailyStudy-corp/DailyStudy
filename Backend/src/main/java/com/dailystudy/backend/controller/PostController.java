@@ -4,6 +4,7 @@ import com.dailystudy.backend.dto.ComentarioDTO;
 import com.dailystudy.backend.dto.CurtidaDTO;
 import com.dailystudy.backend.dto.EditarPostDTO;
 import com.dailystudy.backend.dto.PostFeedDTO;
+import com.dailystudy.backend.dto.PostDetalhesDTO;  // Gui
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
@@ -75,7 +76,11 @@ public class PostController {
         String username = authentication.getName();
         return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
     }
-
+     @GetMapping("/{id}/detalhes") //Gui
+    public ResponseEntity<PostDetalhesDTO> obterPostComComentarios(@PathVariable String id) {
+    return ResponseEntity.ok(postService.obterPostDetalhes(id));
+}
+     
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
         String username = authentication.getName();
