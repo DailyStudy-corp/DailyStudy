@@ -62,7 +62,7 @@ const Posts = (() => {
   //curica: Alterei as variaveis para ficar igual do backend, e fui renomeando onde estavam inseridas
   function createPostCard(post) {
     const autorNome  = post.autorUsername; 
-    const autorFoto = post.autorImg;
+    const autorFoto = Security.safeImage(post.autorImg);
     const initials = Profile.getInitials(autorNome);
 
     const card = document.createElement('article');
@@ -71,13 +71,13 @@ const Posts = (() => {
 
     // Monta o HTML do avatar (foto ou iniciais)
     const avatarHTML = autorFoto
-      ? `<img src="${autorFoto}" alt="Foto de ${escapeHTML(autorNome)}"/>`
+      ? `<img src="${escapeHTML(autorFoto)}" alt="Foto de ${escapeHTML(autorNome)}"/>`
       : escapeHTML(initials);
 
     // Monta a imagem do post, se houver
-    const imageHTML = post.mediaUrl
+    const imageHTML = Security.safeImage(post.mediaUrl)
       ? `<div class="post-image">
-           <img src="${post.mediaUrl}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
+           <img src="${escapeHTML(post.mediaUrl)}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
          </div>`
       : '';
 
