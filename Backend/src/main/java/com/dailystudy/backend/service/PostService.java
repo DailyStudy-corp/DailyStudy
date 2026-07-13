@@ -2,10 +2,12 @@ package com.dailystudy.backend.service;
 
 import com.dailystudy.backend.dto.ComentarioDTO;
 import com.dailystudy.backend.dto.EditarPostDTO;
+import com.dailystudy.backend.dto.PostCreateDTO;
 import com.dailystudy.backend.dto.PostFeedDTO;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -21,7 +23,10 @@ public class PostService {
     private final ComentarioRepository comentarioRepository;
     private final CurtidaRepository curtidaRepository;
 
-    public Post criarPost(Post post, String username) {
+    public Post criarPost(PostCreateDTO dto, String username) {
+        Post post = new Post();
+        post.setContent(dto.content());
+        post.setMediaUrl(dto.mediaUrl());
         post.setAutorId(username);
         post.setDataCriacao(LocalDateTime.now());
 

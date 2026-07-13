@@ -1,13 +1,13 @@
 package com.dailystudy.backend.controller;
 
-import com.dailystudy.backend.dto.ComentarioDTO;
-import com.dailystudy.backend.dto.CurtidaDTO;
-import com.dailystudy.backend.dto.EditarPostDTO;
-import com.dailystudy.backend.dto.PostFeedDTO;
+import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
+import com.dailystudy.backend.util.MediaValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.parameters.P;
@@ -24,16 +24,24 @@ public class PostController {
     private final CurtidaService curtidaService;
 
     @PostMapping
-    public ResponseEntity<Post> postar(@RequestBody Post post, Authentication authentication) {
+    public ResponseEntity<Post> postar(@Valid @RequestBody PostCreateDTO dto, Authentication authentication) {
+
+        if (!MediaValidator.isSafeImage(dto.mediaUrl())){
+            return ResponseEntity.badRequest().build();
+        }
 
         String username = authentication.getName();
-        Post novoPost = postService.criarPost(post, username);
+        Post novoPost = postService.criarPost(dto, username);
 
-        return ResponseEntity.ok(novoPost);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoPost);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Post> editarPost(@PathVariable String id, @RequestBody EditarPostDTO dto, Authentication authentication) {
+
+        if (!MediaValidator.isSafeImage(dto.mediaUrl())){
+            return ResponseEntity.badRequest().build();
+        }
 
         String username = authentication.getName();
         Post post = postService.editarPost(id, dto, username);
