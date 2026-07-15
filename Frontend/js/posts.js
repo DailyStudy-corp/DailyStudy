@@ -20,6 +20,7 @@ const Posts = (() => {
   // Imagem selecionada no compose, ainda não publicada (null se vazia)
   let pendingImageUrl = null;
 
+  let activeCommentPostId = null; // ID do post atualmente aberto no modal de comentários
 
   // ── Helpers ──────────────────────────────────────────────────
 
@@ -159,23 +160,27 @@ const Posts = (() => {
 
     // Listener único no card que detecta em qual botão foi clicado
     // (técnica chamada "event delegation")
-    card.addEventListener('click', event => {
+   card.addEventListener('click', event => {
       const button = event.target.closest('[data-action]');
       if (!button) return;
 
       const action = button.dataset.action;
+
+      // Isso evita que o clique no "Like" ou "Responder" acione o "open-post" do card
+     
+      if (action === 'like' || action === 'reply' || action === 'repost' || action === 'edit' || action === 'delete') {
+        event.stopPropagation(); 
+      }
 
       if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
       if (action === 'profile')   UI.activateTab('profile');
 
-      // Alteracao 2 (Gui) - Mapeando os novos cliques de interacao (curtir, republicar, responder)
-      if (action === 'like')      handleLikeToggle(post.id, button);
-      if (action === 'reply')     handleOpenPostModal(post.id);
-      if (action === 'open-post') handleOpenPostModal(post.id);
-      if (action === 'repost')    UI.showToast('Recurso em desenvolvimento! ', 'ok');
-
+      if (action === 'like')      Posts.handleLikeToggle(post.id, button);
+      if (action === 'reply')     Posts.handleOpenPostModal(post.id);
+      if (action === 'open-post') Posts.handleOpenPostModal(post.id);
+      if (action === 'repost')    UI.showToast('Recurso em desenvolvimento!', 'ok');
     });
 
     return card;
@@ -509,34 +514,37 @@ const Posts = (() => {
   }
 
   // Alteracao 3 Gui: Funcoes de suporte para o like e abertura de modal
-    async function handleLikeToggle(postId, buttonEl) {
+  async function handleLikeToggle(postId, buttonEl) {
     const token = localStorage.getItem('token');
+    
+    // Procura o elemento do contador (.int-count) dentro do botão ou próximo a ele
     const countEl = buttonEl.querySelector('.int-count');
     
     try {
       const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) throw new Error("Nao foi possivel curtir essa porra");
       const data = await response.json(); 
-     // ALTERACAO - ALINHAMENTO COM O DTO QUE RETORNA DO JAVA 
-      const isCurtido = data.curtido !== undefined ? data.curtido : data.curtidoPeloUsuario;
-      const total = data.totalCurtidas !== undefined ? data.totalCurtidas : data;
 
-      if (isCurtido) {
+      // Alinhamento exato com o seu CurtidaDTO(boolean curtido, long total) do Java
+     if (data.curtido) {
         buttonEl.classList.add('active');
       } else {
         buttonEl.classList.remove('active');
       }
-      
-      if (countEl) {
-        countEl.textContent = typeof total === 'object' ? total.totalCurtidas : total;
-      }
 
+      // Atualiza o número do contador na tela com o valor retornado do banco
+      if (countEl) {
+        countEl.textContent = data.total;
+      }
     } catch (err) {
-      UI.showToast('Não foi possível processar a curtida.', 'err');
+      console.error('Erro ao curtir post:', err);
     }
   }
 
@@ -547,7 +555,7 @@ const Posts = (() => {
     activeCommentPostId = postId;
     
     try {
-      // ✅ 1 requisição = post principal + comentários juntos!
+      // 1 requisição = post principal + comentários juntos!
       const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -622,7 +630,8 @@ return {
     clearPendingImage,
     updateCharCounter,
     handleLikeToggle,
-    handleOpenPostModal
+    handleOpenPostModal,
+    getActiveCommentPostId: () => activeCommentPostId,
   };
 
 })();

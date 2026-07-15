@@ -3,7 +3,7 @@ package com.dailystudy.backend.service;
 import com.dailystudy.backend.dto.ComentarioDTO;
 import com.dailystudy.backend.dto.EditarPostDTO;
 import com.dailystudy.backend.dto.PostFeedDTO;
-import com.dailystudy.backend.dto.PostDetalhesDTO; // GUI
+import com.dailystudy.backend.dto.PostDetalhesDTO;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.*;
@@ -50,7 +50,7 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         if (!post.getAutorId().equals(username)){
-           throw new RuntimeException("Não pode deletar esse post");
+            throw new RuntimeException("Não pode deletar esse post");
         }
 
         postRepository.deleteById(id);
@@ -86,20 +86,13 @@ public class PostService {
 
         return mapearFeedDTO(comentarios);
     }
-       /** Gui
-     * Obtém um post individual junto com todos os seus comentários em uma única operação.
-     * Útil para abrir um modal de detalhes/comentários sem fazer múltiplas requisições.
-     * 
-     * @param postId ID do post a buscar
-     * @return PostDetalhesDTO com o post principal e lista de comentários
-     * @throws RuntimeException se o post não existir
-     */
+
     public PostDetalhesDTO obterPostDetalhes(String postId) {
         // Busca o post principal
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        // Mapeia o post principal para DTO
+        // Mapeia o post principal para DTO usando o novo método
         PostFeedDTO postDTO = mapearPostParaDTO(post);
 
         // Busca todos os comentários do post
@@ -109,9 +102,13 @@ public class PostService {
         // Retorna o pacote completo
         return new PostDetalhesDTO(postDTO, comentariosDTO);
     }
+
     private List<PostFeedDTO> mapearFeedDTO(List<Post> posts){
-        return posts.stream().map(post -> {
-             Usuario autor = usuarioRepository.findByUsername(post.getAutorId()).orElse(null);
+        return posts.stream().map(this::mapearPostParaDTO).toList();
+    }
+
+    private PostFeedDTO mapearPostParaDTO(Post post) {
+        Usuario autor = usuarioRepository.findByUsername(post.getAutorId()).orElse(null);
         String autorNome = autor != null ? autor.getUsername() : "Usuario removido";
         String autorFoto = autor != null ? autor.getImg_perfil() : null;
 
@@ -119,6 +116,5 @@ public class PostService {
         long totalComentarios = comentarioRepository.countByPostId(post.getId());
 
         return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios);
-    } 
     }
 }

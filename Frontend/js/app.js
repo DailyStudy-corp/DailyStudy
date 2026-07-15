@@ -343,5 +343,75 @@ document.addEventListener('DOMContentLoaded', async () => {
       searchMainInput.focus();
     });
   });
+ // ── Mapeamento do Modal de Comentários (Respostas) ────────────
+ // ─
+  // Declara TODAS as variáveis que vamos usar do HTML
+  const replyInput = document.getElementById('replyPostInput');
+  const replySendBtn = document.getElementById('commentModalSendBtn');
+  const replyCloseBtn = document.getElementById('commentModalCloseBtn');   // O botão "X" do topo
+  const replyCancelBtn = document.getElementById('commentModalCancelBtn'); // O botão "Cancelar" de baixo
+  const replyBackdrop = document.getElementById('commentModalBackdrop');
+
+  // 2. DEPOIS: Registra os eventos de cada uma delas
+  if (replyInput) {
+    replyInput.addEventListener('input', () => {
+      Posts.updateCharCounter('replyCharCount', replyInput, 500);
+      const hasText = replyInput.value.trim().length > 0;
+      if (replySendBtn) replySendBtn.disabled = !hasText;
+    });
+  }
+
+  if (replySendBtn) {
+    replySendBtn.addEventListener('click', async () => {
+      const text = replyInput.value.trim();
+      if (!text) return;
+
+      const postId = Posts.getActiveCommentPostId();
+      const token = localStorage.getItem('token');
+      replySendBtn.disabled = true;
+
+      try {
+        const response = await fetch(`http://localhost:8080/api/posts/${postId}/comentarios`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content: text })
+        });
+
+        if (!response.ok) throw new Error();
+        replyInput.value = '';
+        
+        await Posts.handleOpenPostModal(postId);
+        await Posts.renderFeed();
+
+        UI.showToast('Resposta enviada!', 'ok');
+
+      } catch (err) {
+        UI.showToast('Não foi possível enviar o comentário.', 'err');
+        replySendBtn.disabled = false;
+      }
+    });
+  }
+
+  // 3. Registrar o clique no botão "X" do topo
+  if (replyCloseBtn) {
+    replyCloseBtn.addEventListener('click', () => UI.closeCommentModal());
+  }
+
+  // 4. Registrar o clique no botão "Cancelar" de baixo
+  if (replyCancelBtn) {
+    replyCancelBtn.addEventListener('click', () => UI.closeCommentModal());
+  }
+
+  // 5. Clique na área escura do fundo fecha o modal
+  if (replyBackdrop) {
+    replyBackdrop.addEventListener('click', (event) => {
+      if (event.target === replyBackdrop) {
+        UI.closeCommentModal();
+      }
+    });
+  }
 
 }); // fim do DOMContentLoaded

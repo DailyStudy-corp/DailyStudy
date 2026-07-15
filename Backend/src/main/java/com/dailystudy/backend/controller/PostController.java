@@ -71,15 +71,17 @@ public class PostController {
         return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
     }
 
+     @PostMapping("/{id}/curtida")
+    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
+        String username = authentication.getName();
+        return ResponseEntity.ok(curtidaService.toggleCurtida(id, username));
+    }
+
     @GetMapping("/{id}/curtida")
-    public  ResponseEntity<CurtidaDTO> statusCurtida(@PathVariable String id, Authentication authentication){
+    public ResponseEntity<CurtidaDTO> statusCurtida(@PathVariable String id, Authentication authentication){
         String username = authentication.getName();
         return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
     }
-     @GetMapping("/{id}/detalhes") //Gui
-    public ResponseEntity<PostDetalhesDTO> obterPostComComentarios(@PathVariable String id) {
-    return ResponseEntity.ok(postService.obterPostDetalhes(id));
-}
      
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
