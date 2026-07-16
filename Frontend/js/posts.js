@@ -133,7 +133,8 @@ const Posts = (() => {
       if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
-      if (action === 'profile')   UI.activateTab('profile');
+      //curica: A acao deixou de ser UI para ser uma funcao real
+      if (action === 'profile')   Profile.openProfile(post.autorUsername);
     });
 
     return card;
@@ -470,12 +471,28 @@ const Posts = (() => {
     else if (remaining <= 80) counterEl.classList.add('warn');
   }
 
+  function renderExternalPosts(posts, containerId, emptyId) {
+    const container = document.getElementById(containerId);
+    const emptyEl = document.getElementById(emptyId);
+
+    container.innerHTML = '';
+
+    if (!posts || posts.length === 0) {
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    emptyEl.classList.add('hidden');
+    posts.forEach(post => container.appendChild(createPostCard(post)));
+  }
+
 
   // ── API pública ──────────────────────────────────────────────
 
   return {
     renderFeed,
     renderProfilePosts,
+    renderExternalPosts,
     updateStats,
     handlePublish,
     openEditModal,
