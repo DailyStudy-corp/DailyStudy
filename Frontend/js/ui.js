@@ -29,11 +29,6 @@ const UI = (() => {
       btn.classList.toggle('active', isActive);
       btn.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
-
-    // Ao abrir o perfil, re-renderiza os posts e atualiza estatísticas
-    if (tabName === 'profile') {
-      Posts.renderProfilePosts();
-    }
   }
 
 

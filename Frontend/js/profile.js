@@ -254,6 +254,7 @@ const Profile = (() => {
     if (username === myUsername) {
       syncUI();
       setReadOnly(false);
+      Posts.renderProfilePosts();
       return;
     }
   
