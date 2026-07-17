@@ -1,9 +1,6 @@
 package com.dailystudy.backend.service;
 
-import com.dailystudy.backend.dto.DadosPerfil;
-import com.dailystudy.backend.dto.ImagemPerfil;
-import com.dailystudy.backend.dto.LoginDTO;
-import com.dailystudy.backend.dto.UsuarioRegistro;
+import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.model.UsuarioRole;
 import com.dailystudy.backend.repository.UsuarioRepository;
@@ -12,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -22,6 +21,8 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     private final BCryptPasswordEncoder passwordEncoder;
+
+    private final PostService postService;
 
     public void registroUsuario(UsuarioRegistro dto) {
 
@@ -71,5 +72,21 @@ public class UsuarioService {
         usuario.setBio(dto.bio());
 
         usuarioRepository.save(usuario);
+    }
+
+    public PerfilPublicoDTO buscarPerfilPublico(String username) {
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+
+        List<PostFeedDTO> posts = postService.listarFeedAutor(username);
+
+        return new PerfilPublicoDTO(
+                usuario.getUsername(),
+                usuario.getImg_perfil(),
+                usuario.getBanner_perfil(),
+                usuario.getCargo(),
+                usuario.getBio(),
+                posts
+        );
     }
 }
