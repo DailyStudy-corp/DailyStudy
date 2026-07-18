@@ -3,6 +3,7 @@ package com.dailystudy.backend.controller;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
+import com.dailystudy.backend.service.PostService;
 import com.dailystudy.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,6 +20,8 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+
+    private final PostService postService;
 
     @PostMapping("/registro") // Mapeia a requisicao HTTP para criar um novo usuario no banco de dados
     public ResponseEntity<String> registrar(@Valid @RequestBody UsuarioRegistro dto) {
@@ -62,6 +66,11 @@ public class UsuarioController {
         usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/perfil/{username}")
+    public ResponseEntity<PerfilPublicoDTO> listarPostsPorUsuarios(@PathVariable String username){
+        return ResponseEntity.ok(usuarioService.buscarPerfilPublico(username));
     }
 
 }

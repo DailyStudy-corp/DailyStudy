@@ -63,7 +63,7 @@ const Posts = (() => {
   //curica: Alterei as variaveis para ficar igual do backend, e fui renomeando onde estavam inseridas
   function createPostCard(post) {
     const autorNome  = post.autorUsername; 
-    const autorFoto = post.autorImg;
+    const autorFoto = Security.safeImage(post.autorImg);
     const initials = Profile.getInitials(autorNome);
 
     const card = document.createElement('article');
@@ -72,13 +72,13 @@ const Posts = (() => {
 
     // Monta o HTML do avatar (foto ou iniciais)
     const avatarHTML = autorFoto
-      ? `<img src="${autorFoto}" alt="Foto de ${escapeHTML(autorNome)}"/>`
+      ? `<img src="${escapeHTML(autorFoto)}" alt="Foto de ${escapeHTML(autorNome)}"/>`
       : escapeHTML(initials);
 
     // Monta a imagem do post, se houver
-    const imageHTML = post.mediaUrl
+    const imageHTML = Security.safeImage(post.mediaUrl)
       ? `<div class="post-image">
-           <img src="${post.mediaUrl}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
+           <img src="${escapeHTML(post.mediaUrl)}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
          </div>`
       : '';
 
@@ -175,12 +175,17 @@ const Posts = (() => {
       if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
+<<<<<<< HEAD
       if (action === 'profile')   UI.activateTab('profile');
 
       if (action === 'like')      Posts.handleLikeToggle(post.id, button);
       if (action === 'reply')     Posts.handleOpenPostModal(post.id);
       if (action === 'open-post') Posts.handleOpenPostModal(post.id);
       if (action === 'repost')    UI.showToast('Recurso em desenvolvimento!', 'ok');
+=======
+      //curica: A acao deixou de ser UI para ser uma funcao real
+      if (action === 'profile')   Profile.openProfile(post.autorUsername);
+>>>>>>> c904829c7f783df0831b03152ba2eaa88abbe6b4
     });
 
     return card;
@@ -513,6 +518,7 @@ const Posts = (() => {
     else if (remaining <= 80) counterEl.classList.add('warn');
   }
 
+<<<<<<< HEAD
   // Alteracao 3 Gui: Funcoes de suporte para o like e abertura de modal
   async function handleLikeToggle(postId, buttonEl) {
     const token = localStorage.getItem('token');
@@ -528,6 +534,23 @@ const Posts = (() => {
           'Content-Type': 'application/json'
         }
       });
+=======
+  function renderExternalPosts(posts, containerId, emptyId) {
+    const container = document.getElementById(containerId);
+    const emptyEl = document.getElementById(emptyId);
+
+    container.innerHTML = '';
+
+    if (!posts || posts.length === 0) {
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+
+    emptyEl.classList.add('hidden');
+    posts.forEach(post => container.appendChild(createPostCard(post)));
+  }
+
+>>>>>>> c904829c7f783df0831b03152ba2eaa88abbe6b4
 
       if (!response.ok) throw new Error("Nao foi possivel curtir essa porra");
       const data = await response.json(); 
@@ -622,6 +645,7 @@ const Posts = (() => {
 return {
     renderFeed,
     renderProfilePosts,
+    renderExternalPosts,
     updateStats,
     handlePublish,
     openEditModal,

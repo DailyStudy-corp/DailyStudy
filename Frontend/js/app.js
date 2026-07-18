@@ -67,12 +67,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Cobre: .rail-btn (desktop) e .bottom-btn (mobile).
 
   document.querySelectorAll('[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => UI.activateTab(btn.dataset.tab));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'profile') {
+        Profile.openProfile(Storage.getProfile().username);
+      } else {
+        UI.activateTab(btn.dataset.tab);
+      }
+    });
   });
-
+  
   // O avatar do compose também navega para o perfil ao ser clicado
   document.getElementById('composeAva').addEventListener('click', () => {
-    UI.activateTab('profile');
+    Profile.openProfile(Storage.getProfile().username);
   });
 
 
