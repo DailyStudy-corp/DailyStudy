@@ -1,14 +1,6 @@
 package com.dailystudy.backend.controller;
 
-<<<<<<< HEAD
-import com.dailystudy.backend.dto.ComentarioDTO;
-import com.dailystudy.backend.dto.CurtidaDTO;
-import com.dailystudy.backend.dto.EditarPostDTO;
-import com.dailystudy.backend.dto.PostFeedDTO;
-import com.dailystudy.backend.dto.PostDetalhesDTO;  // Gui
-=======
 import com.dailystudy.backend.dto.*;
->>>>>>> c904829c7f783df0831b03152ba2eaa88abbe6b4
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
@@ -86,18 +78,12 @@ public class PostController {
         return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
     }
 
-     @PostMapping("/{id}/curtida")
-    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
-        String username = authentication.getName();
-        return ResponseEntity.ok(curtidaService.toggleCurtida(id, username));
-    }
-
     @GetMapping("/{id}/curtida")
-    public ResponseEntity<CurtidaDTO> statusCurtida(@PathVariable String id, Authentication authentication){
+    public  ResponseEntity<CurtidaDTO> statusCurtida(@PathVariable String id, Authentication authentication){
         String username = authentication.getName();
         return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
     }
-     
+
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
         String username = authentication.getName();
