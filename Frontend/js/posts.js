@@ -20,7 +20,6 @@ const Posts = (() => {
   // Imagem selecionada no compose, ainda não publicada (null se vazia)
   let pendingImageUrl = null;
 
-  let activeCommentPostId = null; // ID do post atualmente aberto no modal de comentários
 
   // ── Helpers ──────────────────────────────────────────────────
 
@@ -93,9 +92,6 @@ const Posts = (() => {
       hour: '2-digit', minute: '2-digit',
     });
 
-  // Alteracao GUI - Inicio (Adicionando os botoes de interacao e wrapper clicavel no texto do post)
-  const heartClass = post.curtidoPeloUsuario ? 'int-btn like-btn active' : 'int-btn like-btn';
-
     card.innerHTML = `
       <div class="post-head">
         <div class="post-ava" data-action="profile">${avatarHTML}</div>
@@ -118,74 +114,27 @@ const Posts = (() => {
           </button>
         </div>
       </div>
-      
-      <div class="post-clickable-area" data-action="open-post" style="cursor: pointer;">
-        <p class="post-text">${escapeHTML(post.content)}</p>
-        ${imageHTML}
-      </div>
-      
+      <p class="post-text">${escapeHTML(post.content)}</p>
+      ${imageHTML}
       ${editedHTML}
-
-      <div class="post-interactions" style="display: flex; gap: var(--sp-md, 16px); padding-top: var(--sp-sm, 8px); margin-bottom: var(--sp-xs, 4px);">
-        <button class="int-btn reply-btn" data-action="reply" title="Responder">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-          </svg>
-          <span class="int-count">${post.totalComentarios || 0}</span>
-        </button>
-
-        <button class="int-btn repost-btn" data-action="repost" title="Republicar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="17 1 21 5 17 9"/>
-            <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-            <polyline points="7 23 3 19 7 15"/>
-            <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-          </svg>
-          <span class="int-count">${post.qtdRepublicacoes || 0}</span>
-        </button>
-
-        <button class="${heartClass}" data-action="like" title="Curtir">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-          <span class="int-count">${post.totalCurtidas || 0}</span>
-        </button>
-      </div>
-
       <div class="post-footer">
         <time class="post-ts">${fullDate}</time>
       </div>
-    
     `;
 
     // Listener único no card que detecta em qual botão foi clicado
     // (técnica chamada "event delegation")
-   card.addEventListener('click', event => {
+    card.addEventListener('click', event => {
       const button = event.target.closest('[data-action]');
       if (!button) return;
 
       const action = button.dataset.action;
 
-      // Isso evita que o clique no "Like" ou "Responder" acione o "open-post" do card
-     
-      if (action === 'like' || action === 'reply' || action === 'repost' || action === 'edit' || action === 'delete') {
-        event.stopPropagation(); 
-      }
-
       if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
-<<<<<<< HEAD
-      if (action === 'profile')   UI.activateTab('profile');
-
-      if (action === 'like')      Posts.handleLikeToggle(post.id, button);
-      if (action === 'reply')     Posts.handleOpenPostModal(post.id);
-      if (action === 'open-post') Posts.handleOpenPostModal(post.id);
-      if (action === 'repost')    UI.showToast('Recurso em desenvolvimento!', 'ok');
-=======
       //curica: A acao deixou de ser UI para ser uma funcao real
       if (action === 'profile')   Profile.openProfile(post.autorUsername);
->>>>>>> c904829c7f783df0831b03152ba2eaa88abbe6b4
     });
 
     return card;
@@ -216,6 +165,8 @@ const Posts = (() => {
       if (!response.ok) throw new Error('Erro ao carregar feed');
 
       const posts = await response.json();
+
+      window.allPosts = posts; //aqui ele guarda na memoria os posts
 
       feedEl.innerHTML = '';
     
@@ -254,6 +205,8 @@ const Posts = (() => {
       if (!response.ok) throw new Error();
 
       const meusPosts = await response.json();
+
+      window.meusPosts = meusPosts; //guarda na memoria os nossos posts
 
       container.innerHTML = '';
 
@@ -314,6 +267,8 @@ const Posts = (() => {
 
       if (!response.ok) throw new Error('Erro ao publicar');
 
+      const novoPost = await response.json(); //recebe o post do backend
+
       // Limpa o compose
       input.value = '';
       clearPendingImage();
@@ -321,9 +276,7 @@ const Posts = (() => {
       document.getElementById('btnPost').disabled = true;
 
       renderFeed();
-      // ── ALTERACAO: Correção no updateStats() vazio que quebrava o fluxo, agora puxando a lista atualizada ──
-      const profileResponse = await fetch('http://localhost:8080/api/posts/mine', { headers: {'Authorization': `Bearer ${token}`} });
-      if (profileResponse.ok) updateStats(await profileResponse.json());
+      updateStats(window.meusPosts); //aqui é onde o erro apontava, ele chegava vazio e o post.length dava erro
       UI.showToast('Postagem publicada! 🎉', 'ok');
 
       // Scrolla suavemente para o topo do feed para ver o novo post
@@ -425,10 +378,10 @@ const Posts = (() => {
   }
 }
 
-  // ── ALTERAÇÃO: Verificação de elementos para não dar erro se rodar em telas sem esses listeners específicos ──
+// 5. Deixe os ouvintes de clique preparados (coloque isso no escopo global do arquivo)
   document.getElementById('deleteModalCancelBtn')?.addEventListener('click', closeDeleteModal);
   document.getElementById('deleteModalCloseBtn')?.addEventListener('click', closeDeleteModal);
-  document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
+   document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
 
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
@@ -518,23 +471,6 @@ const Posts = (() => {
     else if (remaining <= 80) counterEl.classList.add('warn');
   }
 
-<<<<<<< HEAD
-  // Alteracao 3 Gui: Funcoes de suporte para o like e abertura de modal
-  async function handleLikeToggle(postId, buttonEl) {
-    const token = localStorage.getItem('token');
-    
-    // Procura o elemento do contador (.int-count) dentro do botão ou próximo a ele
-    const countEl = buttonEl.querySelector('.int-count');
-    
-    try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-=======
   function renderExternalPosts(posts, containerId, emptyId) {
     const container = document.getElementById(containerId);
     const emptyEl = document.getElementById(emptyId);
@@ -550,99 +486,10 @@ const Posts = (() => {
     posts.forEach(post => container.appendChild(createPostCard(post)));
   }
 
->>>>>>> c904829c7f783df0831b03152ba2eaa88abbe6b4
 
-      if (!response.ok) throw new Error("Nao foi possivel curtir essa porra");
-      const data = await response.json(); 
-
-      // Alinhamento exato com o seu CurtidaDTO(boolean curtido, long total) do Java
-     if (data.curtido) {
-        buttonEl.classList.add('active');
-      } else {
-        buttonEl.classList.remove('active');
-      }
-
-      // Atualiza o número do contador na tela com o valor retornado do banco
-      if (countEl) {
-        countEl.textContent = data.total;
-      }
-    } catch (err) {
-      console.error('Erro ao curtir post:', err);
-    }
-  }
-
-  // ── ALTERAÇÃO: Fechamento completo e implementação real da chamada de comentários do back para o modal ──
-   async function handleOpenPostModal(postId) {
-    UI.showToast(`Carregando respostas...`, 'ok');
-    const token = localStorage.getItem('token');
-    activeCommentPostId = postId;
-    
-    try {
-      // 1 requisição = post principal + comentários juntos!
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!response.ok) throw new Error('Erro ao carregar post');
-
-      const { post, comentarios } = await response.json();
-
-      // Renderiza o post principal no modal
-      const originalPostContainer = document.getElementById('commentModalOriginalPost');
-      if (originalPostContainer) {
-        originalPostContainer.innerHTML = '';
-
-        // Cria HTML do post principal
-        const autorImg = post.autorImg 
-          ? `<img src="${post.autorImg}" alt="Foto de ${escapeHTML(post.autorUsername)}"/>`
-          : escapeHTML(post.autorUsername.substring(0, 2).toUpperCase());
-
-        const imageHTML = post.mediaUrl
-          ? `<div class="post-image"><img src="${post.mediaUrl}" alt="Imagem do post"/></div>`
-          : '';
-
-        const postHTML = `
-          <article class="post-card modal-post">
-            <div class="post-head">
-              <div class="post-ava">${autorImg}</div>
-              <div class="post-meta">
-                <div class="post-author">${escapeHTML(post.autorUsername)}</div>
-                <div class="post-date">${formatDate(post.dataCriacao)}</div>
-              </div>
-            </div>
-            <p class="post-text">${escapeHTML(post.content)}</p>
-            ${imageHTML}
-          </article>
-        `;
-
-        originalPostContainer.innerHTML = postHTML;
-      }
-
-      // Renderiza os comentários
-      const repliesListContainer = document.getElementById('commentModalRepliesList');
-      if (repliesListContainer) {
-        repliesListContainer.innerHTML = '';
-
-        if (comentarios.length === 0) {
-          repliesListContainer.innerHTML = `<p style="color: var(--ink-3, #999); text-align: center; font-size: 0.9rem; padding: var(--sp-md) 0;">Nenhuma resposta ainda. Seja o primeiro a comentar!</p>`;
-        } else {
-          comentarios.forEach(reply => {
-            repliesListContainer.appendChild(createPostCard(reply, true));
-          });
-        }
-      }
-
-      // Abre o modal na tela
-      UI.openCommentModal();
-
-    } catch (err) {
-      console.error('Erro ao carregar post:', err);
-      UI.showToast('Erro ao carregar os comentários do post.', 'err');
-    }
-  }
   // ── API pública ──────────────────────────────────────────────
 
-return {
+  return {
     renderFeed,
     renderProfilePosts,
     renderExternalPosts,
@@ -653,9 +500,6 @@ return {
     handleImageSelect,
     clearPendingImage,
     updateCharCounter,
-    handleLikeToggle,
-    handleOpenPostModal,
-    getActiveCommentPostId: () => activeCommentPostId,
   };
 
 })();
