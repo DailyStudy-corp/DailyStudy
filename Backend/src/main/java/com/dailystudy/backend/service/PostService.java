@@ -25,6 +25,7 @@ public class PostService {
 
     public Post criarPost(PostCreateDTO dto, String username) {
         Post post = new Post();
+        post.setId(null);
         post.setContent(dto.content());
         post.setMediaUrl(dto.mediaUrl());
         post.setAutorId(username);
