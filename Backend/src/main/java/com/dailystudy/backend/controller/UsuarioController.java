@@ -1,17 +1,19 @@
 package com.dailystudy.backend.controller;
 
 import com.dailystudy.backend.dto.*;
-import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
-import com.dailystudy.backend.service.PostService;
 import com.dailystudy.backend.service.UsuarioService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.Duration;
 import java.util.Map;
 
 @RestController
@@ -21,7 +23,11 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    private final PostService postService;
+    private static final String COOKIE_NAME = "access_token";
+    private static final Duration COOKIE_MAX_AGE = Duration.ofHours(2);
+
+    @Value("${app.security.cookie.secure}")
+    private boolean cookieSecure;
 
     @PostMapping("/registro") // Mapeia a requisicao HTTP para criar um novo usuario no banco de dados
     public ResponseEntity<String> registrar(@Valid @RequestBody UsuarioRegistro dto) {
@@ -31,10 +37,35 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto) {
+    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto, HttpServletResponse response) {
         String token = usuarioService.autenticar(dto);
 
-        return ResponseEntity.ok(Map.of("token", token));
+        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(COOKIE_MAX_AGE)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok(Map.of("message", "Login feito com sucesso"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response){
+        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
