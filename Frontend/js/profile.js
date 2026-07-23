@@ -146,13 +146,13 @@ const Profile = (() => {
     UI.showToast('Salvando alterações…');
     
     try {
-      const token = localStorage.getItem('token');
       // Adicionado await para esperar a resposta da API corretamente
-      const response = await fetch('http://localhost:8080/api/usuarios/me/perfil', {
+      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/perfil', {
         method: 'PUT',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${token}`, // Padronizado o 'Authorization' com 'A' maiúsculo
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...Csrf.headers()
         },
         body: JSON.stringify({ 
           username: name,  
@@ -200,7 +200,6 @@ const Profile = (() => {
     //ALTERACAO 6 - CAPTURA DE IMAGEM E  PAYLOAD UNIFICADO PARA AVATAR E BANNER
     try {
       const dataUrl = await readFileAsDataUrl(file);
-      const token = localStorage.getItem('token');
       const currentProfile = Storage.getProfile();
            
       // alt 5 - Passou de ava e banner para - img perfil e banner_perfil
@@ -209,11 +208,12 @@ const Profile = (() => {
         banner_perfil: type === 'banner_perfil' ? dataUrl : (currentProfile.banner_perfil || null)
       };
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
-      const response = await fetch('http://localhost:8080/api/usuarios/me/img_perfil', {
+      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/img_perfil', {
         method: 'PUT',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...Csrf.headers()
         },
         body: JSON.stringify(payload)
       });
@@ -266,8 +266,8 @@ const Profile = (() => {
   
     try {
       const response = await fetch(
-        `http://localhost:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
+        `http://127.0.0.1:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
+        {credentials: 'include'}
       );
   
       if (!response.ok) {

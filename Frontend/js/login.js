@@ -25,8 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // 2. Faz a requisição HTTP POST para o endpoint de login do seu amigo.
-            const response = await fetch('http://localhost:8080/api/usuarios/login', {
+            //Padronizei para a porta 127 do Live Server para poder funcionar a protecao SameSite=Lax
+            const response = await fetch('http://127.0.0.1:8080/api/usuarios/login', {
                 method: 'POST',
+                credentials: 'include', //Ele permite ler e enviar o cookie
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -35,14 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 3. Trata a resposta do backend
             if (response.ok) {
-                const dadosResponse = await response.json();
-                
-                // O backend do seu amigo provavelmente retorna um objeto com o token (ex: dadosResponse.token)
-                const token = dadosResponse.token; 
-
-                // Salva o estado de autenticado e o token para usar nas próximas páginas
-                //localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('token', token); // Isso vai ser vital para o feed de posts depois
+                 // Não ha mais necessidade de guardar o token em localStorage, o backend define o estado
 
                 // Redireciona para a home (ajuste o nome do arquivo se necessário, ex: home.html)
                 window.location.href = 'home.html';

@@ -5,6 +5,7 @@ import com.dailystudy.backend.repository.UsuarioRepository;
 import com.dailystudy.backend.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +28,8 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
 
     private final UsuarioRepository usuarioRepository;
+
+    private static final String COOKIE_NAME = "access_token";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -47,11 +51,14 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     private String recuperarToken(HttpServletRequest request){
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")){
+        if (request.getCookies() == null) {
             return null;
         }
-        return authHeader.replace("Bearer ", "");
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> COOKIE_NAME.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     //Para evitar que caia no log do Spring e crie um usuario fantasma

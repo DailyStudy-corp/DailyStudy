@@ -153,13 +153,12 @@ const Posts = (() => {
     const feedEl   = document.getElementById('feedList');
     const emptyEl  = document.getElementById('feedEmpty');
     const badgeEl  = document.getElementById('postBadge');
-    const token = localStorage.getItem('token');
 
     feedEl.innerHTML = '';
 
     try {
-      const response = await fetch('http://localhost:8080/api/posts', {
-        headers: {'Authorization': `Bearer ${token}`}
+      const response = await fetch('http://127.0.0.1:8080/api/posts', {
+        credentials: 'include'
       });
 
       if (!response.ok) throw new Error('Erro ao carregar feed');
@@ -195,11 +194,10 @@ const Posts = (() => {
   async function renderProfilePosts() {
     const container = document.getElementById('profileFeed');
     const emptyEl   = document.getElementById('profileEmpty');
-    const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('http://localhost:8080/api/posts/mine', {
-        headers: {'Authorization': `Bearer ${token}`},
+      const response = await fetch('http://127.0.0.1:8080/api/posts/mine', {
+        credentials: 'include'
       });
 
       if (!response.ok) throw new Error();
@@ -210,7 +208,6 @@ const Posts = (() => {
 
       container.innerHTML = '';
 
-    //curica: aqui nao ta funcionando tambem
     if (meusPosts.length === 0) {
       emptyEl.classList.remove('hidden');
     } else {
@@ -250,14 +247,13 @@ const Posts = (() => {
 
     if (!text) return;
 
-    const token = localStorage.getItem('token');
-
     try {
-      const response = await fetch ('http://localhost:8080/api/posts', {
+      const response = await fetch ('http://127.0.0.1:8080/api/posts', {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...Csrf.headers()
         },
         body: JSON.stringify({
           content: text,
@@ -313,14 +309,13 @@ const Posts = (() => {
       return;
     }
 
-    const token = localStorage.getItem('token');
-
     try {
-      const response = await fetch (`http://localhost:8080/api/posts/${editingPostId}`, {
+      const response = await fetch (`http://127.0.0.1:8080/api/posts/${editingPostId}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...Csrf.headers()
         },
         body: JSON.stringify({ content: newText })
       });
@@ -362,9 +357,10 @@ const Posts = (() => {
 
       const token = localStorage.getItem('token');
       try {
-    const response = await fetch(`http://localhost:8080/api/posts/${postIdToDelete}`, {
+    const response = await fetch(`http://127.0.0.1:8080/api/posts/${postIdToDelete}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      credentials: 'include',
+      headers: { ...Csrf.headers() }
     });
    
     if (!response.ok) throw new Error('Erro ao excluir o post');
@@ -387,12 +383,11 @@ const Posts = (() => {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
 
-    const token = localStorage.getItem('token');
-
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}`, {
+      const response = await fetch(`http://127.0.0.1:8080/api/posts/${postId}`, {
         method: 'DELETE',
-        headers: {'Authorization': `Bearer ${token}`}
+        credentials: 'include',
+        headers: {...Csrf.headers()}
       });
 
       if (!response.ok) throw new Error('Erro ao excluir o post');

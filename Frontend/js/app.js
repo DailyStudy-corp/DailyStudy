@@ -14,16 +14,11 @@
 // Adicionado 'async' para permitir o uso de 'await' na verificação de identidade antes da renderização.
 document.addEventListener('DOMContentLoaded', async () => {
 
-  // Resolve o problema de autenticação antes de renderizar a página.
-  const token = localStorage.getItem('token');
-  if (token) {
+  //Autenticacao validada no backend.
     try {
-       const response = await fetch('http://localhost:8080/api/usuarios/me', {
+       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        } 
+        credentials: 'include'
       });
       if (response.ok) {
         const userData = await response.json();
@@ -40,20 +35,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
        //  Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
        console.warn("Sessão recusada pela Daily Study. Redirecionando...");
-        // ALTERACAO 7 - CORRECAO NA LIMPEAA DO ESTADO DE AUTH QND EXPIRA
-        localStorage.removeItem('token');
-        localStorage.removeItem('isAuthenticated'); 
         
         window.location.href = 'login.html'
+        return;
       } 
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
-        }
-  } else {
-    //- Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
-    window.location.href = 'login.html';
-    return;
-  }
+
+      window.location.href = 'login.html'
+      return;
+    }
+  
   // ── Inicialização ────────────────────────────────────────────
   // Carrega os dados salvos e renderiza o estado inicial da página.
 
