@@ -172,6 +172,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // --Logout
+   async function handleLogout() {
+    try {
+      await fetch('http://127.0.0.1:8080/api/usuarios/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { ...Csrf.headers() }
+      });
+    } catch (err) {
+      // Mesmo se a chamada falhar (ex: backend offline), seguimos
+      // limpando o estado local e redirecionando — não faz sentido
+      // prender o usuário na página por causa disso.
+      console.error('Erro ao efetuar logout no servidor:', err);
+    }
+
+    // Limpa qualquer dado de perfil salvo localmente
+    localStorage.removeItem('ds_profile');
+    localStorage.removeItem('ds_posts');
+
+    window.location.href = 'login.html';
+  }
+
+  document.getElementById('btnLogout')?.addEventListener('click', handleLogout);
+  document.getElementById('btnLogoutMobile')?.addEventListener('click', handleLogout);
+
 
   // ── Upload de avatar ─────────────────────────────────────────
 

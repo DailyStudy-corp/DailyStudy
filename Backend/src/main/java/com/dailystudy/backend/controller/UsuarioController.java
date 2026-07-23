@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -37,7 +38,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto, HttpServletResponse response) {
+    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto, HttpServletResponse response, CsrfToken csrfToken) {
         String token = usuarioService.autenticar(dto);
 
         ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
@@ -49,6 +50,9 @@ public class UsuarioController {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        //Forca o cookie a ser gerado, para resolver o bug de post/put
+        csrfToken.getToken();
 
         return ResponseEntity.ok(Map.of("message", "Login feito com sucesso"));
     }
