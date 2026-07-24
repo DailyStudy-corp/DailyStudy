@@ -19,7 +19,10 @@ const Posts = (() => {
 
   // Imagem selecionada no compose, ainda não publicada (null se vazia)
   let pendingImageUrl = null;
+  
+  //ID do post atualmente visualizado no modal de comentarios
 
+  let activePostId = null;
 
   // ── Helpers ──────────────────────────────────────────────────
 
@@ -119,27 +122,52 @@ const Posts = (() => {
       ${editedHTML}
       <div class="post-footer">
         <time class="post-ts">${fullDate}</time>
+        <div class="post-interactions">
+          <button class="action-btn like-btn ${post.curtido ? 'active' : ''}" data-action="like">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span class="int-count">${post.totalCurtidas || 0}</span>
+          </button>
+          <button class="action-btn comment-btn" data-action="comment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="int-count">${post.totalComentarios || 0}</span>
+          </button>
+        </div>
       </div>
     `;
 
     // Listener único no card que detecta em qual botão foi clicado
     // (técnica chamada "event delegation")
     card.addEventListener('click', event => {
-      const button = event.target.closest('[data-action]');
-      if (!button) return;
-
+       const button = event.target.closest('[data-action]');
+        // Se clicar numa area neutra do card abre o modal
+       if (!button) {
+        openCommentModal(post.id);
+        return;
+      }
+       
       const action = button.dataset.action;
-
       if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
       //curica: A acao deixou de ser UI para ser uma funcao real
       if (action === 'profile')   Profile.openProfile(post.autorUsername);
+      //Gui: Acoes para curtir e abrir o modal de comentarios
+    if (action === 'like') {
+        event.stopPropagation();
+        handleLikeToggle(post.id, button);
+      }
+      if (action === 'comment') {
+        event.stopPropagation();
+        openCommentModal(post.id);
+      }
     });
 
     return card;
   }
-
 
   // ── Renderização ─────────────────────────────────────────────
 
@@ -481,6 +509,99 @@ const Posts = (() => {
     posts.forEach(post => container.appendChild(createPostCard(post)));
   }
 
+  // Comentarios e curtidas
+   async function openCommentModal(postId) {
+    activePostId = postId;
+
+    const modal = document.getElementById('commentModal');
+    const commentsListEl = document.getElementById('commentsList');
+
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    commentsListEl.innerHTML = `<p class="comments-empty">Carregando respostas…</p>`;
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error("Erro ao carregar detalhes");
+
+      const data = await response.json();
+
+      mainPostEl.innerHTML = `
+        <div class="comment-author" style="font-weight: 600;">@${escapeHTML(data.post.autorUsername || 'usuario')}</div>
+        <div class="comment-body" style="margin-top: 6px;">${escapeHTML(data.post.content || data.post.conteudo)}</div>
+      `;
+
+      if (data.comentarios && data.comentarios.length > 0) {
+        commentsListEl.innerHTML = data.comentarios.map(c => `
+          <div class="comment-card">
+            <div class="comment-author">@${escapeHTML(c.autorUsername || 'Anônimo')}</div>
+            <div class="comment-body">${escapeHTML(c.conteudo)}</div>
+          </div>
+        `).join('');
+      } else {
+        commentsListEl.innerHTML = '<p class="no-comments" style="color: var(--ink-2); font-size: 0.9rem; margin-top: 10px;">Nenhuma resposta ainda. Seja o primeiro!</p>';
+      }
+
+    } catch (err) {
+      console.error('Erro ao abrir modal:', err);
+      mainPostEl.innerHTML = '<p style="color: var(--danger);">Erro ao carregar a publicação.</p>';
+    }
+  }
+
+  async function handleCreateComment(conteudo) {
+    if (!activePostId) return;
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${activePostId}/comentarios`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ conteudo })
+      });
+
+      if (!response.ok) throw new Error("Erro ao enviar comentário");
+
+      const inputEl = document.getElementById('commentInput');
+      if (inputEl) inputEl.value = '';
+
+      await openCommentModal(activePostId);
+      await renderFeed(); // Atualiza contador no feed
+
+    } catch (err) {
+      UI.showToast(err.message, 'err');
+    }
+  }
+
+  async function handleLikeToggle(postId, buttonEl) {
+    const token = localStorage.getItem('token');
+    const countEl = buttonEl.querySelector('.int-count');
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error("Erro na requisição de curtida");
+      const data = await response.json();
+
+      buttonEl.classList.toggle('active', data.curtido);
+      if (countEl) countEl.textContent = data.total;
+
+    } catch (err) {
+      console.error('Erro ao curtir post:', err);
+    }
+  }
 
   // ── API pública ──────────────────────────────────────────────
 
@@ -495,6 +616,9 @@ const Posts = (() => {
     handleImageSelect,
     clearPendingImage,
     updateCharCounter,
+    openCommentModal,
+    handleCreateComment,
+    handleLikeToggle
   };
 
 })();
