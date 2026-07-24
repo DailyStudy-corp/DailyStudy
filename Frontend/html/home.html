@@ -415,6 +415,35 @@
   </div>
 </div>
 
+<!-- Modal de Comentários / Respostas -->
+<div class="modal-backdrop hidden" id="commentModal" role="dialog" aria-modal="true" aria-labelledby="commentModalTitle">
+  <div class="modal modal-comments">
+    <div class="modal-head">
+      <h3 id="commentModalTitle">Respostas</h3>
+      <button class="modal-close-btn" id="closeCommentModalBtn" aria-label="Fechar modal">✕</button>
+    </div>
+
+    <!-- Lista onde os comentários existentes do post serão injetados pelo JS -->
+    <div class="comments-list" id="commentsList"></div>
+
+    <!-- Formulário para enviar um novo comentário -->
+    <form id="commentForm" class="comment-form">
+      <div class="comment-input-wrap">
+        <input 
+          type="text" 
+          id="commentInput" 
+          class="comment-input" 
+          placeholder="Escreva sua resposta..." 
+          maxlength="280" 
+          required 
+          autocomplete="off"
+        />
+        <button type="submit" class="btn-primary btn-sm" id="btnSubmitComment">Responder</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Lightbox: imagem em tela cheia -->
 <div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Visualizador de imagem">
   <button class="lightbox-close" id="lightboxClose" aria-label="Fechar imagem">✕</button>

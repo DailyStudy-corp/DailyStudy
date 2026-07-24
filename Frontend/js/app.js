@@ -143,8 +143,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (event.key === 'Escape') {
       UI.closeModal();
       UI.closeLightbox();
+  
+  // MODIFICAÇÃO/ADIÇÃO: ESC também fecha o modal de comentários, se estiver aberto
+      const commentModal = document.getElementById('commentModal');
+      if (commentModal) commentModal.classList.add('hidden');
     }
   });
+
+   //  Modal de Comentários 
+   
+   // Envio de comentários via formulário
+  const commentForm = document.getElementById('commentForm');
+  if (commentForm) {
+    commentForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const input = document.getElementById('commentInput');
+      const conteudo = input ? input.value.trim() : '';
+
+      if (conteudo) {
+        Posts.handleCreateComment(conteudo);
+      }
+    });
+  }
+
+  // Fechar modal de comentários pelo botão de fechar (X) ou botão Cancelar
+  const closeCommentModalBtn = document.getElementById('closeCommentModalBtn');
+  if (closeCommentModalBtn) {
+    closeCommentModalBtn.addEventListener('click', () => {
+      const modal = document.getElementById('commentModal');
+      if (modal) modal.classList.add('hidden');
+    });
+  }
+
+  // Fechar ao clicar no fundo escuro (backdrop) do modal de comentários
+  const commentModal = document.getElementById('commentModal');
+  if (commentModal) {
+    commentModal.addEventListener('click', event => {
+      if (event.target === commentModal) {
+        commentModal.classList.add('hidden');
+      }
+    });
+  }
 
 
   // ── Lightbox ─────────────────────────────────────────────────

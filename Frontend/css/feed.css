@@ -445,3 +445,144 @@
 #deleteModalConfirmBtn:hover {
   background-color: #b82d2d;
 }
+
+/* ── Modal de Comentários / Respostas ──────────────────────── */
+
+.modal.modal-comments {
+  max-width: 520px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+}
+
+.modal-comments .modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.modal-comments .modal-head h3 {
+  font-family: var(--font-ui, inherit);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Área rolável da lista de comentários */
+.comments-list {
+  padding: 16px 20px;
+  max-height: 320px;
+  min-height: 90px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+}
+
+/* Estado vazio da lista de comentários */
+.comments-empty {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--ink-3);
+  font-size: 0.88rem;
+}
+
+/* Item individual de comentário */
+.comment-item {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.comment-ava {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--bg-2);
+  border: 1px solid var(--border);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.comment-author {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.comment-text {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.comment-time {
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+/* Rodapé do modal (área do input de resposta) */
+.comment-form {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.comment-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 4px 6px 4px 16px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.comment-input-wrap:focus-within {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37, 80, 232, 0.1);
+}
+
+.comment-input {
+  flex: 1;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 0;
+  font-family: var(--font-body, inherit);
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.comment-input::placeholder {
+  color: var(--ink-3);
+}
+
+.comment-form .btn-primary {
+  padding: 8px 18px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
