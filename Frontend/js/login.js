@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
             //Padronizei para a porta 127 do Live Server para poder funcionar a protecao SameSite=Lax
             const response = await fetch('http://127.0.0.1:8080/api/usuarios/login', {
                 method: 'POST',
-                credentials: 'include', //Ele permite ler e enviar o cookie
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -37,8 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 3. Trata a resposta do backend
             if (response.ok) {
-                 // Não ha mais necessidade de guardar o token em localStorage, o backend define o estado
-
+                
+                const data = await response .json();
+                Auth.setToken(data.token);
+                
                 // Redireciona para a home (ajuste o nome do arquivo se necessário, ex: home.html)
                 window.location.href = 'home.html';
             } else {
