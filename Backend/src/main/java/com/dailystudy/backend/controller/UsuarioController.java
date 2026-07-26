@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -27,9 +25,6 @@ public class UsuarioController {
     private static final String COOKIE_NAME = "access_token";
     private static final Duration COOKIE_MAX_AGE = Duration.ofHours(2);
 
-    @Value("${app.security.cookie.secure}")
-    private boolean cookieSecure;
-
     @PostMapping("/registro") // Mapeia a requisicao HTTP para criar um novo usuario no banco de dados
     public ResponseEntity<String> registrar(@Valid @RequestBody UsuarioRegistro dto) {
         usuarioService.registroUsuario(dto);
@@ -38,36 +33,13 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto, HttpServletResponse response, CsrfToken csrfToken) {
+    public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto) {
         String token = usuarioService.autenticar(dto);
-
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(COOKIE_MAX_AGE)
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        //Forca o cookie a ser gerado, para resolver o bug de post/put
-        csrfToken.getToken();
-
-        return ResponseEntity.ok(Map.of("message", "Login feito com sucesso"));
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response){
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    public ResponseEntity<Void> logout(@Valid @RequestBody LoginDTO dto){
 
         return ResponseEntity.noContent().build();
     }

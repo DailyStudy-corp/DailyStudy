@@ -149,10 +149,9 @@ const Profile = (() => {
       // Adicionado await para esperar a resposta da API corretamente
       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/perfil', {
         method: 'PUT',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...Csrf.headers()
+          ...Auth.headers()
         },
         body: JSON.stringify({ 
           username: name,  
@@ -210,10 +209,9 @@ const Profile = (() => {
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/img_perfil', {
         method: 'PUT',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...Csrf.headers()
+          ...Auth.headers()
         },
         body: JSON.stringify(payload)
       });
@@ -267,7 +265,9 @@ const Profile = (() => {
     try {
       const response = await fetch(
         `http://127.0.0.1:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
-        {credentials: 'include'}
+        {
+          headers: {...Auth.headers()}
+        }
       );
   
       if (!response.ok) {

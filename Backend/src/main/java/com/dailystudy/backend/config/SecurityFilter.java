@@ -1,11 +1,9 @@
 package com.dailystudy.backend.config;
 
-import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.UsuarioRepository;
 import com.dailystudy.backend.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -51,15 +49,12 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     private String recuperarToken(HttpServletRequest request){
-        if (request.getCookies() == null) {
-            return null;
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")){
+            return header.substring(7);
         }
-        return Arrays.stream(request.getCookies())
-                .filter(cookie -> COOKIE_NAME.equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
-    }
+        return null;
+        }
 
     //Para evitar que caia no log do Spring e crie um usuario fantasma
     @Bean

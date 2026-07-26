@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
        const response = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
         method: 'GET',
-        credentials: 'include'
+        headers: {...Auth.headers()}
       });
       if (response.ok) {
         const userData = await response.json();
@@ -50,8 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Carrega os dados salvos e renderiza o estado inicial da página.
 
   Profile.syncUI();      // exibe nome, avatar e banner do perfil
-  Posts.renderFeed();    // exibe os posts salvos no feed
-  Posts.renderProfilePosts();   // exibe o total de posts
+  await Posts.renderFeed();    // exibe os posts salvos no feed
+  await Posts.renderProfilePosts();   // exibe o total de posts
 
 
   // ── Navegação entre abas ─────────────────────────────────────
@@ -216,8 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       await fetch('http://127.0.0.1:8080/api/usuarios/logout', {
         method: 'POST',
-        credentials: 'include',
-        headers: { ...Csrf.headers() }
+        headers: { ...Auth.headers() }
       });
     } catch (err) {
       // Mesmo se a chamada falhar (ex: backend offline), seguimos
