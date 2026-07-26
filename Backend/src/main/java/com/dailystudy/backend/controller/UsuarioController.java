@@ -39,7 +39,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@Valid @RequestBody LoginDTO dto){
+    public ResponseEntity<Void> logout(){
 
         return ResponseEntity.noContent().build();
     }
