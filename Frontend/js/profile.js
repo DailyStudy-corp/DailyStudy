@@ -161,7 +161,8 @@ const Profile = (() => {
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao atualizar o perfil no servidor.');
+        const erroServidor = await response.json().catch(() => null);
+        throw new Error(erroServidor?.message || 'Falha ao atualizar o perfil no servidor.');
       }
 
       Storage.patchProfile({ name, role, bio });

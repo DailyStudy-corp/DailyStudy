@@ -67,6 +67,12 @@ public class UsuarioService {
     public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario não encontrado"));
+
+        if (!usuario.getUsername().equals(dto.username())
+                && usuarioRepository.findByUsername(dto.username()).isPresent()) {
+            throw new UsuarioException("Este nome de usuário já está em uso");
+        }
+
         usuario.setUsername(dto.username());
         usuario.setCargo(dto.cargo());
         usuario.setBio(dto.bio());
