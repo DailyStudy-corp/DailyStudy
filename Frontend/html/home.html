@@ -395,6 +395,7 @@
   </div>
 </div>
 
+
   <div class="modal-backdrop hidden" id="deleteModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
   <div class="modal">
     <div class="modal-head">
@@ -418,13 +419,18 @@
 <!-- Modal de Comentários / Respostas -->
 <div class="modal-backdrop hidden" id="commentModal" role="dialog" aria-modal="true" aria-labelledby="commentModalTitle">
   <div class="modal modal-comments">
+
     <div class="modal-head">
       <h3 id="commentModalTitle">Respostas</h3>
       <button class="modal-close-btn" id="closeCommentModalBtn" aria-label="Fechar modal">✕</button>
     </div>
 
-    <!-- Lista onde os comentários existentes do post serão injetados pelo JS -->
-    <div class="comments-list" id="commentsList"></div>
+      <!-- Lista onde os comentários existentes do post serão injetados pelo JS -->
+     <div id="commentModalOriginalPost" class="comment-modal-original-post"></div>
+ 
+    <div class="comment-modal-divider" aria-hidden="true"></div>
+ 
+    <div id="commentModalRepliesList" class="comments-list"></div>
 
     <!-- Formulário para enviar um novo comentário -->
     <form id="commentForm" class="comment-form">

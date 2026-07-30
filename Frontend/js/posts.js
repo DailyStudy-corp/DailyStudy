@@ -14,13 +14,11 @@
 
 const Posts = (() => {
 
-  // ID do post que está sendo editado no modal (null quando fechado)
+  // ── Variáveis globais ───────────────────────────────────────
   let editingPostId = null;
-
-  // Imagem selecionada no compose, ainda não publicada (null se vazia)
   let pendingImageUrl = null;
-
-
+  let activeCommentPostId = null;
+ 
   // ── Helpers ──────────────────────────────────────────────────
 
   // Formata uma data ISO para texto amigável em português.
@@ -52,7 +50,6 @@ const Posts = (() => {
     div.appendChild(document.createTextNode(text));
     return div.innerHTML;
   }
-
 
   // ── Criação de cards ─────────────────────────────────────────
 
@@ -117,8 +114,23 @@ const Posts = (() => {
       <p class="post-text">${escapeHTML(post.content)}</p>
       ${imageHTML}
       ${editedHTML}
-      <div class="post-footer">
+       <div class="post-footer">
         <time class="post-ts">${fullDate}</time>
+        <!-- ALTERAÇÃO 1 - Claude: Recolocado bloco de interações removido anteriormente -->
+        <div class="post-interactions">
+          <button class="action-btn like-btn ${post.curtido ? 'active' : ''}" data-action="like">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span class="int-count">${post.totalCurtidas || 0}</span>
+          </button>
+          <button class="action-btn comment-btn" data-action="comment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="int-count">${post.totalComentarios || 0}</span>
+          </button>
+        </div>
       </div>
     `;
 
@@ -133,13 +145,20 @@ const Posts = (() => {
       if (action === 'edit')      openEditModal(post.id, post.content);
       if (action === 'delete')    openDeleteModal(post.id);
       if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
-      //curica: A acao deixou de ser UI para ser uma funcao real
+      //curica: A acao deixou de ser UI para ser uma funcao real\
       if (action === 'profile')   Profile.openProfile(post.autorUsername);
+      if (action === 'like') {
+        event.stopPropagation();
+        handleLikeToggle(post.id, button);
+      }
+      if (action === 'comment') {
+        event.stopPropagation();
+        handleOpenPostModal(post.id);
+      }
     });
 
     return card;
   }
-
 
   // ── Renderização ─────────────────────────────────────────────
 
@@ -331,8 +350,6 @@ const Posts = (() => {
     }
   }
 
-  // Pede confirmação antes de excluir o post.
-
   //curica: Coloquei o endpoint para excluir um post, com a variavel do id // Modal para exclusao do post junto com a logica e o endpoint do bot
   let postIdToDelete = null;  // ID do post que será excluído
    
@@ -443,13 +460,9 @@ const Posts = (() => {
     if (imgToolBtn)       imgToolBtn.classList.remove('has-image');
   }
 
-
+  
   // ── Contador de caracteres ───────────────────────────────────
 
-  // Atualiza o contador e muda a cor conforme o limite se aproxima.
-  // counterId → ID do elemento span que mostra o número
-  // inputEl   → o textarea monitorado
-  // maxLength → limite máximo de caracteres
   function updateCharCounter(counterId, inputEl, maxLength) {
     const counterEl = document.getElementById(counterId);
     if (!counterEl || !inputEl) return;
@@ -461,25 +474,138 @@ const Posts = (() => {
     if (remaining <= 20) counterEl.classList.add('danger');
     else if (remaining <= 80) counterEl.classList.add('warn');
   }
-
-  function renderExternalPosts(posts, containerId, emptyId) {
+    function renderExternalPosts(posts, containerId, emptyId) {
     const container = document.getElementById(containerId);
-    const emptyEl = document.getElementById(emptyId);
-
+    const emptyEl   = document.getElementById(emptyId);
+ 
     container.innerHTML = '';
-
+ 
     if (!posts || posts.length === 0) {
       emptyEl.classList.remove('hidden');
       return;
     }
-
+ 
     emptyEl.classList.add('hidden');
     posts.forEach(post => container.appendChild(createPostCard(post)));
   }
+  // ── Modal de comentários ─────────────────────────────────────
+  async function handleOpenPostModal(postId) {
+    activeCommentPostId = postId;
 
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
+        headers: { ...Auth.headers() }
+      });
 
+      if (!response.ok) throw new Error('Erro ao carregar post');
+
+      const { post, comentarios } = await response.json();
+
+      const originalPostContainer = document.getElementById('commentModalOriginalPost');
+      if (originalPostContainer) {
+        const autorImg = Security.safeImage(post.autorImg)
+          ? `<img src="${escapeHTML(post.autorImg)}" alt="Foto de ${escapeHTML(post.autorUsername)}"/>`
+          : escapeHTML(Profile.getInitials(post.autorUsername));
+
+        const imageHTML = Security.safeImage(post.mediaUrl)
+          ? `<div class="post-image"><img src="${escapeHTML(post.mediaUrl)}" alt="Imagem do post"/></div>`
+          : '';
+
+        originalPostContainer.innerHTML = `
+          <article class="post-card modal-post">
+            <div class="post-head">
+              <div class="post-ava">${autorImg}</div>
+              <div class="post-meta">
+                <div class="post-author">${escapeHTML(post.autorUsername)}</div>
+                <div class="post-date">${formatDate(post.dataCriacao)}</div>
+              </div>
+            </div>
+            <p class="post-text">${escapeHTML(post.content)}</p>
+            ${imageHTML}
+          </article>
+        `;
+      }
+
+      const repliesContainer = document.getElementById('commentModalRepliesList');
+      if (repliesContainer) {
+        repliesContainer.innerHTML = '';
+
+        if (!comentarios || comentarios.length === 0) {
+          repliesContainer.innerHTML = `<p class="comments-empty">Nenhuma resposta ainda. Seja o primeiro a comentar!</p>`;
+        } else {
+          comentarios.forEach(reply => repliesContainer.appendChild(createPostCard(reply)));
+        }
+      }
+
+      UI.openCommentModal();
+
+    } catch (err) {
+      console.error('Erro ao abrir modal de post:', err);
+      UI.showToast('Erro ao carregar os comentários do post.', 'err');
+    }
+  }
+ 
+  // Authorization: Bearer. Trocado para credentials: 'include' + Csrf.headers(),
+  async function handleCreateComment(conteudo) {
+    if (!activePostId || !conteudo.trim()) return;
+ 
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${activePostId}/comentarios`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...Auth.headers()
+        },
+        body: JSON.stringify({ conteudo: conteudo.trim() })
+      });
+ 
+      if (!response.ok) throw new Error('Erro ao enviar comentário');
+ 
+      // Limpa o campo de input após envio bem-sucedido
+      const inputEl = document.getElementById('commentInput');
+      if (inputEl) inputEl.value = '';
+ 
+      // Recarrega a lista de comentários no modal
+      await openCommentModal(activePostId);
+ 
+      // Atualiza o contador de comentários no card do feed
+      await renderFeed();
+ 
+    } catch (err) {
+      console.error('Erro ao criar comentário:', err);
+      UI.showToast(err.message, 'err');
+    }
+  }
+ 
+  async function handleLikeToggle(postId, buttonEl) {
+    const countEl = buttonEl.querySelector('.int-count');
+ 
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...Auth.headers()
+        }
+      });
+ 
+      if (!response.ok) throw new Error('Erro na requisição de curtida');
+ 
+      const data = await response.json();
+ 
+      buttonEl.classList.toggle('active', data.curtido);
+      if (countEl) countEl.textContent = data.total;
+ 
+    } catch (err) {
+      console.error('Erro ao curtir post:', err);
+    }
+  }
+ 
+ 
   // ── API pública ──────────────────────────────────────────────
-
+ 
   return {
     renderFeed,
     renderProfilePosts,
@@ -491,6 +617,9 @@ const Posts = (() => {
     handleImageSelect,
     clearPendingImage,
     updateCharCounter,
+    handleOpenPostModal,
+    handleCreateComment,
+    handleLikeToggle,
   };
-
+ 
 })();

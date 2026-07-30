@@ -92,6 +92,38 @@ const UI = (() => {
     document.body.style.overflow = '';
   }
 
+  // Abre o modal de comentários, bloqueia o scroll e foca no input de resposta.
+  function openCommentModal() {
+    const modal = document.getElementById('commentModal');
+    if (!modal) return;
+ 
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+ 
+    // Foca no input de resposta após a animação de entrada (250ms)
+    setTimeout(() => {
+      const input = document.getElementById('commentInput');
+      if (input) input.focus();
+    }, 260);
+  }
+ 
+  // Fecha o modal de comentários, limpa os containers e restaura o scroll.
+  function closeCommentModal() {
+    const modal = document.getElementById('commentModal');
+    if (!modal) return;
+ 
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+ 
+    // Limpa os containers para não exibir conteúdo antigo na próxima abertura
+    const originalPost = document.getElementById('commentModalOriginalPost');
+    const repliesList  = document.getElementById('commentModalRepliesList');
+    const commentInput = document.getElementById('commentInput');
+ 
+    if (originalPost)  originalPost.innerHTML  = '';
+    if (repliesList)   repliesList.innerHTML   = '';
+    if (commentInput)  commentInput.value       = '';
+  }
 
   // ── API pública ──────────────────────────────────────────────
 
@@ -102,6 +134,8 @@ const UI = (() => {
     showToast,
     openLightbox,
     closeLightbox,
+    openCommentModal,
+    closeCommentModal
   };
 
 })();

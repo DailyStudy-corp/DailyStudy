@@ -96,4 +96,10 @@ public class PostController {
     public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id){
         return ResponseEntity.ok(postService.listarComentarios(id));
     }
+
+    @GetMapping("/{id}/detalhes")
+    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id) {
+        PostDetalhesDTO detalhes = postService.buscarDetalhes(id);
+        return ResponseEntity.ok(detalhes);
+    }
 }
