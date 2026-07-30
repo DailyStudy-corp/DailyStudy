@@ -1,5 +1,6 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.dto.PostDetalhesDTO;
 import com.dailystudy.backend.dto.ComentarioDTO;
 import com.dailystudy.backend.dto.EditarPostDTO;
 import com.dailystudy.backend.dto.PostCreateDTO;
@@ -103,5 +104,15 @@ public class PostService {
 
             return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios);
         }).toList();
+    }
+
+    public PostDetalhesDTO buscarDetalhes(String id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+
+        PostFeedDTO postDTO = mapearFeedDTO(List.of(post)).get(0);
+        List<PostFeedDTO> comentariosDTO = listarComentarios(id);
+
+        return new PostDetalhesDTO(postDTO, comentariosDTO);
     }
 }
