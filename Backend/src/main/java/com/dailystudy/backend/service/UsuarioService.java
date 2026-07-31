@@ -1,5 +1,8 @@
 package com.dailystudy.backend.service;
 
+import com.dailystudy.backend.model.Post;
+import com.dailystudy.backend.repository.PostRepository;
+import java.util.List;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.model.UsuarioRole;
@@ -24,13 +27,15 @@ public class UsuarioService {
 
     private final PostService postService;
 
+    private final PostRepository postRepository;
+
     public void registroUsuario(UsuarioRegistro dto) {
 
         if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new UsuarioException("Email inválido");
         }
 
-        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()){
+        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new UsuarioException("Este nome já esta em uso");
         }
 
@@ -55,6 +60,13 @@ public class UsuarioService {
 
     }
 
+    // Gui - Criei um metodo auxiliar para buscar o user por id
+    public Usuario buscarPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    }
+
+
     public void atualizarImgPerfil(Long id, ImagemPerfil dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
@@ -73,11 +85,24 @@ public class UsuarioService {
             throw new UsuarioException("Este nome de usuário já está em uso");
         }
 
+        // ALTERAÇÃO 2  Guarda o username antigo antes de atualizar,
+        // para localizar os posts que precisam ser atualizados.
+        String usernameAntigo = usuario.getUsername();
+
         usuario.setUsername(dto.username());
         usuario.setCargo(dto.cargo());
         usuario.setBio(dto.bio());
 
         usuarioRepository.save(usuario);
+
+        // ALTERAÇÃO 2 -  Se o username mudou, atualiza o autorId de todos
+        // os posts do usuário para o novo username, evitando "Usuario removido" no feed.
+        if (!usernameAntigo.equals(dto.username())) {
+            List<Post> postsDoAutor = postRepository.findByAutorId(usernameAntigo);
+            postsDoAutor.forEach(post -> post.setAutorId(dto.username()));
+            postRepository.saveAll(postsDoAutor);
+        }
+
     }
 
     public PerfilPublicoDTO buscarPerfilPublico(String username) {

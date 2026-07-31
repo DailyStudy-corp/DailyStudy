@@ -13,5 +13,7 @@ public interface PostRepository extends MongoRepository<Post, String> {
 
     List<Post> findByComentPostIdOrderByDataCriacaoDesc(String comentPostId);
 
+    List<Post> findByAutorId(String autorId);
+
     long countByComentPostId(String comentPostId);
 }

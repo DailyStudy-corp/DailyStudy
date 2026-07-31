@@ -56,7 +56,7 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
         if (!post.getAutorId().equals(username)){
-           throw new RuntimeException("Não pode deletar esse post");
+            throw new RuntimeException("Não pode deletar esse post");
         }
 
         postRepository.deleteById(id);
@@ -75,16 +75,19 @@ public class PostService {
     }
 
     public Post criarComentario(String comentPostId, ComentarioDTO dto, String username){
-        postRepository.findById(comentPostId)
-                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+    postRepository.findById(comentPostId)
+            .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        Post comentario = new Post();
-        comentario.setContent(dto.content());
-        comentario.setMediaUrl(dto.mediaUrl());
-        comentario.setDataCriacao(LocalDateTime.now());
-        comentario.setComentPostId(comentPostId);
+    Post comentario = new Post();
+    comentario.setContent(dto.content());
+    comentario.setMediaUrl(dto.mediaUrl());
+    comentario.setDataCriacao(LocalDateTime.now());
+    comentario.setComentPostId(comentPostId);
+    // ALTERAÇÃO 2 - Claude: Adicionado setAutorId — estava faltando,
+    // causando autor nulo nos comentários e exibindo "Usuario removido" na tela.
+    comentario.setAutorId(username);
 
-        return postRepository.save(comentario);
+    return postRepository.save(comentario);
     }
 
     public List<PostFeedDTO> listarComentarios(String comentPostId){
