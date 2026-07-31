@@ -131,7 +131,7 @@ const Profile = (() => {
     document.getElementById('btnEditP').style.display = '';
   }
 
-  // Valida e salva as alterações de nome e bio.
+  // Valida e salva as alterações de nome e bio. //ALTERACAO GUI 
   async function saveEditForm() {
     const name = document.getElementById('eName').value.trim();
     const bio  = document.getElementById('eBio').value.trim();
@@ -146,7 +146,6 @@ const Profile = (() => {
     UI.showToast('Salvando alterações…');
     
     try {
-      // Adicionado await para esperar a resposta da API corretamente
       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/perfil', {
         method: 'PUT',
         headers: {
@@ -165,15 +164,24 @@ const Profile = (() => {
         throw new Error(erroServidor?.message || 'Falha ao atualizar o perfil no servidor.');
       }
 
-      Storage.patchProfile({ name, role, bio });
+      const data = await response.json().catch(() => null);
+
+      // Se o backend devolver um novo JWT com o username atualizado, atualizamos o Auth
+      if (data && data.token) {
+        Auth.setToken(data.token);
+      }
+
+      // Passamos 'username' junto com 'name' para sincronizar com o storage.js
+      Storage.patchProfile({ username: name, name, role, bio });
+      
       syncUI();
       closeEditForm();
 
-      // Re-renderiza posts para atualizar o nome do autor nos cards
-      Posts.renderFeed();
-      Posts.renderProfilePosts();
+      // Recarrega os feeds com await para garantir que tudo renderize em ordem
+      await Posts.renderFeed();
+      await Posts.renderProfilePosts();
 
-      UI.showToast('Perfil updated!', 'ok');
+      UI.showToast('Perfil atualizado!', 'ok');
 
     } catch (err) {
       console.error('Erro ao salvar o formulário:', err);
@@ -261,13 +269,11 @@ const Profile = (() => {
   }
 
   async function loadProfileVisited(username) {
-    const token = localStorage.getItem('token');
-  
     try {
       const response = await fetch(
         `http://127.0.0.1:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
         {
-          headers: {...Auth.headers()}
+          headers: { ...Auth.headers() }
         }
       );
   

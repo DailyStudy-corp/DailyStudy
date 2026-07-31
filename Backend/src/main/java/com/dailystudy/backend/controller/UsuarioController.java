@@ -1,5 +1,6 @@
 package com.dailystudy.backend.controller;
 
+import com.dailystudy.backend.service.TokenService;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final TokenService tokenService;
 
     private static final String COOKIE_NAME = "access_token";
     private static final Duration COOKIE_MAX_AGE = Duration.ofHours(2);
@@ -65,14 +67,24 @@ public class UsuarioController {
     }
 
     @PutMapping("/me/perfil")
-    public ResponseEntity<Void> editarPerfil(@AuthenticationPrincipal Usuario usuarioLogado, @RequestBody DadosPerfil dto){
-        if (usuarioLogado == null){
-            return ResponseEntity.status(401).build();
-        }
+    public ResponseEntity<Map<String, String>> editarPerfil(
+        @AuthenticationPrincipal Usuario usuarioLogado,
+        @RequestBody DadosPerfil dto) {
 
-        usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
+    if (usuarioLogado == null) {
+        return ResponseEntity.status(401).build();
+    }
 
-        return ResponseEntity.noContent().build();
+    // Salva as alterações no banco
+    usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
+
+    // Busca o usuário atualizado para gerar o token com o username novo
+    Usuario usuarioAtualizado = usuarioService.buscarPorId(usuarioLogado.getId());
+
+    // Gera e retorna o novo token
+    String novoToken = tokenService.gerarToken(usuarioAtualizado);
+    return ResponseEntity.ok(Map.of("token", novoToken));
+
     }
 
     @GetMapping("/perfil/{username}")

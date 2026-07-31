@@ -25,13 +25,14 @@ const Storage = (() => {
     PROFILE: 'ds_profile',
   };
 
-  // Perfil padrão exibido na primeira vez que o app é aberto
+  // Perfil padrão exibido na primeira vez que o app é aberto ALTERACAO 1 
   const DEFAULT_PROFILE = {
-    name:      'Usuário',
-    role:      'Estudante · Daily Study',
-    bio:       'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
-    avatarUrl: null,
-    bannerUrl: null,
+    username:      'Usuário',
+    name:          'Usuário',
+    role:          'Estudante · Daily Study',
+    bio:           'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
+    img_perfil:    null,
+    banner_perfil: null,
   };
 
 
@@ -133,9 +134,14 @@ const Storage = (() => {
   }
 
   // Atualiza campos específicos do perfil sem sobrescrever os outros.
-  // Exemplo: patchProfile({ avatarUrl: '...' }) atualiza só o avatar.
+  // Exemplo: patchProfile({ avatarUrl: '...' }) atualiza só o avatar. Alteracao 2 
   function patchProfile(fields) {
     const current = getProfile();
+
+    // Sincroniza username e name para evitar que o profile.js perca a referência
+    if (fields.username && !fields.name) fields.name = fields.username;
+    if (fields.name && !fields.username) fields.username = fields.name;
+
     const updated = { ...current, ...fields };
     saveProfile(updated);
     return updated;
