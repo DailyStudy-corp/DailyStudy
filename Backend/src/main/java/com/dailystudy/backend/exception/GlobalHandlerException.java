@@ -44,4 +44,17 @@ public class GlobalHandlerException {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(erro);
     }
+
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ExceptionDTO> handleRateLimitException(RateLimitException ex) {
+
+        ExceptionDTO erro = new ExceptionDTO(
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                "Limite excedido",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(erro);
+    }
 }
