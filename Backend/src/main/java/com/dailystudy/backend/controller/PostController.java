@@ -78,12 +78,6 @@ public class PostController {
         return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
     }
 
-    @GetMapping("/{id}/curtida")
-    public  ResponseEntity<CurtidaDTO> statusCurtida(@PathVariable String id, Authentication authentication){
-        String username = authentication.getName();
-        return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
-    }
-
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
         String username = authentication.getName();
