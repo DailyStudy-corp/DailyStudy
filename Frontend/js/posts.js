@@ -132,34 +132,36 @@ const Posts = (() => {
           </button>
         </div>
       </div>
-    `;
+     `;
 
-    // Listener único no card que detecta em qual botão foi clicado
-    // (técnica chamada "event delegation")
-    card.addEventListener('click', event => {
-      const button = event.target.closest('[data-action]');
-      if (!button) return;
-
-      const action = button.dataset.action;
-
-      if (action === 'edit')      openEditModal(post.id, post.content);
-      if (action === 'delete')    openDeleteModal(post.id);
-      if (action === 'lightbox')  UI.openLightbox(post.mediaUrl);
-      //curica: A acao deixou de ser UI para ser uma funcao real\
-      if (action === 'profile')   Profile.openProfile(post.autorUsername);
-      if (action === 'like') {
-        event.stopPropagation();
-        handleLikeToggle(post.id, button);
-      }
-      if (action === 'comment') {
-        event.stopPropagation();
-        handleOpenPostModal(post.id);
-      }
-    });
-
-    return card;
+    
+   card.addEventListener('click', event => {
+   const button = event.target.closest('[data-action]');
+  // ALTERAÇÃO 2 - Se clicar fora de qualquer botão de ação,
+  // abre o modal do post. Exceto editar, excluir e like — tratados abaixo.
+  if (!button) {
+    handleOpenPostModal(post.id);
+    return;
   }
 
+   const action = button.dataset.action;
+
+   if (action === 'edit')     openEditModal(post.id, post.content);
+   if (action === 'delete')   openDeleteModal(post.id);
+   if (action === 'lightbox') UI.openLightbox(post.mediaUrl);
+   if (action === 'profile')  Profile.openProfile(post.autorUsername);
+   if (action === 'like') {
+    event.stopPropagation();
+    handleLikeToggle(post.id, button);
+   }
+   if (action === 'comment') {
+    event.stopPropagation();
+    handleOpenPostModal(post.id);
+   }
+ });
+ 
+      return card;
+   }  
   // ── Renderização ─────────────────────────────────────────────
 
   // Renderiza todos os posts no feed principal.
@@ -566,7 +568,7 @@ async function handleCreateComment(conteudo) {
         'Content-Type': 'application/json',
         ...Auth.headers()
       },
-      body: JSON.stringify({ conteudo: conteudo.trim() })
+      body: JSON.stringify({ content: conteudo.trim() })
     });
 
     if (!response.ok) throw new Error('Erro ao enviar comentário');
