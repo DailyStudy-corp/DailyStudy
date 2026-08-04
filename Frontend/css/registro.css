@@ -128,3 +128,12 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+/* Deixa o botao cinza quando atigingir o limite de requisicoes */
+.submit-button:disabled {
+    background: #cccccc;
+    color: #888888;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
