@@ -393,6 +393,15 @@ const Posts = (() => {
   document.getElementById('deleteModalCloseBtn')?.addEventListener('click', closeDeleteModal);
    document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
 
+  // Função para fechar o modal de comentário e restaurar o scroll via UI
+  function closeCommentModal() {
+    activeCommentPostId = null;
+    UI.closeCommentModal();
+  }
+  
+  // Listener do botão de fechar o modal de comentários
+  document.getElementById('closeCommentModalBtn')?.addEventListener('click', closeCommentModal);
+
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
@@ -546,37 +555,35 @@ const Posts = (() => {
   }
  
   // Authorization: Bearer. Trocado para credentials: 'include' + Csrf.headers(),
-  async function handleCreateComment(conteudo) {
-    if (!activePostId || !conteudo.trim()) return;
- 
-    try {
-      const response = await fetch(`http://localhost:8080/api/posts/${activePostId}/comentarios`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...Auth.headers()
-        },
-        body: JSON.stringify({ conteudo: conteudo.trim() })
-      });
- 
-      if (!response.ok) throw new Error('Erro ao enviar comentário');
- 
-      // Limpa o campo de input após envio bem-sucedido
-      const inputEl = document.getElementById('commentInput');
-      if (inputEl) inputEl.value = '';
- 
-      // Recarrega a lista de comentários no modal
-      await openCommentModal(activePostId);
- 
-      // Atualiza o contador de comentários no card do feed
-      await renderFeed();
- 
-    } catch (err) {
-      console.error('Erro ao criar comentário:', err);
-      UI.showToast(err.message, 'err');
-    }
+async function handleCreateComment(conteudo) {
+  // ALTERAÇÃO 2 - Trocado activePostId por activeCommentPostId.
+  if (!activeCommentPostId || !conteudo.trim()) return;
+
+  try {
+    const response = await fetch(`http://localhost:8080/api/posts/${activeCommentPostId}/comentarios`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...Auth.headers()
+      },
+      body: JSON.stringify({ conteudo: conteudo.trim() })
+    });
+
+    if (!response.ok) throw new Error('Erro ao enviar comentário');
+
+    const inputEl = document.getElementById('commentInput');
+    if (inputEl) inputEl.value = '';
+
+    // ALTERAÇÃO 2 - Trocado openCommentModal por handleOpenPostModal.
+    // openCommentModal não existe mais — foi substituída por handleOpenPostModal.
+    await handleOpenPostModal(activeCommentPostId);
+    await renderFeed();
+
+  } catch (err) {
+    console.error('Erro ao criar comentário:', err);
+    UI.showToast(err.message, 'err');
   }
+}
  
   async function handleLikeToggle(postId, buttonEl) {
     const countEl = buttonEl.querySelector('.int-count');
