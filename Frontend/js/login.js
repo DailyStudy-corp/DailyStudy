@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Redireciona para a home (ajuste o nome do arquivo se necessário, ex: home.html)
                 window.location.href = 'home.html';
+                
+            } else if (RateLimit.isRateLimited(response)){
+
+                RateLimit.handleRateLimit(response, {
+                    button: document.getElementById('btn-login'),
+                    messageEl : mensagemErro
+            });
+
             } else {
                 // Se o backend retornar 401 (Não autorizado) ou 404 (Não encontrado)
                 mensagemErro.textContent = 'E-mail ou senha incorretos.';
