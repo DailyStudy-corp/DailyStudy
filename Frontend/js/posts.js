@@ -178,7 +178,7 @@ const Posts = (() => {
     feedEl.innerHTML = '';
 
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
+      const response = await fetch('/api/posts', {
         headers: {...Auth.headers()}
       });
 
@@ -217,7 +217,7 @@ const Posts = (() => {
     const emptyEl   = document.getElementById('profileEmpty');
 
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts/mine', {
+      const response = await fetch('/api/posts/mine', {
         headers: {...Auth.headers()}
       });
 
@@ -269,7 +269,7 @@ const Posts = (() => {
     if (!text) return;
 
     try {
-      const response = await fetch ('http://127.0.0.1:8080/api/posts', {
+      const response = await fetch ('/api/posts', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -330,7 +330,7 @@ const Posts = (() => {
     }
 
     try {
-      const response = await fetch (`http://127.0.0.1:8080/api/posts/${editingPostId}`, {
+      const response = await fetch (`/api/posts/${editingPostId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -374,7 +374,7 @@ const Posts = (() => {
 
       const token = localStorage.getItem('token');
       try {
-    const response = await fetch(`http://127.0.0.1:8080/api/posts/${postIdToDelete}`, {
+    const response = await fetch(`/api/posts/${postIdToDelete}`, {
       method: 'DELETE',
       headers: { ...Auth.headers() }
     });
@@ -409,7 +409,7 @@ const Posts = (() => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8080/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}`, {
         method: 'DELETE',
         headers: {...Auth.headers()}
       });
@@ -562,7 +562,7 @@ async function handleCreateComment(conteudo) {
   if (!activeCommentPostId || !conteudo.trim()) return;
 
   try {
-    const response = await fetch(`http://localhost:8080/api/posts/${activeCommentPostId}/comentarios`, {
+    const response = await fetch(`/api/posts/${activeCommentPostId}/comentarios`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -591,7 +591,7 @@ async function handleCreateComment(conteudo) {
     const countEl = buttonEl.querySelector('.int-count');
  
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
+      const response = await fetch(`/api/posts/${postId}/curtida`, {
         method: 'POST',
         credentials: 'include',
         headers: {
