@@ -1,0 +1,24 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    volumes:      # esses são os caminhos das pastas e do container
+      - ./Frontend:/usr/share/nginx/html:ro # ro significa read only
+      - ./nginx/dev/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs/dev:/etc/nginx/certs/dev:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # necessário no Linux
+    networks:
+      - app-network
+
+  postgres:
+    ports:
+      - "5432:5432"   # exposto no host porque o backend roda na IDE em dev
+
+  mongo:
+    ports:
+      - "27017:27017"
