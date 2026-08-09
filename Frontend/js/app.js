@@ -176,15 +176,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Fechar ao clicar no fundo escuro (backdrop) do modal de comentários
-  const commentModal = document.getElementById('commentModal');
-  if (commentModal) {
-    commentModal.addEventListener('click', event => {
-      if (event.target === commentModal) {
-        commentModal.classList.add('hidden');
-      }
-    });
-  }
-
+   const commentModal = document.getElementById('commentModal');
+   if (commentModal) {
+   commentModal.addEventListener('click', event => {
+    if (event.target === commentModal) {
+      UI.closeCommentModal();
+    }
+  });
+}
 
   // ── Lightbox ─────────────────────────────────────────────────
 
