@@ -35,7 +35,7 @@ public class UsuarioService {
             throw new UsuarioException("Email inválido");
         }
 
-        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
+        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()){
             throw new UsuarioException("Este nome já esta em uso");
         }
 
@@ -59,12 +59,11 @@ public class UsuarioService {
         return tokenService.gerarToken(usuario);
 
     }
-
-    // Gui - Criei um metodo auxiliar para buscar o user por id
+      // Gui - Criei um metodo auxiliar para buscar o user por id
     public Usuario buscarPorId(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
-    }
+     return usuarioRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+}
 
 
     public void atualizarImgPerfil(Long id, ImagemPerfil dto) {
@@ -76,32 +75,32 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-    public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario não encontrado"));
+public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
+    Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario não encontrado"));
 
-        if (!usuario.getUsername().equals(dto.username())
-                && usuarioRepository.findByUsername(dto.username()).isPresent()) {
-            throw new UsuarioException("Este nome de usuário já está em uso");
-        }
+    if (!usuario.getUsername().equals(dto.username())
+            && usuarioRepository.findByUsername(dto.username()).isPresent()) {
+        throw new UsuarioException("Este nome de usuário já está em uso");
+    }
 
-        // ALTERAÇÃO 2  Guarda o username antigo antes de atualizar,
-        // para localizar os posts que precisam ser atualizados.
-        String usernameAntigo = usuario.getUsername();
+    // ALTERAÇÃO 2  Guarda o username antigo antes de atualizar,
+    // para localizar os posts que precisam ser atualizados.
+    String usernameAntigo = usuario.getUsername();
 
-        usuario.setUsername(dto.username());
-        usuario.setCargo(dto.cargo());
-        usuario.setBio(dto.bio());
+    usuario.setUsername(dto.username());
+    usuario.setCargo(dto.cargo());
+    usuario.setBio(dto.bio());
 
-        usuarioRepository.save(usuario);
+    usuarioRepository.save(usuario);
 
-        // ALTERAÇÃO 2 -  Se o username mudou, atualiza o autorId de todos
-        // os posts do usuário para o novo username, evitando "Usuario removido" no feed.
-        if (!usernameAntigo.equals(dto.username())) {
-            List<Post> postsDoAutor = postRepository.findByAutorId(usernameAntigo);
-            postsDoAutor.forEach(post -> post.setAutorId(dto.username()));
-            postRepository.saveAll(postsDoAutor);
-        }
+    // ALTERAÇÃO 2 -  Se o username mudou, atualiza o autorId de todos
+    // os posts do usuário para o novo username, evitando "Usuario removido" no feed.
+    if (!usernameAntigo.equals(dto.username())) {
+        List<Post> postsDoAutor = postRepository.findByAutorId(usernameAntigo);
+        postsDoAutor.forEach(post -> post.setAutorId(dto.username()));
+        postRepository.saveAll(postsDoAutor);
+    }
 
     }
 

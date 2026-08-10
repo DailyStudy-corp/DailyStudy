@@ -135,33 +135,33 @@ const Posts = (() => {
      `;
 
     
-   card.addEventListener('click', event => {
-   const button = event.target.closest('[data-action]');
+    card.addEventListener('click', event => {
+        const button = event.target.closest('[data-action]');
   // ALTERAÇÃO 2 - Se clicar fora de qualquer botão de ação,
   // abre o modal do post. Exceto editar, excluir e like — tratados abaixo.
   if (!button) {
-    handleOpenPostModal(post.id);
-    return;
-  }
+            handleOpenPostModal(post.id);
+            return;
+        }
 
    const action = button.dataset.action;
 
-   if (action === 'edit')     openEditModal(post.id, post.content);
-   if (action === 'delete')   openDeleteModal(post.id);
-   if (action === 'lightbox') UI.openLightbox(post.mediaUrl);
-   if (action === 'profile')  Profile.openProfile(post.autorUsername);
-   if (action === 'like') {
-    event.stopPropagation();
-    handleLikeToggle(post.id, button);
-   }
-   if (action === 'comment') {
-    event.stopPropagation();
-    handleOpenPostModal(post.id);
-   }
- });
- 
-      return card;
-   }  
+        if (action === 'edit')     openEditModal(post.id, post.content);
+        if (action === 'delete')   openDeleteModal(post.id);
+        if (action === 'lightbox') UI.openLightbox(post.mediaUrl);
+        if (action === 'profile')  Profile.openProfile(post.autorUsername);
+        if (action === 'like') {
+            event.stopPropagation();
+            handleLikeToggle(post.id, button);
+        }
+        if (action === 'comment') {
+            event.stopPropagation();
+            handleOpenPostModal(post.id);
+        }
+    });
+
+    return card; 
+}  
   // ── Renderização ─────────────────────────────────────────────
 
   // Renderiza todos os posts no feed principal.
@@ -402,8 +402,9 @@ const Posts = (() => {
   }
   
   // Listener do botão de fechar o modal de comentários
-  document.getElementById('closeCommentModalBtn')?.addEventListener('click', closeCommentModal);
-
+  document.getElementById('closeCommentModalBtn')?.addEventListener('click', () => {
+  UI.closeCommentModal();
+});
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;

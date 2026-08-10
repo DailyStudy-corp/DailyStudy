@@ -419,34 +419,33 @@
 <!-- Modal de Comentários / Respostas -->
 <div class="modal-backdrop hidden" id="commentModal" role="dialog" aria-modal="true" aria-labelledby="commentModalTitle">
   <div class="modal modal-comments">
-
+ 
     <div class="modal-head">
       <h3 id="commentModalTitle">Respostas</h3>
       <button class="modal-close-btn" id="closeCommentModalBtn" aria-label="Fechar modal">✕</button>
     </div>
-
-      <!-- Lista onde os comentários existentes do post serão injetados pelo JS -->
-     <div id="commentModalOriginalPost" class="comment-modal-original-post"></div>
  
-    <div class="comment-modal-divider" aria-hidden="true"></div>
+    <div class="modal-comments-body">
+      <div id="commentModalOriginalPost" class="comment-modal-original-post"></div>
+      <div class="comment-modal-divider" aria-hidden="true"></div>
+      <div id="commentModalRepliesList" class="comments-list"></div>
+    </div>
  
-    <div id="commentModalRepliesList" class="comments-list"></div>
-
-    <!-- Formulário para enviar um novo comentário -->
     <form id="commentForm" class="comment-form">
       <div class="comment-input-wrap">
-        <input 
-          type="text" 
-          id="commentInput" 
-          class="comment-input" 
-          placeholder="Escreva sua resposta..." 
-          maxlength="280" 
-          required 
+        <input
+          type="text"
+          id="commentInput"
+          class="comment-input"
+          placeholder="Escreva sua resposta..."
+          maxlength="280"
+          required
           autocomplete="off"
         />
         <button type="submit" class="btn-primary btn-sm" id="btnSubmitComment">Responder</button>
       </div>
     </form>
+ 
   </div>
 </div>
 

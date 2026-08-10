@@ -156,11 +156,15 @@
   background: rgba(28, 26, 23, 0.55);
   backdrop-filter: blur(6px);
   z-index: 500;
-  display: flex;
+  display: none;           /* oculto por padrão */
   align-items: center;
   justify-content: center;
   padding: 16px;
   animation: fadeIn 0.15s ease;
+}
+
+.modal-backdrop:not(.hidden) {
+  display: flex;
 }
 
 /* Card do modal */
@@ -389,20 +393,24 @@
 /* ── Modal de Comentários / Respostas*/
 
 .modal.modal-comments {
-  max-width: 520px;
-  width: 90%;
+  max-width: 560px;
+  width: 95%;
   display: flex;
   flex-direction: column;
-  max-height: 80vh;
+  /* Limita a altura total do modal a 85% da tela */
+  max-height: 85vh;
   padding: 0 !important;
   overflow: hidden;
   border-radius: var(--r-xl);
 }
 
+/* Cabeçalho fixo — não entra no scroll */
 .modal-comments .modal-head {
+  flex-shrink: 0;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
 }
 
 .modal-comments .modal-head h3 {
@@ -412,16 +420,45 @@
   color: var(--ink);
 }
 
-/* Área rolável da lista de comentários */
-.comments-list {
-  padding: 16px 20px;
-  max-height: 320px;
-  min-height: 90px;
+/* Área central — cresce para ocupar o espaço disponível e rola */
+.modal-comments-body {
+  flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
   background: var(--surface);
+  /* Scroll suave no iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Post original dentro da área rolável */
+.comment-modal-original-post {
+  padding: 16px 20px 0;
+  flex-shrink: 0;
+}
+
+/* Imagem dentro do post original não estoura o modal */
+.comment-modal-original-post .post-image img {
+  max-height: 280px;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* Divisor entre post original e respostas */
+.comment-modal-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 20px;
+  flex-shrink: 0;
+}
+
+/* Lista de respostas — sem altura fixa, cresce naturalmente */
+.comments-list {
+  padding: 0 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
 }
 
 .comments-empty {
@@ -449,7 +486,12 @@
   border-radius: 50%;
   background-color: var(--bg-2);
   border: 1px solid var(--border);
-  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-2);
   flex-shrink: 0;
 }
 
@@ -479,21 +521,22 @@
   margin-top: 2px;
 }
 
-/* Formulário de comentários */
+/* Formulário fixo na base — não entra no scroll */
 .comment-form {
-  padding: 14px 20px 20px 20px;
+  flex-shrink: 0;
+  padding: 14px 20px;
   border-top: 1px solid var(--border);
   background: var(--surface);
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
 }
 
-/* Envolto pílula: input + botão integrados */
 .comment-input-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
   background: var(--bg-2);
   border: 1.5px solid var(--border);
-  border-radius: var(--r-pill, 99px);
+  border-radius: var(--r-pill);
   padding: 4px 6px 4px 16px;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
@@ -504,10 +547,8 @@
   box-shadow: 0 0 0 3px rgba(37, 80, 232, 0.1);
 }
 
-/* Tira os estilos padrão do navegador do input */
 .comment-input-wrap .comment-input {
   flex: 1;
-  width: 100%;
   border: none !important;
   background: transparent !important;
   padding: 8px 0 !important;
