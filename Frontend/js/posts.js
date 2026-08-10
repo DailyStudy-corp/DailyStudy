@@ -549,6 +549,21 @@ const Posts = (() => {
         }
       }
 
+      const commentFormAva = document.getElementById('commentFormAva');
+      if (commentFormAva) {
+      const profile = Storage.getProfile();
+          commentFormAva.innerHTML = '';
+
+         if (profile.avatarUrl) {
+         const img = document.createElement('img');
+         img.src = profile.avatarUrl;
+        img.alt = 'Seu avatar';
+    commentFormAva.appendChild(img);
+  } else {
+    commentFormAva.textContent = Profile.getInitials(profile.name || profile.username || 'U');
+  }
+}
+
       UI.openCommentModal();
 
     } catch (err) {

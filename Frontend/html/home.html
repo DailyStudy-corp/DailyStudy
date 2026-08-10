@@ -431,20 +431,25 @@
       <div id="commentModalRepliesList" class="comments-list"></div>
     </div>
  
-    <form id="commentForm" class="comment-form">
-      <div class="comment-input-wrap">
-        <input
-          type="text"
-          id="commentInput"
-          class="comment-input"
-          placeholder="Escreva sua resposta..."
-          maxlength="280"
-          required
-          autocomplete="off"
-        />
-        <button type="submit" class="btn-primary btn-sm" id="btnSubmitComment">Responder</button>
-      </div>
-    </form>
+<form id="commentForm" class="comment-form">
+  <!-- ALTERAÇÃO 2 - Claude: Adicionado .comment-form-row para alinhar
+       o avatar do usuário logado ao lado do campo de resposta -->
+  <div class="comment-form-row">
+    <div class="comment-form-ava" id="commentFormAva"></div>
+    <div class="comment-input-wrap">
+      <input
+        type="text"
+        id="commentInput"
+        class="comment-input"
+        placeholder="Escreva sua resposta..."
+        maxlength="280"
+        required
+        autocomplete="off"
+      />
+      <button type="submit" class="btn-primary btn-sm" id="btnSubmitComment">Responder</button>
+    </div>
+  </div>
+</form>
  
   </div>
 </div>

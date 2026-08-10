@@ -569,3 +569,85 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* Post original — sem borda, sem sombra, sem hover */
+#commentModalOriginalPost .post-card {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 16px 20px;
+  background: transparent;
+}
+
+#commentModalOriginalPost .post-card:hover {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Esconde os botões de editar/excluir no post original do modal */
+#commentModalOriginalPost .post-actions {
+  display: none;
+}
+
+/* Esconde o rodapé com timestamp e interações no post original */
+#commentModalOriginalPost .post-footer {
+  display: none;
+}
+
+/* Respostas — sem borda de card, apenas linha separadora entre elas */
+#commentModalRepliesList .post-card {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 0;
+  padding: 14px 20px;
+  background: transparent;
+}
+
+#commentModalRepliesList .post-card:hover {
+  border-color: transparent;
+  border-bottom-color: var(--border);
+  box-shadow: none;
+}
+
+#commentModalRepliesList .post-card:last-child {
+  border-bottom: none;
+}
+
+/* Esconde botões de editar/excluir nas respostas */
+#commentModalRepliesList .post-actions {
+  display: none;
+}
+
+/* ALTERAÇÃO 1 - Claude: Avatar do usuário logado no campo de resposta */
+.comment-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-form-ava {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
+
+.comment-form-ava img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-form-row .comment-input-wrap {
+  flex: 1;
+}
