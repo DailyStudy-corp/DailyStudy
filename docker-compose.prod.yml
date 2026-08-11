@@ -6,7 +6,7 @@ services:
   nginx:
     build:
       context: .
-      dockerfile: nginx/Dockerfile   # COPY do Frontend embutido na imagem, sem bind mount
+      dockerfile: nginx/DockerFile   # COPY do Frontend embutido na imagem, sem bind mount
     volumes:
       - ./nginx/prod/nginx.conf:/etc/nginx/nginx.conf:ro
       - certbot-etc:/etc/letsencrypt:ro
