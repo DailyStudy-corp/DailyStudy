@@ -14,13 +14,11 @@
 
 const Posts = (() => {
 
-  // ID do post que está sendo editado no modal (null quando fechado)
+  // ── Variáveis globais ───────────────────────────────────────
   let editingPostId = null;
-
-  // Imagem selecionada no compose, ainda não publicada (null se vazia)
   let pendingImageUrl = null;
-
-
+  let activeCommentPostId = null;
+ 
   // ── Helpers ──────────────────────────────────────────────────
 
   // Formata uma data ISO para texto amigável em português.
@@ -53,38 +51,40 @@ const Posts = (() => {
     return div.innerHTML;
   }
 
-
   // ── Criação de cards ─────────────────────────────────────────
 
   // Cria e retorna o elemento HTML de um único post.
   // Cada card tem: cabeçalho (avatar, nome, data, ações) + texto + imagem + rodapé.
+
+  //curica: Alterei as variaveis para ficar igual do backend, e fui renomeando onde estavam inseridas
   function createPostCard(post) {
-    const profile  = Profile.get();
-    const initials = Profile.getInitials(profile.name);
+    const autorNome  = post.autorUsername; 
+    const autorFoto = Security.safeImage(post.autorImg);
+    const initials = Profile.getInitials(autorNome);
 
     const card = document.createElement('article');
     card.className  = 'post-card';
     card.dataset.id = post.id;  // usado para encontrar o card no DOM depois
 
     // Monta o HTML do avatar (foto ou iniciais)
-    const avatarHTML = profile.avatarUrl
-      ? `<img src="${profile.avatarUrl}" alt="Foto de ${escapeHTML(profile.name)}"/>`
+    const avatarHTML = autorFoto
+      ? `<img src="${escapeHTML(autorFoto)}" alt="Foto de ${escapeHTML(autorNome)}"/>`
       : escapeHTML(initials);
 
     // Monta a imagem do post, se houver
-    const imageHTML = post.image
+    const imageHTML = Security.safeImage(post.mediaUrl)
       ? `<div class="post-image">
-           <img src="${post.image}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
+           <img src="${escapeHTML(post.mediaUrl)}" alt="Imagem da postagem" data-action="lightbox" title="Clique para ampliar" loading="lazy"/>
          </div>`
       : '';
 
     // Monta a tag "editado", se o post foi modificado
-    const editedHTML = post.editedAt
-      ? `<p class="post-edited-tag">editado ${formatDate(post.editedAt)}</p>`
+    const editedHTML = post.dataEdicao
+      ? `<p class="post-edited-tag">editado ${formatDate(post.dataEdicao)}</p>`
       : '';
 
     // Formata a data completa para o rodapé
-    const fullDate = new Date(post.createdAt).toLocaleString('pt-BR', {
+    const fullDate = new Date(post.dataCriacao).toLocaleString('pt-BR', {
       day: 'numeric', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -93,8 +93,8 @@ const Posts = (() => {
       <div class="post-head">
         <div class="post-ava" data-action="profile">${avatarHTML}</div>
         <div class="post-meta">
-          <div class="post-author">${escapeHTML(profile.name)}</div>
-          <div class="post-date">${formatDate(post.createdAt)}</div>
+          <div class="post-author">${escapeHTML(autorNome)}</div>
+          <div class="post-date">${formatDate(post.dataCriacao)}</div>
         </div>
         <div class="post-actions">
           <button class="pa-btn"     data-action="edit"   title="Editar">
@@ -111,43 +111,85 @@ const Posts = (() => {
           </button>
         </div>
       </div>
-      <p class="post-text">${escapeHTML(post.text)}</p>
+      <p class="post-text">${escapeHTML(post.content)}</p>
       ${imageHTML}
       ${editedHTML}
-      <div class="post-footer">
+       <div class="post-footer">
         <time class="post-ts">${fullDate}</time>
+        <!-- ALTERAÇÃO 1 - Claude: Recolocado bloco de interações removido anteriormente -->
+        <div class="post-interactions">
+          <button class="action-btn like-btn ${post.curtido ? 'active' : ''}" data-action="like">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span class="int-count">${post.totalCurtidas || 0}</span>
+          </button>
+          <button class="action-btn comment-btn" data-action="comment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="int-count">${post.totalComentarios || 0}</span>
+          </button>
+        </div>
       </div>
-    `;
+     `;
 
-    // Listener único no card que detecta em qual botão foi clicado
-    // (técnica chamada "event delegation")
+    
     card.addEventListener('click', event => {
-      const button = event.target.closest('[data-action]');
-      if (!button) return;
+        const button = event.target.closest('[data-action]');
+  // ALTERAÇÃO 2 - Se clicar fora de qualquer botão de ação,
+  // abre o modal do post. Exceto editar, excluir e like — tratados abaixo.
+  if (!button) {
+            handleOpenPostModal(post.id);
+            return;
+        }
 
-      const action = button.dataset.action;
+   const action = button.dataset.action;
 
-      if (action === 'edit')      openEditModal(post.id, post.text);
-      if (action === 'delete')    confirmAndDelete(post.id);
-      if (action === 'lightbox')  UI.openLightbox(post.image);
-      if (action === 'profile')   UI.activateTab('profile');
+        if (action === 'edit')     openEditModal(post.id, post.content);
+        if (action === 'delete')   openDeleteModal(post.id);
+        if (action === 'lightbox') UI.openLightbox(post.mediaUrl);
+        if (action === 'profile')  Profile.openProfile(post.autorUsername);
+        if (action === 'like') {
+            event.stopPropagation();
+            handleLikeToggle(post.id, button);
+        }
+        if (action === 'comment') {
+            event.stopPropagation();
+            handleOpenPostModal(post.id);
+        }
     });
 
-    return card;
-  }
-
-
+    return card; 
+}  
   // ── Renderização ─────────────────────────────────────────────
 
   // Renderiza todos os posts no feed principal.
   // Chamada ao inicializar, publicar, editar ou excluir.
-  function renderFeed() {
+
+  /*curica: Implementei o endpoint do post, coloquei o token para autorizar
+            o fetch ja vem com metodo GET padrao, entao nao tive que declarar
+  */
+  async function renderFeed() {
     const feedEl   = document.getElementById('feedList');
     const emptyEl  = document.getElementById('feedEmpty');
     const badgeEl  = document.getElementById('postBadge');
-    const posts    = Storage.getPosts();
 
     feedEl.innerHTML = '';
+
+    try {
+      const response = await fetch('http://127.0.0.1:8080/api/posts', {
+        headers: {...Auth.headers()}
+      });
+
+      if (!response.ok) throw new Error('Erro ao carregar feed');
+
+      const posts = await response.json();
+
+      window.allPosts = posts; //aqui ele guarda na memoria os posts
+
+      feedEl.innerHTML = '';
+    
 
     if (posts.length === 0) {
       emptyEl.classList.remove('hidden');
@@ -159,37 +201,57 @@ const Posts = (() => {
     badgeEl.textContent = `${posts.length} post${posts.length !== 1 ? 's' : ''}`;
 
     posts.forEach(post => feedEl.appendChild(createPostCard(post)));
+  } catch (err) {
+    feedEl.innerHTML = '';
+    UI.showToast('Erro ao carregar o feed.', 'err')
+  }
   }
 
   // Renderiza os posts na aba de perfil.
   // Funciona da mesma forma que renderFeed, mas em outro container.
-  function renderProfilePosts() {
+
+  //curica: Aqui a mesma coisa que o de cima, porem nao esta funcionando corretamente, tem que revisar
+  //curica: Atualizacao: Agora tem um endpoint especifico, e a logica nao fica no front
+  async function renderProfilePosts() {
     const container = document.getElementById('profileFeed');
     const emptyEl   = document.getElementById('profileEmpty');
-    const posts     = Storage.getPosts();
 
-    container.innerHTML = '';
+    try {
+      const response = await fetch('http://127.0.0.1:8080/api/posts/mine', {
+        headers: {...Auth.headers()}
+      });
 
-    if (posts.length === 0) {
+      if (!response.ok) throw new Error();
+
+      const meusPosts = await response.json();
+
+      window.meusPosts = meusPosts; //guarda na memoria os nossos posts
+
+      container.innerHTML = '';
+
+    if (meusPosts.length === 0) {
       emptyEl.classList.remove('hidden');
-      return;
+    } else {
+      emptyEl.classList.add('hidden');
+    meusPosts.forEach(post => container.appendChild(createPostCard(post)));
     }
 
-    emptyEl.classList.add('hidden');
-    posts.forEach(post => container.appendChild(createPostCard(post)));
+    updateStats(meusPosts);
+
+  } catch {
+    UI.showToast('Erro ao carregar seus posts', 'err');
   }
+}
 
   // Atualiza os números nos cards de estatísticas do perfil.
-  function updateStats() {
-    const posts = Storage.getPosts();
+  function updateStats(posts) {
 
-    // Total de posts
     const statPostsEl = document.getElementById('statPosts');
     if (statPostsEl) statPostsEl.textContent = posts.length;
 
     // Dias únicos com pelo menos um post
     // Set() elimina datas duplicadas automaticamente
-    const uniqueDays  = new Set(posts.map(p => new Date(p.createdAt).toDateString()));
+    const uniqueDays  = new Set(posts.map(p => new Date(p.dataCriacao).toDateString()));
     const statDaysEl  = document.getElementById('statDays');
     if (statDaysEl) statDaysEl.textContent = uniqueDays.size;
   }
@@ -198,14 +260,30 @@ const Posts = (() => {
   // ── Ações de post ────────────────────────────────────────────
 
   // Lê o texto e a imagem pendente, cria o post e atualiza a tela.
-  function handlePublish() {
+
+  //curica: aqui é a mesma coisa, tive que apenas colocar o token pra validar e o fetch
+  async function handlePublish() {
     const input = document.getElementById('postInput');
     const text  = input.value.trim();
 
     if (!text) return;
 
     try {
-      Storage.addPost(text, pendingImageUrl);
+      const response = await fetch ('http://127.0.0.1:8080/api/posts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...Auth.headers()
+        },
+        body: JSON.stringify({
+          content: text,
+          mediaUrl: pendingImageUrl
+        })
+      });
+
+      if (!response.ok) throw new Error('Erro ao publicar');
+
+      const novoPost = await response.json(); //recebe o post do backend
 
       // Limpa o compose
       input.value = '';
@@ -214,7 +292,7 @@ const Posts = (() => {
       document.getElementById('btnPost').disabled = true;
 
       renderFeed();
-      updateStats();
+      updateStats(window.meusPosts); //aqui é onde o erro apontava, ele chegava vazio e o post.length dava erro
       UI.showToast('Postagem publicada! 🎉', 'ok');
 
       // Scrolla suavemente para o topo do feed para ver o novo post
@@ -238,7 +316,9 @@ const Posts = (() => {
   }
 
   // Salva o texto editado no modal.
-  function handleSaveEdit() {
+
+  //curica: Coloquei o endpoint, com a variavel do id do post que esta sendo editado
+  async function handleSaveEdit() {
     if (!editingPostId) return;
 
     const textarea = document.getElementById('editTa');
@@ -249,25 +329,101 @@ const Posts = (() => {
       return;
     }
 
-    Storage.editPost(editingPostId, newText);
-    editingPostId = null;
+    try {
+      const response = await fetch (`http://127.0.0.1:8080/api/posts/${editingPostId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...Auth.headers()
+        },
+        body: JSON.stringify({ content: newText })
+      });
 
-    UI.closeModal();
-    renderFeed();
-    renderProfilePosts();
-    UI.showToast('Postagem atualizada!', 'ok');
+      if(!response.ok) throw new Error('Erro ao editar post');
+
+      editingPostId = null;
+      UI.closeModal();
+      await renderFeed();
+      await renderProfilePosts();
+      UI.showToast('Post atualizado!', 'ok');
+
+    } catch (err) {
+      UI.showToast(err.message, 'err');
+    }
   }
 
-  // Pede confirmação antes de excluir o post.
-  function confirmAndDelete(postId) {
+  //curica: Coloquei o endpoint para excluir um post, com a variavel do id // Modal para exclusao do post junto com a logica e o endpoint do bot
+  let postIdToDelete = null;  // ID do post que será excluído
+   
+  function openDeleteModal(postId) {
+    postIdToDelete = postId;
+    const modal = document.getElementById('deleteModalBackdrop');
+    if (modal) {
+      modal.classList.remove('hidden');
+    }
+  }
+    function closeDeleteModal() {
+    postIdToDelete = null;
+    const modal = document.getElementById('deleteModalBackdrop');
+    if (modal) {
+      modal.classList.add('hidden');
+     }
+  } 
+    async function executePostDeletion() {
+      if (!postIdToDelete) return;
+
+      const token = localStorage.getItem('token');
+      try {
+    const response = await fetch(`http://127.0.0.1:8080/api/posts/${postIdToDelete}`, {
+      method: 'DELETE',
+      headers: { ...Auth.headers() }
+    });
+   
+    if (!response.ok) throw new Error('Erro ao excluir o post');
+     closeDeleteModal();
+     await renderFeed();
+    await renderProfilePosts();
+    UI.showToast('Postagem excluída.', 'err');
+
+  } catch (err) {
+    UI.showToast(err.message, 'err');
+  }
+}
+
+// 5. Deixe os ouvintes de clique preparados (coloque isso no escopo global do arquivo)
+  document.getElementById('deleteModalCancelBtn')?.addEventListener('click', closeDeleteModal);
+  document.getElementById('deleteModalCloseBtn')?.addEventListener('click', closeDeleteModal);
+   document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
+
+  // Função para fechar o modal de comentário e restaurar o scroll via UI
+  function closeCommentModal() {
+    activeCommentPostId = null;
+    UI.closeCommentModal();
+  }
+  
+  // Listener do botão de fechar o modal de comentários
+  document.getElementById('closeCommentModalBtn')?.addEventListener('click', () => {
+  UI.closeCommentModal();
+});
+  async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
 
-    Storage.deletePost(postId);
-    renderFeed();
-    renderProfilePosts();
-    updateStats();
-    UI.showToast('Postagem excluída.', 'err');
+    try {
+      const response = await fetch(`http://127.0.0.1:8080/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {...Auth.headers()}
+      });
+
+      if (!response.ok) throw new Error('Erro ao excluir o post');
+
+      await renderFeed();
+      await renderProfilePosts();
+      UI.showToast('Postagem excluída.', 'err');
+
+    } catch (err) {
+      UI.showToast(err.message, 'err');
+    }
   }
 
 
@@ -316,13 +472,9 @@ const Posts = (() => {
     if (imgToolBtn)       imgToolBtn.classList.remove('has-image');
   }
 
-
+  
   // ── Contador de caracteres ───────────────────────────────────
 
-  // Atualiza o contador e muda a cor conforme o limite se aproxima.
-  // counterId → ID do elemento span que mostra o número
-  // inputEl   → o textarea monitorado
-  // maxLength → limite máximo de caracteres
   function updateCharCounter(counterId, inputEl, maxLength) {
     const counterEl = document.getElementById(counterId);
     if (!counterEl || !inputEl) return;
@@ -334,13 +486,155 @@ const Posts = (() => {
     if (remaining <= 20) counterEl.classList.add('danger');
     else if (remaining <= 80) counterEl.classList.add('warn');
   }
+    function renderExternalPosts(posts, containerId, emptyId) {
+    const container = document.getElementById(containerId);
+    const emptyEl   = document.getElementById(emptyId);
+ 
+    container.innerHTML = '';
+ 
+    if (!posts || posts.length === 0) {
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+ 
+    emptyEl.classList.add('hidden');
+    posts.forEach(post => container.appendChild(createPostCard(post)));
+  }
+  // ── Modal de comentários ─────────────────────────────────────
+  async function handleOpenPostModal(postId) {
+    activeCommentPostId = postId;
 
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
+        headers: { ...Auth.headers() }
+      });
 
+      if (!response.ok) throw new Error('Erro ao carregar post');
+
+      const { post, comentarios } = await response.json();
+
+      const originalPostContainer = document.getElementById('commentModalOriginalPost');
+      if (originalPostContainer) {
+        const autorImg = Security.safeImage(post.autorImg)
+          ? `<img src="${escapeHTML(post.autorImg)}" alt="Foto de ${escapeHTML(post.autorUsername)}"/>`
+          : escapeHTML(Profile.getInitials(post.autorUsername));
+
+        const imageHTML = Security.safeImage(post.mediaUrl)
+          ? `<div class="post-image"><img src="${escapeHTML(post.mediaUrl)}" alt="Imagem do post"/></div>`
+          : '';
+
+        originalPostContainer.innerHTML = `
+          <article class="post-card modal-post">
+            <div class="post-head">
+              <div class="post-ava">${autorImg}</div>
+              <div class="post-meta">
+                <div class="post-author">${escapeHTML(post.autorUsername)}</div>
+                <div class="post-date">${formatDate(post.dataCriacao)}</div>
+              </div>
+            </div>
+            <p class="post-text">${escapeHTML(post.content)}</p>
+            ${imageHTML}
+          </article>
+        `;
+      }
+
+      const repliesContainer = document.getElementById('commentModalRepliesList');
+      if (repliesContainer) {
+        repliesContainer.innerHTML = '';
+
+        if (!comentarios || comentarios.length === 0) {
+          repliesContainer.innerHTML = `<p class="comments-empty">Nenhuma resposta ainda. Seja o primeiro a comentar!</p>`;
+        } else {
+          comentarios.forEach(reply => repliesContainer.appendChild(createPostCard(reply)));
+        }
+      }
+
+      const commentFormAva = document.getElementById('commentFormAva');
+      if (commentFormAva) {
+      const profile = Storage.getProfile();
+          commentFormAva.innerHTML = '';
+
+         if (profile.avatarUrl) {
+         const img = document.createElement('img');
+         img.src = profile.avatarUrl;
+        img.alt = 'Seu avatar';
+    commentFormAva.appendChild(img);
+  } else {
+    commentFormAva.textContent = Profile.getInitials(profile.name || profile.username || 'U');
+  }
+}
+
+      UI.openCommentModal();
+
+    } catch (err) {
+      console.error('Erro ao abrir modal de post:', err);
+      UI.showToast('Erro ao carregar os comentários do post.', 'err');
+    }
+  }
+ 
+  // Authorization: Bearer. Trocado para credentials: 'include' + Csrf.headers(),
+async function handleCreateComment(conteudo) {
+  // ALTERAÇÃO 2 - Trocado activePostId por activeCommentPostId.
+  if (!activeCommentPostId || !conteudo.trim()) return;
+
+  try {
+    const response = await fetch(`http://localhost:8080/api/posts/${activeCommentPostId}/comentarios`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...Auth.headers()
+      },
+      body: JSON.stringify({ content: conteudo.trim() })
+    });
+
+    if (!response.ok) throw new Error('Erro ao enviar comentário');
+
+    const inputEl = document.getElementById('commentInput');
+    if (inputEl) inputEl.value = '';
+
+    // ALTERAÇÃO 2 - Trocado openCommentModal por handleOpenPostModal.
+    // openCommentModal não existe mais — foi substituída por handleOpenPostModal.
+    await handleOpenPostModal(activeCommentPostId);
+    await renderFeed();
+
+  } catch (err) {
+    console.error('Erro ao criar comentário:', err);
+    UI.showToast(err.message, 'err');
+  }
+}
+ 
+  async function handleLikeToggle(postId, buttonEl) {
+    const countEl = buttonEl.querySelector('.int-count');
+ 
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...Auth.headers()
+        }
+      });
+ 
+      if (!response.ok) throw new Error('Erro na requisição de curtida');
+ 
+      const data = await response.json();
+ 
+      buttonEl.classList.toggle('active', data.curtido);
+      if (countEl) countEl.textContent = data.total;
+ 
+    } catch (err) {
+      console.error('Erro ao curtir post:', err);
+    }
+  }
+ 
+ 
   // ── API pública ──────────────────────────────────────────────
-
+ 
   return {
     renderFeed,
     renderProfilePosts,
+    renderExternalPosts,
     updateStats,
     handlePublish,
     openEditModal,
@@ -348,6 +642,9 @@ const Posts = (() => {
     handleImageSelect,
     clearPendingImage,
     updateCharCounter,
+    handleOpenPostModal,
+    handleCreateComment,
+    handleLikeToggle,
   };
-
+ 
 })();

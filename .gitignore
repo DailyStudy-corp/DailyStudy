@@ -1,0 +1,5 @@
+.env
+app.jar
+app.zip
+app_extracted/
+.idea/

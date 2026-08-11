@@ -156,11 +156,15 @@
   background: rgba(28, 26, 23, 0.55);
   backdrop-filter: blur(6px);
   z-index: 500;
-  display: flex;
+  display: none;           /* oculto por padrão */
   align-items: center;
   justify-content: center;
   padding: 16px;
   animation: fadeIn 0.15s ease;
+}
+
+.modal-backdrop:not(.hidden) {
+  display: flex;
 }
 
 /* Card do modal */
@@ -385,4 +389,265 @@
   justify-content: flex-end;
   gap: var(--sp-sm);
   margin-top: 8px;
+}
+/* ── Modal de Comentários / Respostas*/
+
+.modal.modal-comments {
+  max-width: 560px;
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+  /* Limita a altura total do modal a 85% da tela */
+  max-height: 85vh;
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+}
+
+/* Cabeçalho fixo — não entra no scroll */
+.modal-comments .modal-head {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+
+.modal-comments .modal-head h3 {
+  font-family: var(--font-ui, inherit);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Área central — cresce para ocupar o espaço disponível e rola */
+.modal-comments-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  /* Scroll suave no iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Post original dentro da área rolável */
+.comment-modal-original-post {
+  padding: 16px 20px 0;
+  flex-shrink: 0;
+}
+
+/* Imagem dentro do post original não estoura o modal */
+.comment-modal-original-post .post-image img {
+  max-height: 280px;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* Divisor entre post original e respostas */
+.comment-modal-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 20px;
+  flex-shrink: 0;
+}
+
+/* Lista de respostas — sem altura fixa, cresce naturalmente */
+.comments-list {
+  padding: 0 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.comments-empty {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--ink-3);
+  font-size: 0.88rem;
+}
+
+.comment-item {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.comment-ava {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--bg-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.comment-author {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.comment-text {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.comment-time {
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+/* Formulário fixo na base — não entra no scroll */
+.comment-form {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+}
+
+.comment-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 4px 6px 4px 16px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.comment-input-wrap:focus-within {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37, 80, 232, 0.1);
+}
+
+.comment-input-wrap .comment-input {
+  flex: 1;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 0 !important;
+  font-family: var(--font-body, inherit);
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.comment-input-wrap .comment-input::placeholder {
+  color: var(--ink-3);
+}
+
+.comment-form .btn-primary {
+  padding: 8px 18px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Post original — sem borda, sem sombra, sem hover */
+#commentModalOriginalPost .post-card {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 16px 20px;
+  background: transparent;
+}
+
+#commentModalOriginalPost .post-card:hover {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Esconde os botões de editar/excluir no post original do modal */
+#commentModalOriginalPost .post-actions {
+  display: none;
+}
+
+/* Esconde o rodapé com timestamp e interações no post original */
+#commentModalOriginalPost .post-footer {
+  display: none;
+}
+
+/* Respostas — sem borda de card, apenas linha separadora entre elas */
+#commentModalRepliesList .post-card {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 0;
+  padding: 14px 20px;
+  background: transparent;
+}
+
+#commentModalRepliesList .post-card:hover {
+  border-color: transparent;
+  border-bottom-color: var(--border);
+  box-shadow: none;
+}
+
+#commentModalRepliesList .post-card:last-child {
+  border-bottom: none;
+}
+
+/* Esconde botões de editar/excluir nas respostas */
+#commentModalRepliesList .post-actions {
+  display: none;
+}
+
+/* ALTERAÇÃO 1 - Claude: Avatar do usuário logado no campo de resposta */
+.comment-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-form-ava {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
+
+.comment-form-ava img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-form-row .comment-input-wrap {
+  flex: 1;
 }

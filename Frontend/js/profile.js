@@ -60,55 +60,57 @@ const Profile = (() => {
   // ── Sincronização da UI ──────────────────────────────────────
 
   // Atualiza todos os elementos visuais com os dados atuais do perfil.
-  // Chamada sempre que o perfil muda (editar nome, trocar foto, etc.).
+  
   function syncUI() {
     const profile = Storage.getProfile();
+    if (!profile) return;
 
-    // Imagem no compose box
-    fillimg_perfil(
-      document.getElementById('composeAva'),
-      profile.name,
-      profile.img_perfil
-    );
+    // Alt 1 Isola o elemento do composebox
+     const composeAva = document.getElementById('composeAva');
+     if (composeAva) {
+        fillimg_perfil(composeAva, profile.name || profile.username, profile.img_perfil);
+      }
 
     // Avatar grande na aba de perfil
-    fillimg_perfil(
-      document.getElementById('profileAvaBig'),
-      profile.name,
-      profile.img_perfil
-    );
-
+    const profileAvaBig= document.getElementById('profileAvaBig');
+    if (profileAvaBig) {
+      fillimg_perfil(profileAvaBig, profile.name || profile.username, profile.img_perfil);
+    } 
+  
     // Nome, cargo e bio
     const nameEl = document.getElementById('pName');
     const bioEl  = document.getElementById('pBio');
-    if (nameEl) nameEl.textContent = profile.name;
+
+   // Alt 2 - Carrega o profile.username como fallback na hora de editar o form
+
+    if (nameEl) nameEl.textContent = profile.name || profile.username || '';
     if (bioEl)  bioEl.textContent  = profile.bio || '';
     
     // Sincroniza o cargo (p-role) na tela inicial puxando o objeto do perfil
     const roleEl = document.getElementById('pRole');
     if (roleEl) roleEl.textContent = profile.role || 'Estudante · Daily Study';
   
-    // Banner: mostra a imagem se existir, esconde se não existir
-    const banner_perfil = document.getElementById('banner_perfil');
-    if (banner_perfil) {
+    // Alt 3 - Nova logica para renderizar o banner.
+    const bannerZone = document.getElementById('bannerZone');
+    if (bannerZone) {
       if (profile.banner_perfil) {
-        banner_perfil.src = profile.banner_perfil;
-        banner_perfil.classList.remove('hidden');
+        // Aplica o Base64 direto como fundo do bannerZone
+        bannerZone.style.backgroundImage = `url('${profile.banner_perfil}')`;
+        bannerZone.style.backgroundSize = 'cover';
+        bannerZone.style.backgroundPosition = 'center';
       } else {
-        banner_perfil.src = '';
-        banner_perfil.classList.add('hidden');
-      }
-    }
-  }
-
-
+        // Se não tiver imagem no perfil, remove o fundo para manter o padrão do CSS
+        bannerZone.style.backgroundImage = 'none';  
+     }
+   } 
+  }      
   // ── Formulário de edição ─────────────────────────────────────
 
   // Abre o formulário preenchido com os dados atuais.
   function openEditForm() {
     const profile = Storage.getProfile();
 
-    document.getElementById('eName').value = profile.name;
+    document.getElementById('eName').value = profile.name || profile.username || '';
     document.getElementById('eBio').value  = profile.bio || '';
     
     // Carrega o cargo atual ou o valor padrão no campo de edição
@@ -129,11 +131,10 @@ const Profile = (() => {
     document.getElementById('btnEditP').style.display = '';
   }
 
-  // Valida e salva as alterações de nome e bio.
+  // Valida e salva as alterações de nome e bio. //ALTERACAO GUI 
   async function saveEditForm() {
     const name = document.getElementById('eName').value.trim();
     const bio  = document.getElementById('eBio').value.trim();
-    // Captura o valor digitado no input do cargo
     const role = document.getElementById('eRole') ? document.getElementById('eRole').value.trim() : '';
 
     if (!name) {
@@ -145,13 +146,11 @@ const Profile = (() => {
     UI.showToast('Salvando alterações…');
     
     try {
-      const token = localStorage.getItem('token');
-      // Adicionado await para esperar a resposta da API corretamente
-      const response = await fetch('http://localhost:8080/api/usuarios/me/perfil', {
+      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/perfil', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`, // Padronizado o 'Authorization' com 'A' maiúsculo
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...Auth.headers()
         },
         body: JSON.stringify({ 
           username: name,  
@@ -161,18 +160,28 @@ const Profile = (() => {
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao atualizar o perfil no servidor.');
+        const erroServidor = await response.json().catch(() => null);
+        throw new Error(erroServidor?.message || 'Falha ao atualizar o perfil no servidor.');
       }
 
-      Storage.patchProfile({ name, role, bio });
+      const data = await response.json().catch(() => null);
+
+      // Se o backend devolver um novo JWT com o username atualizado, atualizamos o Auth
+      if (data && data.token) {
+        Auth.setToken(data.token);
+      }
+
+      // Passamos 'username' junto com 'name' para sincronizar com o storage.js
+      Storage.patchProfile({ username: name, name, role, bio });
+      
       syncUI();
       closeEditForm();
 
-      // Re-renderiza posts para atualizar o nome do autor nos cards
-      Posts.renderFeed();
-      Posts.renderProfilePosts();
+      // Recarrega os feeds com await para garantir que tudo renderize em ordem
+      await Posts.renderFeed();
+      await Posts.renderProfilePosts();
 
-      UI.showToast('Perfil updated!', 'ok');
+      UI.showToast('Perfil atualizado!', 'ok');
 
     } catch (err) {
       console.error('Erro ao salvar o formulário:', err);
@@ -199,20 +208,19 @@ const Profile = (() => {
     //ALTERACAO 6 - CAPTURA DE IMAGEM E  PAYLOAD UNIFICADO PARA AVATAR E BANNER
     try {
       const dataUrl = await readFileAsDataUrl(file);
-      const token = localStorage.getItem('token');
       const currentProfile = Storage.getProfile();
            
-      // Monta o payload respeitando o record img perfil 
+      // alt 5 - Passou de ava e banner para - img perfil e banner_perfil
       const payload = {
-        img_perfil: type === 'avatar' ? dataUrl : currentProfile.img_perfil,
-        banner_perfil: type === 'banner' ? dataUrl : currentProfile.banner_perfil
+        img_perfil: type === 'img_perfil' ? dataUrl : (currentProfile.img_perfil || null),
+        banner_perfil: type === 'banner_perfil' ? dataUrl : (currentProfile.banner_perfil || null)
       };
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
-      const response = await fetch('http://localhost:8080/api/usuarios/me/img_perfil', {
+      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/img_perfil', {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...Auth.headers()
         },
         body: JSON.stringify(payload)
       });
@@ -220,11 +228,11 @@ const Profile = (() => {
       if (!response.ok) {
         throw new Error('Falha ao atualizar a imagem no servidor.');
       }
-      
-      if (type === 'avatar') {
+      //Alterado de avatar para img_perfil
+      if (type === 'img_perfil') {
         Storage.patchProfile({ img_perfil: dataUrl });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
-      } else {
+      } else if (type === 'banner_perfil') {
         Storage.patchProfile({ banner_perfil: dataUrl });
         UI.showToast('Banner updated! 🖼️', 'ok');
       }
@@ -236,6 +244,75 @@ const Profile = (() => {
       UI.showToast(err.message || 'Erro ao carregar a imagem.', 'err');
     }
   }
+
+  function setReadOnly(isReadOnly) {
+    const btnEditP = document.getElementById('btnEditP');
+    if(btnEditP) btnEditP.style.display = isReadOnly ? 'none' : '';
+
+    document.getElementById('profileAvaBig')?.classList.toggle('readOnly-ava', isReadOnly);
+    document.getElementById('bannerZone')?.classList.toggle('readOnly-banner', isReadOnly);
+  }
+
+  function openProfile(username) {
+    const myUsername = Storage.getProfile().username;
+  
+    UI.activateTab('profile');
+  
+    if (username === myUsername) {
+      syncUI();
+      setReadOnly(false);
+      Posts.renderProfilePosts();
+      return;
+    }
+  
+    loadProfileVisited(username);
+  }
+
+  async function loadProfileVisited(username) {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
+        {
+          headers: { ...Auth.headers() }
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error('Falha ao carregar o perfil do usuário.');
+      }
+  
+      const perfil = await response.json();
+      renderProfileVisited(perfil);
+  
+    } catch (err) {
+      console.error('Erro ao carregar perfil visitado:', err);
+      UI.showToast('Não foi possível carregar este perfil.', 'err');
+    }
+  }
+
+  function renderProfileVisited(perfil){
+    document.getElementById('pName').textContent = perfil.username;
+    document.getElementById('pRole').textContent = perfil.cargo || 'Estudante';
+    document.getElementById('pBio').textContent = perfil.bio || '';
+
+    fillimg_perfil(document.getElementById('profileAvaBig'), perfil.username, perfil.img_perfil);
+
+    const bannerZone = document.getElementById('bannerZone');
+    if (perfil.banner_perfil) {
+      bannerZone.style.backgroundImage = `url('${perfil.banner_perfil}')`;
+    bannerZone.style.backgroundSize = 'cover';
+    bannerZone.style.backgroundPosition = 'center';
+  } else {
+    bannerZone.style.backgroundImage = 'none';
+  }
+    const posts = perfil.posts || [];
+    Posts.renderExternalPosts(posts, 'profileFeed', 'profileEmpty');
+    Posts.updateStats(posts);
+    
+    setReadOnly(true);
+  }
+
+
 
 
   // ── API pública ──────────────────────────────────────────────
@@ -250,6 +327,7 @@ const Profile = (() => {
     closeEditForm,
     saveEditForm,
     handleImageUpload,
+    openProfile,
   };
 
 })();

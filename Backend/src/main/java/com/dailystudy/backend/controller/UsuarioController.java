@@ -1,15 +1,19 @@
 package com.dailystudy.backend.controller;
 
+import com.dailystudy.backend.service.TokenService;
 import com.dailystudy.backend.dto.*;
-import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Map;
 
 @RestController
@@ -18,6 +22,10 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final TokenService tokenService;
+
+    private static final String COOKIE_NAME = "access_token";
+    private static final Duration COOKIE_MAX_AGE = Duration.ofHours(2);
 
     @PostMapping("/registro") // Mapeia a requisicao HTTP para criar um novo usuario no banco de dados
     public ResponseEntity<String> registrar(@Valid @RequestBody UsuarioRegistro dto) {
@@ -29,8 +37,13 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login (@Valid @RequestBody LoginDTO dto) {
         String token = usuarioService.autenticar(dto);
-
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(){
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
@@ -54,14 +67,29 @@ public class UsuarioController {
     }
 
     @PutMapping("/me/perfil")
-    public ResponseEntity<Void> editarPerfil(@AuthenticationPrincipal Usuario usuarioLogado, @RequestBody DadosPerfil dto){
-        if (usuarioLogado == null){
-            return ResponseEntity.status(401).build();
-        }
+    public ResponseEntity<Map<String, String>> editarPerfil(
+        @AuthenticationPrincipal Usuario usuarioLogado,
+        @RequestBody DadosPerfil dto) {
 
-        usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
+    if (usuarioLogado == null) {
+        return ResponseEntity.status(401).build();
+    }
 
-        return ResponseEntity.noContent().build();
+    // Salva as alterações no banco
+    usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
+
+    // Busca o usuário atualizado para gerar o token com o username novo
+    Usuario usuarioAtualizado = usuarioService.buscarPorId(usuarioLogado.getId());
+
+    // Gera e retorna o novo token
+    String novoToken = tokenService.gerarToken(usuarioAtualizado);
+    return ResponseEntity.ok(Map.of("token", novoToken));
+
+    }
+
+    @GetMapping("/perfil/{username}")
+    public ResponseEntity<PerfilPublicoDTO> listarPostsPorUsuarios(@PathVariable String username){
+        return ResponseEntity.ok(usuarioService.buscarPerfilPublico(username));
     }
 
 }

@@ -61,6 +61,16 @@
       <span class="rail-tooltip">Perfil</span>
     </button>
 
+    <!--Botão Sair-->
+    <button class="rail-btn" id="btnLogout" aria-label="Sair">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span class="rail-tooltip">Sair</span>
+    </button>
+
   </nav>
 
   <!-- ── Coluna central (conteúdo das abas) ────────────────── -->
@@ -353,12 +363,19 @@
       Perfil
     </button>
 
+    <button class="bottom-btn" id="btnLogoutMobile" aria-label="Sair">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Sair
+    </button>
+
   </nav>
 
 
 </div><!-- /app-shell -->
-
-<!-- Area de modais e toasts-->
 
 <!-- Modal de edição de post -->
 <div class="modal-backdrop hidden" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -378,6 +395,65 @@
   </div>
 </div>
 
+
+  <div class="modal-backdrop hidden" id="deleteModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="deleteModalTitle">Excluir postagem?</h3>
+      <button class="modal-close-btn" id="deleteModalCloseBtn" aria-label="Fechar modal">X</button>
+    </div>
+    
+    <div class="modal-body" style="padding: var(--sp-md) 0; color: var(--ink-2); font-size: 0.95rem;">
+      <p>Esta ação não poderá ser desfeita e o post sumirá do seu feed de estudos.</p>
+    </div>
+    
+    <div class="modal-foot">
+      <div class="modal-actions">
+        <button class="btn-secondary" id="deleteModalCancelBtn">Cancelar</button>
+        <button class="btn-primary" id="deleteModalConfirmBtn" style="background-color: var(--danger, #d43f3f);">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Comentários / Respostas -->
+<div class="modal-backdrop hidden" id="commentModal" role="dialog" aria-modal="true" aria-labelledby="commentModalTitle">
+  <div class="modal modal-comments">
+ 
+    <div class="modal-head">
+      <h3 id="commentModalTitle">Respostas</h3>
+      <button class="modal-close-btn" id="closeCommentModalBtn" aria-label="Fechar modal">✕</button>
+    </div>
+ 
+    <div class="modal-comments-body">
+      <div id="commentModalOriginalPost" class="comment-modal-original-post"></div>
+      <div class="comment-modal-divider" aria-hidden="true"></div>
+      <div id="commentModalRepliesList" class="comments-list"></div>
+    </div>
+ 
+<form id="commentForm" class="comment-form">
+  <!-- ALTERAÇÃO 2 - Claude: Adicionado .comment-form-row para alinhar
+       o avatar do usuário logado ao lado do campo de resposta -->
+  <div class="comment-form-row">
+    <div class="comment-form-ava" id="commentFormAva"></div>
+    <div class="comment-input-wrap">
+      <input
+        type="text"
+        id="commentInput"
+        class="comment-input"
+        placeholder="Escreva sua resposta..."
+        maxlength="280"
+        required
+        autocomplete="off"
+      />
+      <button type="submit" class="btn-primary btn-sm" id="btnSubmitComment">Responder</button>
+    </div>
+  </div>
+</form>
+ 
+  </div>
+</div>
+
 <!-- Lightbox: imagem em tela cheia -->
 <div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Visualizador de imagem">
   <button class="lightbox-close" id="lightboxClose" aria-label="Fechar imagem">✕</button>
@@ -387,6 +463,8 @@
 <!-- Toast: notificação flutuante -->
 <div class="toast" id="toast" role="alert" aria-live="polite" aria-atomic="true"></div>
 
+<script src="../js/auth.js"></script>
+<script src="../js/security.js"></script>
 <script src="../js/storage.js"></script>
 <script src="../js/profile.js"></script>
 <script src="../js/posts.js"></script>

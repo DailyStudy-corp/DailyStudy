@@ -14,51 +14,44 @@
 // Adicionado 'async' para permitir o uso de 'await' na verificação de identidade antes da renderização.
 document.addEventListener('DOMContentLoaded', async () => {
 
-  // Resolve o problema de autenticação antes de renderizar a página.
-  const token = localStorage.getItem('token');
-  if (token) {
+  //Autenticacao validada no backend.
     try {
-       const response = await fetch('http://localhost:8080/api/usuarios/me', {
+       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        } 
+        headers: {...Auth.headers()}
       });
       if (response.ok) {
         const userData = await response.json();
         // Atualiza o perfil no armazenamento local com o nome vindo do banco.   --NOVA  ALTERACAO FT IMAGEM PERFIL E BANNER
         Storage.saveProfile({
-          name: userData.username,
+          username: userData.username,
+          name: userData.nome || userData.name || userData.username,
           role: userData.cargo || 'Estudante · Daily Study',
           bio: userData.bio || '',
-          avatarUrl: userData.img_perfil,   // Traduz snake_case para camelCase 
-          bannerUrl: userData.banner_perfil // Traduz snake_case para camelCase
+          img_perfil: userData.img_perfil,   // Traduz snake_case para camelCase 
+          banner_perfil: userData.banner_perfil // Traduz snake_case para camelCase
         });
 
       } else {
        //  Se o servidor recusar a requisição (ex: 401 Unauthorized por falta de cookies), limpamos o  rastro do token orfao  e redirecionamos pro login.
        console.warn("Sessão recusada pela Daily Study. Redirecionando...");
-        // ALTERACAO 7 - CORRECAO NA LIMPEAA DO ESTADO DE AUTH QND EXPIRA
-        localStorage.removeItem('token');
-        localStorage.removeItem('isAuthenticated'); 
         
         window.location.href = 'login.html'
+        return;
       } 
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
-        }
-  } else {
-    //- Se ele tentar entrar sem token, a sua entrada é barrada e ele é redirecionado pro login.
-    window.location.href = 'login.html';
-    return;
-  }
+
+      window.location.href = 'login.html'
+      return;
+    }
+  
   // ── Inicialização ────────────────────────────────────────────
   // Carrega os dados salvos e renderiza o estado inicial da página.
 
   Profile.syncUI();      // exibe nome, avatar e banner do perfil
-  Posts.renderFeed();    // exibe os posts salvos no feed
-  Posts.updateStats();   // exibe o total de posts e dias ativos
+  await Posts.renderFeed();    // exibe os posts salvos no feed
+  await Posts.renderProfilePosts();   // exibe o total de posts
 
 
   // ── Navegação entre abas ─────────────────────────────────────
@@ -66,12 +59,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Cobre: .rail-btn (desktop) e .bottom-btn (mobile).
 
   document.querySelectorAll('[data-tab]').forEach(btn => {
-    btn.addEventListener('click', () => UI.activateTab(btn.dataset.tab));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'profile') {
+        Profile.openProfile(Storage.getProfile().username);
+      } else {
+        UI.activateTab(btn.dataset.tab);
+      }
+    });
   });
-
+  
   // O avatar do compose também navega para o perfil ao ser clicado
   document.getElementById('composeAva').addEventListener('click', () => {
-    UI.activateTab('profile');
+    Profile.openProfile(Storage.getProfile().username);
   });
 
 
@@ -144,9 +143,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (event.key === 'Escape') {
       UI.closeModal();
       UI.closeLightbox();
+  
+  // MODIFICAÇÃO/ADIÇÃO: ESC também fecha o modal de comentários, se estiver aberto
+      const commentModal = document.getElementById('commentModal');
+      if (commentModal) commentModal.classList.add('hidden');
     }
   });
 
+   //  Modal de Comentários 
+   
+   // Envio de comentários via formulário
+  const commentForm = document.getElementById('commentForm');
+  if (commentForm) {
+    commentForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const input = document.getElementById('commentInput');
+      const conteudo = input ? input.value.trim() : '';
+
+      if (conteudo) {
+        Posts.handleCreateComment(conteudo);
+      }
+    });
+  }
+
+  // Fechar modal de comentários pelo botão de fechar (X) ou botão Cancelar
+  const closeCommentModalBtn = document.getElementById('closeCommentModalBtn');
+  if (closeCommentModalBtn) {
+    closeCommentModalBtn.addEventListener('click', () => {
+      const modal = document.getElementById('commentModal');
+      if (modal) modal.classList.add('hidden');
+    });
+  }
+
+  // Fechar ao clicar no fundo escuro (backdrop) do modal de comentários
+   const commentModal = document.getElementById('commentModal');
+   if (commentModal) {
+   commentModal.addEventListener('click', event => {
+    if (event.target === commentModal) {
+      UI.closeCommentModal();
+    }
+  });
+}
 
   // ── Lightbox ─────────────────────────────────────────────────
 
@@ -172,6 +209,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       Profile.saveEditForm();
     }
   });
+
+  // --Logout
+   async function handleLogout() {
+    try {
+      await fetch('http://127.0.0.1:8080/api/usuarios/logout', {
+        method: 'POST',
+        headers: { ...Auth.headers() }
+      });
+    } catch (err) {
+      // Mesmo se a chamada falhar (ex: backend offline), seguimos
+      // limpando o estado local e redirecionando — não faz sentido
+      // prender o usuário na página por causa disso.
+      console.error('Erro ao efetuar logout no servidor:', err);
+    }
+
+    // Limpa qualquer dado de perfil salvo localmente
+    localStorage.removeItem('ds_profile');
+    localStorage.removeItem('ds_posts');
+
+    window.location.href = 'login.html';
+  }
+
+  document.getElementById('btnLogout')?.addEventListener('click', handleLogout);
+  document.getElementById('btnLogoutMobile')?.addEventListener('click', handleLogout);
 
 
   // ── Upload de avatar ─────────────────────────────────────────
