@@ -2,7 +2,7 @@ services:
   nginx:
     build:
       context: .
-      dockerfile: nginx/Dockerfile
+      dockerfile: nginx/DockerFile
     volumes:      # esses são os caminhos das pastas e do container
       - ./Frontend:/usr/share/nginx/html:ro # ro significa read only
       - ./nginx/dev/nginx.conf:/etc/nginx/nginx.conf:ro
