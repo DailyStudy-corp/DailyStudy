@@ -146,7 +146,7 @@ const Profile = (() => {
     UI.showToast('Salvando alterações…');
     
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/perfil', {
+      const response = await fetch('/api/usuarios/me/perfil', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ const Profile = (() => {
         banner_perfil: type === 'banner_perfil' ? dataUrl : (currentProfile.banner_perfil || null)
       };
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
-      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/img_perfil', {
+      const response = await fetch('/api/usuarios/me/img_perfil', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -271,7 +271,7 @@ const Profile = (() => {
   async function loadProfileVisited(username) {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
+        `/api/usuarios/perfil/${encodeURIComponent(username)}`,
         {
           headers: { ...Auth.headers() }
         }

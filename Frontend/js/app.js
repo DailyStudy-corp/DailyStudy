@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   //Autenticacao validada no backend.
     try {
-       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
+       const response = await fetch('/api/usuarios/me', {
         method: 'GET',
         headers: {...Auth.headers()}
       });
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --Logout
    async function handleLogout() {
     try {
-      await fetch('http://127.0.0.1:8080/api/usuarios/logout', {
+      await fetch('/api/usuarios/logout', {
         method: 'POST',
         headers: { ...Auth.headers() }
       });
