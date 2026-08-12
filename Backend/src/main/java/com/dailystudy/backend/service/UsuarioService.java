@@ -75,7 +75,7 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
+    public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
     Usuario usuario = usuarioRepository.findById(id)
             .orElseThrow(() -> new UsernameNotFoundException("Usuario não encontrado"));
 

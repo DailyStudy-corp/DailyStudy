@@ -75,7 +75,7 @@ public class PostController {
     @PostMapping("/{id}/curtida")
     public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
         String username = authentication.getName();
-        return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
+        return ResponseEntity.ok(curtidaService.toggleCurtida(id, username));
     }
 
     @PostMapping("/{id}/comentarios")
