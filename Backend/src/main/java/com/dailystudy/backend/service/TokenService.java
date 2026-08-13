@@ -8,10 +8,8 @@ import com.dailystudy.backend.model.Usuario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.AlgorithmConstraints;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 public class TokenService {
@@ -47,6 +45,6 @@ public class TokenService {
     }
 
     private Instant gerarDataExpiracao() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+        return Instant.now().plus(Duration.ofHours(2));
     }
 }
