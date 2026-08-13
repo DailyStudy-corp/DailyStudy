@@ -37,7 +37,7 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> editarPost(@PathVariable String id, @RequestBody EditarPostDTO dto, Authentication authentication) {
+    public ResponseEntity<Post> editarPost(@Valid @PathVariable String id, @RequestBody EditarPostDTO dto, Authentication authentication) {
 
         if (!MediaValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
@@ -79,7 +79,7 @@ public class PostController {
     }
 
     @PostMapping("/{id}/comentarios")
-    public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
+    public ResponseEntity<Post> comentar(@Valid @PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
         String username = authentication.getName();
         Post comentario = postService.criarComentario(id, dto, username);
 
