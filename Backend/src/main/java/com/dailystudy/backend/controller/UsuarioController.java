@@ -4,9 +4,12 @@ import com.dailystudy.backend.service.TokenService;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
+import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,9 +56,13 @@ public class UsuarioController {
     }
 
     @PutMapping("/me/img_perfil")
-    public ResponseEntity<Void> uploadImagemPerfil(@AuthenticationPrincipal Usuario usuarioLogado, @RequestBody ImagemPerfil dto){
+    public ResponseEntity<Void> uploadImagemPerfil(@Valid @AuthenticationPrincipal Usuario usuarioLogado, @RequestBody ImagemPerfil dto){
         if (usuarioLogado == null){
             return ResponseEntity.status(401).build();
+        }
+
+        if (!MediaValidator.isSafeImage(dto.img_perfil())) {
+            return ResponseEntity.badRequest().build();
         }
 
         usuarioService.atualizarImgPerfil(usuarioLogado.getId(), dto);
