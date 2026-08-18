@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +24,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final AtividadeRepository atividadeRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ComentarioRepository comentarioRepository;
     private final CurtidaRepository curtidaRepository;
 
     public Post criarPost(PostCreateDTO dto, String username) {
@@ -97,16 +99,36 @@ public class PostService {
     }
 
     private List<PostFeedDTO> mapearFeedDTO(List<Post> posts){
+        if (posts.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> autorIds = posts.stream()
+                .map(Post::getAutorId)
+                .distinct()
+                .toList();
+
+        List<String> postIds = posts.stream()
+                .map(Post::getId)
+                .toList();
+
+        Map<String, Usuario> autoresPorUsername = usuarioRepository.findByUsernameIn(autorIds).stream()
+                .collect(Collectors.toMap(Usuario::getUsername, Function.identity()));
+
+        Map<String, Long> curtidasPorPost = curtidaRepository.countGroupedByPostId(postIds);
+        Map<String, Long> comentariosPorPost = postRepository.countGroupedByComentPostId(postIds);
+
         return posts.stream().map(post -> {
-            Usuario autor = usuarioRepository.findByUsername(post.getAutorId()).orElse(null);
-            String autorNome = autor != null ? autor.getUsername() : "Usuario removido";
+            Usuario autor = autoresPorUsername.get(post.getAutorId());
+            String autorNome = autor != null ? autor.getUsername() : "Usuário removido";
             String autorFoto = autor != null ? autor.getImg_perfil() : null;
 
-            long totalCurtidas = curtidaRepository.countByPostId(post.getId());
-            long totalComentarios = comentarioRepository.countByPostId(post.getId());
+            long totalCurtidas = curtidasPorPost.getOrDefault(post.getId(), 0L);
+            long totalComentarios = comentariosPorPost.getOrDefault(post.getId(), 0L);
 
             return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios);
         }).toList();
+
     }
 
     public PostDetalhesDTO buscarDetalhes(String id) {
