@@ -397,11 +397,11 @@
   width: 95%;
   display: flex;
   flex-direction: column;
-  /* Limita a altura total do modal a 85% da tela */
+  height: 85vh;
   max-height: 85vh;
   padding: 0 !important;
   overflow: hidden;
-  border-radius: var(--r-xl);
+  border-radius: var(--r-xl)
 }
 
 /* Cabeçalho fixo — não entra no scroll */
@@ -423,11 +423,11 @@
 /* Área central — cresce para ocupar o espaço disponível e rola */
 .modal-comments-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  /* Scroll suave no iOS */
   -webkit-overflow-scrolling: touch;
 }
 
@@ -445,20 +445,34 @@
 }
 
 /* Divisor entre post original e respostas */
+/* ALT 7 CLAUDE - Separador refinado com label "RESPOSTAS" centralizada
+   e linhas simétricas em ambos os lados */
 .comment-modal-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 14px 20px;
-  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  margin: 4px 0 0;
 }
 
-/* Lista de respostas — sem altura fixa, cresce naturalmente */
-.comments-list {
-  padding: 0 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.comment-modal-divider::before,
+.comment-modal-divider::after {
+  content: '';
   flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.comment-modal-divider-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+
 }
 
 .comments-empty {
@@ -569,35 +583,60 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+/* ── Estilo novo no modal de comentários */
 
-/* Post original — sem borda, sem sombra, sem hover */
+/* ALT 1  - Limita altura da imagem do post original para evitar
+   scroll duplo quando o post tem imagem grande */
+#commentModalOriginalPost .post-image img {
+  max-height: 300px;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* ALT 1 - Post original sem borda/sombra, com destaque visual
+   via fonte maior e fundo levemente diferenciado */
 #commentModalOriginalPost .post-card {
   border: none;
   box-shadow: none;
   border-radius: 0;
-  padding: 16px 20px;
+  padding: 16px 20px 12px;
   background: transparent;
 }
 
 #commentModalOriginalPost .post-card:hover {
   border-color: transparent;
   box-shadow: none;
+  background: transparent;
 }
 
-/* Esconde os botões de editar/excluir no post original do modal */
+/* ALT 1  - Texto do post original maior para dar destaque */
+#commentModalOriginalPost .post-text {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+/* ALT 1  - Nome do autor maior no post original */
+#commentModalOriginalPost .post-author {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ALT 2  - Esconde botões de editar/excluir e footer no post original */
 #commentModalOriginalPost .post-actions {
   display: none;
 }
 
-/* Esconde o rodapé com timestamp e interações no post original */
 #commentModalOriginalPost .post-footer {
   display: none;
 }
 
-/* Respostas — sem borda de card, apenas linha separadora entre elas */
+/* ALT 2  - Respostas: sem borda de card, apenas linha separadora
+   clara entre cada resposta */
 #commentModalRepliesList .post-card {
   border: none;
-  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   box-shadow: none;
   border-radius: 0;
   padding: 14px 20px;
@@ -606,20 +645,206 @@
 
 #commentModalRepliesList .post-card:hover {
   border-color: transparent;
-  border-bottom-color: var(--border);
+  border-top-color: var(--border);
   box-shadow: none;
+  background: var(--bg);
 }
 
-#commentModalRepliesList .post-card:last-child {
-  border-bottom: none;
+#commentModalRepliesList .post-card:first-child {
+  border-top: none;
 }
 
-/* Esconde botões de editar/excluir nas respostas */
+/* ALT 2  - Esconde botões de editar/excluir e footer nas respostas */
 #commentModalRepliesList .post-actions {
   display: none;
 }
 
-/* ALTERAÇÃO 1 - Claude: Avatar do usuário logado no campo de resposta */
+#commentModalRepliesList .post-footer {
+  display: none;
+}
+
+/* ALT 2 - Texto das respostas menor que o post original */
+#commentModalRepliesList .post-text {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+
+/* ALT 2  - Avatar menor nas respostas */
+#commentModalRepliesList .post-ava {
+  width: 34px;
+  height: 34px;
+  font-size: 0.68rem;
+}
+
+/* ── Campo de resposta com avatar ── */
+.comment-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-form-ava {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
+
+.comment-form-ava img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-form-row .comment-input-wrap {
+  flex: 1;
+}
+
+/* ── Estilo Twitter no modal de comentários ── */
+
+/* ALT 1 CLAUDE - Limita altura da imagem do post original */
+#commentModalOriginalPost .post-image img {
+  max-height: 300px;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* ALT 7 CLAUDE - Post original: fundo branco, padding generoso, sem borda */
+#commentModalOriginalPost {
+  background: var(--surface);
+  border-radius: 0;
+  padding-bottom: 0;
+}
+
+#commentModalOriginalPost .post-card {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 20px 24px 16px;
+  background: transparent;
+}
+
+#commentModalOriginalPost .post-card:hover {
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+}
+
+#commentModalOriginalPost .post-text {
+  font-size: 1.08rem;
+  line-height: 1.78;
+  color: var(--ink);
+  font-weight: 400;
+}
+
+#commentModalOriginalPost .post-author {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+#commentModalOriginalPost .post-actions {
+  display: none;
+}
+
+#commentModalOriginalPost .post-footer {
+  display: none;
+}
+
+/* ALT 7 CLAUDE - Separador refinado com label "RESPOSTAS" centralizada
+   e linhas simétricas em ambos os lados via flex */
+.comment-modal-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  margin: 4px 0 0;
+}
+
+.comment-modal-divider::before,
+.comment-modal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.comment-modal-divider-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ALT 7 CLAUDE - Respostas com separador sutil e hierarquia visual secundária */
+#commentModalRepliesList .post-card {
+  border: none;
+  border-top: 1px solid rgba(227, 224, 216, 0.7);
+  box-shadow: none;
+  border-radius: 0;
+  padding: 16px 24px;
+  background: transparent;
+  transition: background var(--transition);
+}
+
+#commentModalRepliesList .post-card:hover {
+  border-color: transparent;
+  border-top-color: rgba(227, 224, 216, 0.7);
+  box-shadow: none;
+  background: var(--bg);
+}
+
+#commentModalRepliesList .post-card:first-child {
+  border-top: none;
+}
+
+#commentModalRepliesList .post-actions {
+  display: none;
+}
+
+#commentModalRepliesList .post-footer {
+  display: none;
+}
+
+#commentModalRepliesList .post-text {
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+#commentModalRepliesList .post-ava {
+  width: 34px;
+  height: 34px;
+  font-size: 0.68rem;
+}
+
+#commentModalRepliesList .post-author {
+  font-size: 0.88rem;
+}
+
+/* ALT 5 CLAUDE - Remove overflow do #commentModalRepliesList para eliminar
+   o scroll duplo. O scroll fica apenas no .modal-comments-body pai. */
+#commentModalRepliesList.comments-list {
+  overflow: visible;
+  max-height: none;
+  height: auto;
+  flex: none;
+  padding-top: 8px;
+}
+
+/* ALT 1 CLAUDE - Avatar do usuário logado no campo de resposta */
 .comment-form-row {
   display: flex;
   align-items: center;
