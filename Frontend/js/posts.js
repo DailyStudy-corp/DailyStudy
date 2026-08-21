@@ -505,7 +505,7 @@ const Posts = (() => {
     activeCommentPostId = postId;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
+      const response = await fetch(`/api/posts/${postId}/detalhes`, {
         headers: { ...Auth.headers() }
       });
 
@@ -549,22 +549,36 @@ const Posts = (() => {
         }
       }
 
-      const commentFormAva = document.getElementById('commentFormAva');
-      if (commentFormAva) {
-      const profile = Storage.getProfile();
-          commentFormAva.innerHTML = '';
+const commentFormAva = document.getElementById('commentFormAva');
+if (commentFormAva) {
+  commentFormAva.innerHTML = '';
 
-         if (profile.avatarUrl) {
-         const img = document.createElement('img');
-         img.src = profile.avatarUrl;
+  try {
+    const meResponse = await fetch('/api/usuarios/me', {
+      headers: { ...Auth.headers() }
+    });
+
+    if (meResponse.ok) {
+      const me = await meResponse.json();
+
+      if (me.img_perfil) {
+        const img = document.createElement('img');
+        img.src = me.img_perfil;
         img.alt = 'Seu avatar';
-    commentFormAva.appendChild(img);
-  } else {
+        commentFormAva.appendChild(img);
+      } else {
+        const initials = Profile.getInitials(me.username || me.name || 'U');
+        commentFormAva.textContent = initials;
+      }
+    }
+  } catch {
+    // fallback para iniciais se a requisição falhar
+    const profile = Storage.getProfile();
     commentFormAva.textContent = Profile.getInitials(profile.name || profile.username || 'U');
   }
 }
 
-      UI.openCommentModal();
+UI.openCommentModal();
 
     } catch (err) {
       console.error('Erro ao abrir modal de post:', err);
