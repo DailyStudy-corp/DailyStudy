@@ -505,7 +505,7 @@ const Posts = (() => {
     activeCommentPostId = postId;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
+      const response = await fetch(`/api/posts/${postId}/detalhes`, {
         headers: { ...Auth.headers() }
       });
 
@@ -554,7 +554,7 @@ if (commentFormAva) {
   commentFormAva.innerHTML = '';
 
   try {
-    const meResponse = await fetch('http://localhost:8080/api/usuarios/me', {
+    const meResponse = await fetch('/api/usuarios/me', {
       headers: { ...Auth.headers() }
     });
 
