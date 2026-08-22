@@ -72,11 +72,11 @@ public class PostController {
         return ResponseEntity.ok(postService.listarFeedAutor(username));
     }
 
-    @PostMapping("/{id}/curtida")
-    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
-        String username = authentication.getName();
-        return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
-    }
+      @PostMapping("/{id}/curtida")
+     public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
+    String username = authentication.getName();
+    return ResponseEntity.ok(curtidaService.toggleCurtida(id, username));
+}
 
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
