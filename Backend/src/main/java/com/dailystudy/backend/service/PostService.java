@@ -21,7 +21,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final AtividadeRepository atividadeRepository;
     private final UsuarioRepository usuarioRepository;
-    private final ComentarioRepository comentarioRepository;
     private final CurtidaRepository curtidaRepository;
 
     public Post criarPost(PostCreateDTO dto, String username) {
@@ -103,7 +102,7 @@ public class PostService {
             String autorFoto = autor != null ? autor.getImg_perfil() : null;
 
             long totalCurtidas = curtidaRepository.countByPostId(post.getId());
-            long totalComentarios = comentarioRepository.countByPostId(post.getId());
+            long totalComentarios = postRepository.countByComentPostId(post.getId());
 
             return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios);
         }).toList();
