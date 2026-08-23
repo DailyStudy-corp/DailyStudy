@@ -9,5 +9,5 @@ public interface CurtidaRepository extends MongoRepository<Curtida, String>, Cur
 
     long countByPostId(String postId);
 
-    Optional<Curtida> findByPostIdAndAutorId(String postId, String autorId);
+    Optional<Curtida> findByPostIdAndAutorId(String postId, Long autorId);
 }

@@ -26,23 +26,23 @@ public class PostService {
     private final UsuarioRepository usuarioRepository;
     private final CurtidaRepository curtidaRepository;
 
-    public Post criarPost(PostCreateDTO dto, String username) {
+    public Post criarPost(PostCreateDTO dto, Long autorId) {
         Post post = new Post();
         post.setId(null);
         post.setContent(dto.content());
         post.setMediaUrl(dto.mediaUrl());
-        post.setAutorId(username);
+        post.setAutorId(autorId);
         post.setDataCriacao(LocalDateTime.now());
 
         return postRepository.save(post);
     }
 
-    public Post editarPost(String id, EditarPostDTO dto, String username){
+    public Post editarPost(String id, EditarPostDTO dto, Long autorId){
 
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        if(!post.getAutorId().equals(username)){
+        if(!post.getAutorId().equals(autorId)){
             throw new RuntimeException("Não pode editar esse post");
         }
 
@@ -53,11 +53,11 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public void deletarPost(String id, String username){
+    public void deletarPost(String id, Long autorId){
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        if (!post.getAutorId().equals(username)){
+        if (!post.getAutorId().equals(autorId)){
             throw new RuntimeException("Não pode deletar esse post");
         }
 
@@ -70,13 +70,13 @@ public class PostService {
         return mapearFeedDTO(posts);
     }
 
-    public List<PostFeedDTO> listarFeedAutor(String username){
-        List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(username);
+    public List<PostFeedDTO> listarFeedAutor(Long autorId){
+        List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(autorId);
 
         return mapearFeedDTO(posts);
     }
 
-    public Post criarComentario(String comentPostId, ComentarioDTO dto, String username){
+    public Post criarComentario(String comentPostId, ComentarioDTO dto, Long autorId){
     postRepository.findById(comentPostId)
             .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
@@ -87,7 +87,7 @@ public class PostService {
     comentario.setComentPostId(comentPostId);
     // ALTERAÇÃO 2 - Claude: Adicionado setAutorId — estava faltando,
     // causando autor nulo nos comentários e exibindo "Usuario removido" na tela.
-    comentario.setAutorId(username);
+    comentario.setAutorId(autorId);
 
     return postRepository.save(comentario);
     }
@@ -103,7 +103,7 @@ public class PostService {
             return List.of();
         }
 
-        List<String> autorIds = posts.stream()
+        List<Long> autorIds = posts.stream()
                 .map(Post::getAutorId)
                 .distinct()
                 .toList();
@@ -112,14 +112,14 @@ public class PostService {
                 .map(Post::getId)
                 .toList();
 
-        Map<String, Usuario> autoresPorUsername = usuarioRepository.findByUsernameIn(autorIds).stream()
-                .collect(Collectors.toMap(Usuario::getUsername, Function.identity()));
+        Map<Long, Usuario> autoresPorId = usuarioRepository.findAllById(autorIds).stream()
+                .collect(Collectors.toMap(Usuario::getId, Function.identity()));
 
         Map<String, Long> curtidasPorPost = curtidaRepository.countGroupedByPostId(postIds);
         Map<String, Long> comentariosPorPost = postRepository.countGroupedByComentPostId(postIds);
 
         return posts.stream().map(post -> {
-            Usuario autor = autoresPorUsername.get(post.getAutorId());
+            Usuario autor = autoresPorId.get(post.getAutorId());
             String autorNome = autor != null ? autor.getUsername() : "Usuário removido";
             String autorFoto = autor != null ? autor.getImg_perfil() : null;
 

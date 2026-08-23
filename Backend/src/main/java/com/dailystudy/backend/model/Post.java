@@ -21,7 +21,7 @@ public class Post {
     private String visibility;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataEdicao;
-    private String autorId;
+    private Long autorId;
 
     private String comentPostId;
 }
