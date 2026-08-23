@@ -9,11 +9,9 @@ public interface PostRepository extends MongoRepository<Post, String>, PostRepos
     // Ordena os posts por data de criacao
     List<Post> findByComentPostIdIsNullOrderByDataCriacaoDesc();
 
-    List<Post> findByAutorIdOrderByDataCriacaoDesc(String autorId);
+    List<Post> findByAutorIdOrderByDataCriacaoDesc(Long autorId);
 
     List<Post> findByComentPostIdOrderByDataCriacaoDesc(String comentPostId);
-
-    List<Post> findByAutorId(String autorId);
 
     long countByComentPostId(String comentPostId);
 }

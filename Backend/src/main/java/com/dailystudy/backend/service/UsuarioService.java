@@ -27,8 +27,6 @@ public class UsuarioService {
 
     private final PostService postService;
 
-    private final PostRepository postRepository;
-
     public void registroUsuario(UsuarioRegistro dto) {
 
         if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -84,23 +82,11 @@ public class UsuarioService {
         throw new UsuarioException("Este nome de usuário já está em uso");
     }
 
-    // ALTERAÇÃO 2  Guarda o username antigo antes de atualizar,
-    // para localizar os posts que precisam ser atualizados.
-    String usernameAntigo = usuario.getUsername();
-
     usuario.setUsername(dto.username());
     usuario.setCargo(dto.cargo());
     usuario.setBio(dto.bio());
 
     usuarioRepository.save(usuario);
-
-    // ALTERAÇÃO 2 -  Se o username mudou, atualiza o autorId de todos
-    // os posts do usuário para o novo username, evitando "Usuario removido" no feed.
-    if (!usernameAntigo.equals(dto.username())) {
-        List<Post> postsDoAutor = postRepository.findByAutorId(usernameAntigo);
-        postsDoAutor.forEach(post -> post.setAutorId(dto.username()));
-        postRepository.saveAll(postsDoAutor);
-    }
 
     }
 
@@ -108,7 +94,7 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
-        List<PostFeedDTO> posts = postService.listarFeedAutor(username);
+        List<PostFeedDTO> posts = postService.listarFeedAutor(usuario.getId());
 
         return new PerfilPublicoDTO(
                 usuario.getUsername(),

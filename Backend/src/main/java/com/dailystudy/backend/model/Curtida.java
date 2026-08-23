@@ -17,7 +17,7 @@ public class Curtida {
     @Id
     private String id;
 
-    private String autorId;
+    private Long autorId;
     private String postId;
     private LocalDateTime dataCriacao;
 }

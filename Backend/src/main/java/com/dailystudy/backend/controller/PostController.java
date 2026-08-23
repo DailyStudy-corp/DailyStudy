@@ -2,6 +2,7 @@ package com.dailystudy.backend.controller;
 
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Post;
+import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
 import com.dailystudy.backend.util.MediaValidator;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,36 +26,33 @@ public class PostController {
     private final CurtidaService curtidaService;
 
     @PostMapping
-    public ResponseEntity<Post> postar(@Valid @RequestBody PostCreateDTO dto, Authentication authentication) {
+    public ResponseEntity<Post> postar(@Valid @RequestBody PostCreateDTO dto, @AuthenticationPrincipal Usuario usuarioLogado) {
 
         if (!MediaValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
         }
 
-        String username = authentication.getName();
-        Post novoPost = postService.criarPost(dto, username);
+        Post novoPost = postService.criarPost(dto, usuarioLogado.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(novoPost);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> editarPost(@Valid @PathVariable String id, @RequestBody EditarPostDTO dto, Authentication authentication) {
+    public ResponseEntity<Post> editarPost(@Valid @PathVariable String id, @RequestBody EditarPostDTO dto, @AuthenticationPrincipal Usuario usuarioLogado) {
 
         if (!MediaValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
         }
 
-        String username = authentication.getName();
-        Post post = postService.editarPost(id, dto, username);
+        Post post = postService.editarPost(id, dto, usuarioLogado.getId());
 
         return ResponseEntity.ok(post);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarPost(@PathVariable String id, Authentication authentication) {
+    public ResponseEntity<Void> deletarPost(@PathVariable String id, @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        String username = authentication.getName();
-        postService.deletarPost(id, username);
+        postService.deletarPost(id, usuarioLogado.getId());
 
         return ResponseEntity.noContent().build();
     }
@@ -65,23 +64,19 @@ public class PostController {
 
 
     @GetMapping("/mine")
-    public ResponseEntity<List<PostFeedDTO>> listarFeedAutor(Authentication authentication) {
+    public ResponseEntity<List<PostFeedDTO>> listarFeedAutor(@AuthenticationPrincipal Usuario usuarioLogado) {
 
-        String username = authentication.getName();
-
-        return ResponseEntity.ok(postService.listarFeedAutor(username));
+        return ResponseEntity.ok(postService.listarFeedAutor(usuarioLogado.getId()));
     }
 
     @PostMapping("/{id}/curtida")
-    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
-        String username = authentication.getName();
-        return ResponseEntity.ok(curtidaService.toggleCurtida(id, username));
+    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, @AuthenticationPrincipal Usuario usuarioLogado){
+         return ResponseEntity.ok(curtidaService.toggleCurtida(id, usuarioLogado.getId()));
     }
 
     @PostMapping("/{id}/comentarios")
-    public ResponseEntity<Post> comentar(@Valid @PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
-        String username = authentication.getName();
-        Post comentario = postService.criarComentario(id, dto, username);
+    public ResponseEntity<Post> comentar(@Valid @PathVariable String id, @RequestBody ComentarioDTO dto, @AuthenticationPrincipal Usuario usuarioLogado){
+        Post comentario = postService.criarComentario(id, dto, usuarioLogado.getId());
 
         return ResponseEntity.ok(comentario);
     }
