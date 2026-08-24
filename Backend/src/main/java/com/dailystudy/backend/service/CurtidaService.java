@@ -4,6 +4,7 @@ import com.dailystudy.backend.dto.CurtidaDTO;
 import com.dailystudy.backend.model.Curtida;
 import com.dailystudy.backend.repository.CurtidaRepository;
 import com.dailystudy.backend.repository.PostRepository;
+import com.mongodb.DuplicateKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +29,13 @@ public class CurtidaService {
             curtidaRepository.delete(curtidaExistente.get());
             curtido = false;
         } else {
-            Curtida novaCurtida = new Curtida(null, autorId, postId, LocalDateTime.now());
-            curtidaRepository.save(novaCurtida);
-            curtido = true;
+            try {
+                Curtida novaCurtida = new Curtida(null, autorId, postId, LocalDateTime.now());
+                curtidaRepository.save(novaCurtida);
+                curtido = true;
+            } catch (DuplicateKeyException e) {
+                curtido = true;
+            }
         }
 
         long total = curtidaRepository.countByPostId(postId);
