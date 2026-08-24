@@ -4,12 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 import java.awt.*;
 import java.time.LocalDateTime;
 
 @Document(collection = "posts")
+@CompoundIndex(name = "autorId_dataCriacao_idx", def = "{'autorId': 1, 'dataCriacao': -1}")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
