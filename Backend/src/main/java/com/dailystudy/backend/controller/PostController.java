@@ -7,6 +7,7 @@ import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
 import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,5 +91,10 @@ public class PostController {
     public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id) {
         PostDetalhesDTO detalhes = postService.buscarDetalhes(id);
         return ResponseEntity.ok(detalhes);
+    }
+
+    @GetMapping
+    public ResponseEntity<FeedPageDTO> listarPosts(@RequestParam(required = false) String cursor, @RequestParam(defaultValue = "20") @Max(50) int limit) {
+        return ResponseEntity.ok(postService.listarFeedCursor(cursor, limit));
     }
 }

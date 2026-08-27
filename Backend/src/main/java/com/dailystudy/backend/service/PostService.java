@@ -1,13 +1,10 @@
 package com.dailystudy.backend.service;
 
-import com.dailystudy.backend.dto.PostDetalhesDTO;
-import com.dailystudy.backend.dto.ComentarioDTO;
-import com.dailystudy.backend.dto.EditarPostDTO;
-import com.dailystudy.backend.dto.PostCreateDTO;
-import com.dailystudy.backend.dto.PostFeedDTO;
+import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.*;
+import com.dailystudy.backend.util.CursorCodec;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -139,5 +136,27 @@ public class PostService {
         List<PostFeedDTO> comentariosDTO = listarComentarios(id);
 
         return new PostDetalhesDTO(postDTO, comentariosDTO);
+    }
+
+    public FeedPageDTO listarFeedCursor(String cursorCodificado, int limit) {
+        var cursor = CursorCodec.decode(cursorCodificado);
+
+        List<Post> posts = postRepository.ordenarFeedCursor(
+                cursor != null ? cursor.dataCriacao() : null,
+                cursor != null ? cursor.id() : null,
+                limit
+        );
+
+        boolean hasMore = posts.size() > limit;
+        List<Post> pagina = hasMore ? posts.subList(0, limit) : posts;
+        List<PostFeedDTO> dtos = mapearFeedDTO(pagina);
+
+        String nextCursor = null;
+        if (hasMore) {
+            Post ultimo = pagina.get(pagina.size() - 1);
+            nextCursor = CursorCodec.encode(ultimo.getDataCriacao(), ultimo.getId());
+        }
+
+        return new FeedPageDTO(dtos, nextCursor, hasMore);
     }
 }

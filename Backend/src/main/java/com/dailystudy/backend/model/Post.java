@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Document(collection = "posts")
 @CompoundIndex(name = "autorId_dataCriacao_idx", def = "{'autorId': 1, 'dataCriacao': -1}")
+@CompoundIndex(name = "feed_cursor_idx", def = "{'comentPostId': 1, 'dataCriacao': -1, '_id': -1}")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
