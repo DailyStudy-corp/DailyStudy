@@ -84,7 +84,7 @@ public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
         throw new UsuarioException("Este nome de usuário já está em uso");
     }
 
-    // ALTERAÇÃO 2  Guarda o username antigo antes de atualizar,
+    // ALTERAÇÃO   Guarda o username antigo antes de atualizar,
     // para localizar os posts que precisam ser atualizados.
     String usernameAntigo = usuario.getUsername();
 
@@ -94,7 +94,7 @@ public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
 
     usuarioRepository.save(usuario);
 
-    // ALTERAÇÃO 2 -  Se o username mudou, atualiza o autorId de todos
+    // ALTERAÇÃO  -  Se o username mudou, atualiza o autorId de todos
     // os posts do usuário para o novo username, evitando "Usuario removido" no feed.
     if (!usernameAntigo.equals(dto.username())) {
         List<Post> postsDoAutor = postRepository.findByAutorId(usernameAntigo);
@@ -108,7 +108,7 @@ public void atualizarDadosPerfil(Long id, DadosPerfil dto) {
         Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
-        List<PostFeedDTO> posts = postService.listarFeedAutor(username);
+        List<PostFeedDTO> posts = postService.listarFeedAutor(username, null);
 
         return new PerfilPublicoDTO(
                 usuario.getUsername(),

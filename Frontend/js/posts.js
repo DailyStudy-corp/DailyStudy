@@ -133,7 +133,6 @@ const Posts = (() => {
 </div>
      `;
 
-    
     card.addEventListener('click', event => {
         const button = event.target.closest('[data-action]');
   // ALTERAÇÃO 2 - Se clicar fora de qualquer botão de ação,
@@ -553,7 +552,7 @@ if (commentFormAva) {
   commentFormAva.innerHTML = '';
 
   try {
-    const meResponse = await fetch('http://localhost:8080/api/usuarios/me', {
+    const meResponse = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
       headers: { ...Auth.headers() }
     });
 
@@ -591,7 +590,7 @@ async function handleCreateComment(conteudo) {
   if (!activeCommentPostId || !conteudo.trim()) return;
 
   try {
-    const response = await fetch(`http://localhost:8080/api/posts/${activeCommentPostId}/comentarios`, {
+     const response = await fetch(`http://127.0.0.1:8080/api/posts/${activeCommentPostId}/comentarios`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -620,7 +619,7 @@ async function handleCreateComment(conteudo) {
     const countEl = buttonEl.querySelector('.int-count');
  
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/curtida`, {
+      const response = await fetch(`http://127.0.0.1:8080/api/posts/${postId}/curtida`, {
         method: 'POST',
         credentials: 'include',
         headers: {
