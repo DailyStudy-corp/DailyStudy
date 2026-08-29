@@ -511,29 +511,15 @@ const Posts = (() => {
 
       const { post, comentarios } = await response.json();
 
-      const originalPostContainer = document.getElementById('commentModalOriginalPost');
+            const originalPostContainer = document.getElementById('commentModalOriginalPost');
       if (originalPostContainer) {
-        const autorImg = Security.safeImage(post.autorImg)
-          ? `<img src="${escapeHTML(post.autorImg)}" alt="Foto de ${escapeHTML(post.autorUsername)}"/>`
-          : escapeHTML(Profile.getInitials(post.autorUsername));
-
-        const imageHTML = Security.safeImage(post.mediaUrl)
-          ? `<div class="post-image"><img src="${escapeHTML(post.mediaUrl)}" alt="Imagem do post"/></div>`
-          : '';
-
-        originalPostContainer.innerHTML = `
-          <article class="post-card modal-post">
-            <div class="post-head">
-              <div class="post-ava">${autorImg}</div>
-              <div class="post-meta">
-                <div class="post-author">${escapeHTML(post.autorUsername)}</div>
-                <div class="post-date">${formatDate(post.dataCriacao)}</div>
-              </div>
-            </div>
-            <p class="post-text">${escapeHTML(post.content)}</p>
-            ${imageHTML}
-          </article>
-        `;
+        // ALT 11 CLAUDE - Reutiliza createPostCard() (mesma função usada no feed e nas
+        // respostas) em vez de montar HTML manual, que nunca incluía o footer com
+        // likes/comentários. Evita lógica duplicada e garante consistência visual.
+        originalPostContainer.innerHTML = '';
+        const originalCardEl = createPostCard(post);
+        originalCardEl.classList.add('modal-post');
+        originalPostContainer.appendChild(originalCardEl);
       }
 
       const repliesContainer = document.getElementById('commentModalRepliesList');

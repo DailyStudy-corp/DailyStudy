@@ -934,3 +934,10 @@
 .comment-form-row .comment-input-wrap {
   flex: 1;
 }
+#commentModalOriginalPost .post-footer,
+#commentModalRepliesList .post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
