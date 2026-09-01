@@ -18,6 +18,7 @@ const Posts = (() => {
   let editingPostId = null;
   let pendingImageUrl = null;
   let activeCommentPostId = null;
+  let commentModalHistory = []; // Histórico de posts abertos no modal de comentários 
  
   // ── Helpers ──────────────────────────────────────────────────
 
@@ -394,8 +395,20 @@ const Posts = (() => {
    document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
 
   // Função para fechar o modal de comentário e restaurar o scroll via UI
+   // ALT 15 - Volta para o post anterior da pilha de navegação
+  
+   function handleBackCommentModal() {
+    const previousId = commentModalHistory.pop();
+    if (previousId) {
+      handleOpenPostModal(previousId, false);
+    }
+  }
+
+  // Função para fechar o modal de comentário e restaurar o scroll via UI
   function closeCommentModal() {
     activeCommentPostId = null;
+    // ALT  - Limpa o histórico de navegação ao fechar o modal
+    commentModalHistory = [];
     UI.closeCommentModal();
   }
   
@@ -403,6 +416,11 @@ const Posts = (() => {
   document.getElementById('closeCommentModalBtn')?.addEventListener('click', () => {
   UI.closeCommentModal();
 });
+
+  document.getElementById('commentModalBackBtn')?.addEventListener('click', () => {
+    handleBackCommentModal();
+  });
+  
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
@@ -499,8 +517,14 @@ const Posts = (() => {
     posts.forEach(post => container.appendChild(createPostCard(post)));
   }
   // ── Modal de comentários ─────────────────────────────────────
-  async function handleOpenPostModal(postId) {
-    activeCommentPostId = postId;
+  async function handleOpenPostModal(postId, pushToHistory = true) {
+  if (pushToHistory && activeCommentPostId && activeCommentPostId !== postId) {
+    commentModalHistory.push(activeCommentPostId);
+  }
+  activeCommentPostId = postId;
+   
+  const backBtn = document.getElementById('commentModalBackBtn');
+    if (backBtn) backBtn.classList.toggle('hidden', commentModalHistory.length === 0);
 
     try {
       const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
