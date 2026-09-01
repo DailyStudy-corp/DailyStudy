@@ -419,19 +419,17 @@
 <!-- Modal de Comentários / Respostas -->
 <div class="modal-backdrop hidden" id="commentModal" role="dialog" aria-modal="true" aria-labelledby="commentModalTitle">
   <div class="modal modal-comments">
- 
-    <div class="modal-head">
+     <div class="modal-head">
       
-      <!-- Botao de voltar -->
-    <button class = "modal-close-btn hidden" id="closeCommentModalBtn" aria-label="Voltar">✕</button>  
-     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
-
-      <h3 id="commentModalTitle">Respostas</h3>
-      <button class="modal-close-btn" id="closeCommentModalBtn" aria-label="Fechar modal">✕</button>
-    </div>
+   <button class="modal-close-btn hidden" id="commentModalBackBtn" aria-label="Voltar">
+   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"/>
+    <polyline points="12 19 5 12 12 5"/>
+    </svg>
+  </button>
+  <h3 id="commentModalTitle">Respostas</h3>
+  <button class="modal-close-btn" id="closeCommentModalBtn" aria-label="Fechar modal">✕</button>
+  </div>
  
     <div class="modal-comments-body">
       <div id="commentModalOriginalPost" class="comment-modal-original-post"></div>
