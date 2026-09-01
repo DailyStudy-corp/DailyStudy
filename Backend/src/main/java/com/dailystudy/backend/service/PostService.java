@@ -5,7 +5,6 @@ import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.*;
 import com.dailystudy.backend.util.CursorCodec;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
