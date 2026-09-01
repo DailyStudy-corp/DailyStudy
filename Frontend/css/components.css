@@ -644,24 +644,46 @@
 }
 
 /* ALT 9 CLAUDE - Botões de like e comentário nas respostas mais compactos */
+#commentModalRepliesList .post-interactions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
 #commentModalRepliesList .action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 0.78rem;
-  gap: 4px;
-  padding: 4px 6px;
+  font-weight: 500;
   color: var(--ink-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--r-sm);
+  transition: color var(--transition), background var(--transition);
 }
 
 #commentModalRepliesList .action-btn svg {
   width: 14px;
   height: 14px;
+  flex-shrink: 0;
 }
 
 #commentModalRepliesList .action-btn:hover {
   color: var(--accent);
+  background: var(--accent-bg);
 }
 
 #commentModalRepliesList .like-btn.active {
   color: var(--danger);
+}
+
+#commentModalRepliesList .like-btn.active svg {
+  fill: var(--danger);
+  stroke: var(--danger);
 }
 
 #commentModalRepliesList .int-count {
@@ -911,4 +933,11 @@
 
 .comment-form-row .comment-input-wrap {
   flex: 1;
+}
+#commentModalOriginalPost .post-footer,
+#commentModalRepliesList .post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }

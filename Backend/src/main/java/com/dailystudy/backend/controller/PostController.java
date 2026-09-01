@@ -59,24 +59,23 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostFeedDTO>> listarPosts() {
-        return ResponseEntity.ok(postService.listarFeed());
+    public ResponseEntity<List<PostFeedDTO>> listarPosts(Authentication authentication) {
+        // ALT 4 - Passar username do usuário logado para calcular curtido em cada post
+        String username = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(postService.listarFeed(username));
     }
-
 
     @GetMapping("/mine")
-    public ResponseEntity<List<PostFeedDTO>> listarFeedAutor(Authentication authentication) {
-
+    public ResponseEntity<List<PostFeedDTO>> listarPostsMeus(Authentication authentication) {
         String username = authentication.getName();
-
-        return ResponseEntity.ok(postService.listarFeedAutor(username));
+        return ResponseEntity.ok(postService.listarFeedAutor(username, username));
     }
 
-    @PostMapping("/{id}/curtida")
-    public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
-        String username = authentication.getName();
-        return ResponseEntity.ok(curtidaService.statusCurtida(id, username));
-    }
+      @PostMapping("/{id}/curtida")
+     public ResponseEntity<CurtidaDTO> curtir (@PathVariable String id, Authentication authentication){
+    String username = authentication.getName();
+    return ResponseEntity.ok(curtidaService.toggleCurtida(id, username));
+}
 
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@PathVariable String id, @RequestBody ComentarioDTO dto, Authentication authentication){
@@ -86,14 +85,19 @@ public class PostController {
         return ResponseEntity.ok(comentario);
     }
 
-    @GetMapping("/{id}/comentarios")
-    public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id){
-        return ResponseEntity.ok(postService.listarComentarios(id));
-    }
+      @GetMapping("/{id}/comentarios")
+    public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id, Authentication authentication) {
+        // ALT 5  - Passar username do usuário logado para calcular curtido nos comentários
+        String username = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(postService.listarComentarios(id, username));
+      }
 
-    @GetMapping("/{id}/detalhes")
-    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id) {
-        PostDetalhesDTO detalhes = postService.buscarDetalhes(id);
+      @GetMapping("/{id}/detalhes")
+    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id, Authentication authentication) {
+        // ALT 6  - Passar username do usuário logado para calcular curtido no post e comentários
+        String username = authentication != null ? authentication.getName() : null;
+        PostDetalhesDTO detalhes = postService.buscarDetalhes(id, username);
         return ResponseEntity.ok(detalhes);
     }
-}
+
+ }
