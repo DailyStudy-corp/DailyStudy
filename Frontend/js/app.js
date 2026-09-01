@@ -364,6 +364,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 320);
   }
 
+  const feedSentinel = document.getElementById('feedSentinel');
+
+  if (feedSentinel) {
+    const feedObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+        const buscaAtiva = document.getElementById('feedSearchInput').value.trim().length > 0;
+        if (!buscaAtiva) Posts.loadMoreFeed();
+        
+        }
+      });
+    }, {
+      root: null,         // viewport como referencia para carregar o feed
+      rootMargin: '200px',// dispara um pouco antes do fim para ter a sensacao de scroll
+      threshold: 0
+    });
+
+    feedObserver.observe(feedSentinel);
+  }
+
 
   // ── Aba de busca ─────────────────────────────────────────────
 

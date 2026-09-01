@@ -58,12 +58,6 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public ResponseEntity<List<PostFeedDTO>> listarPosts() {
-        return ResponseEntity.ok(postService.listarFeed());
-    }
-
-
     @GetMapping("/mine")
     public ResponseEntity<List<PostFeedDTO>> listarFeedAutor(@AuthenticationPrincipal Usuario usuarioLogado) {
 
