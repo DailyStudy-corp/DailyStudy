@@ -620,6 +620,14 @@ async function handleCreateComment(conteudo) {
  
       buttonEl.classList.toggle('active', data.curtido);
       if (countEl) countEl.textContent = data.total;
+
+      //ALT SINCRONIZA OS OUTROS CARDS DO MESMO POST (feed, perfil, modal de comentários)
+      document.querySelectorAll(`[data-id="${postId}"] .like-btn`).forEach(otherBtn => {
+        if (otherBtn === buttonEl) return;
+        otherBtn.classList.toggle('active', data.curtido);
+        const otherCount = otherBtn.querySelector('.int-count');
+        if (otherCount) otherCount.textContent = data.total;
+      });
  
     } catch (err) {
       console.error('Erro ao curtir post:', err);
