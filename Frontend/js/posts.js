@@ -169,42 +169,69 @@ const Posts = (() => {
 
   /*curica: Implementei o endpoint do post, coloquei o token para autorizar
             o fetch ja vem com metodo GET padrao, entao nao tive que declarar
+            
+            Agora o renderFeed tem paginacao por cursor
   */
-  async function renderFeed() {
-    const feedEl   = document.getElementById('feedList');
-    const emptyEl  = document.getElementById('feedEmpty');
-    const badgeEl  = document.getElementById('postBadge');
+  let feedCursor = null;
+  let feedHasMore = true;
+  let feedLoading = false;
 
-    feedEl.innerHTML = '';
+  async function renderFeed(reset = true) {
+    if (reset) {
+      const feedEl = document.getElementById('feedList');
+      feedEl.innerHTML = '';
+      feedCursor = null;
+      feedHasMore = true;
+      window.allPosts = [];
+    }
+    await loadMoreFeed();
+  }
+
+  async function loadMoreFeed() {
+    if (feedLoading || !feedHasMore) return;
+    feedLoading = true;
+
+    const feedEl  = document.getElementById('feedList');
+    const emptyEl = document.getElementById('feedEmpty');
+    const badgeEl = document.getElementById('postBadge');
+    const loadingEl = document.getElementById('feedLoadingIndicator');
+
+    if (loadingEl) loadingEl.classList.remove('hidden');
 
     try {
-      const response = await fetch('/api/posts', {
-        headers: {...Auth.headers()}
+      const params = new URLSearchParams({ limit: 20 });
+      if (feedCursor) params.set('cursor', feedCursor);
+
+      const response = await fetch(`/api/posts?${params}`, {
+        headers: { ...Auth.headers() }
       });
 
-      if (!response.ok) throw new Error('Erro ao carregar feed');
+      if (!response.ok) throw new Error('Erro ao carregar o feed');
 
-      const posts = await response.json();
+      const { posts, nextCursor, hasMore } = await response.json();
 
-      window.allPosts = posts; //aqui ele guarda na memoria os posts
+      window.allPosts = (window.allPosts || []).concat(posts);
+      feedCursor  = nextCursor;
+      feedHasMore = hasMore;
 
-      feedEl.innerHTML = '';
-    
+      if (window.allPosts.length === 0) {
+        emptyEl.classList.remove('hidden');
+        badgeEl.textContent = '0 posts';
+        return;
+      }
 
-    if (posts.length === 0) {
-      emptyEl.classList.remove('hidden');
-      badgeEl.textContent = '0 posts';
-      return;
+      emptyEl.classList.add('hidden');
+      badgeEl.textContent = `${window.allPosts.length} post${window.allPosts.length !== 1 ? 's' : ''}`;
+
+      posts.forEach(post => feedEl.appendChild(createPostCard(post)));
+
+    } catch (err) {
+      console.error('Erro no loadMoreFeed:', err);
+      UI.showToast('Erro ao carregar o feed.', 'err');
+    } finally {
+      feedLoading = false;
+      if (loadingEl) loadingEl.classList.add('hidden');
     }
-
-    emptyEl.classList.add('hidden');
-    badgeEl.textContent = `${posts.length} post${posts.length !== 1 ? 's' : ''}`;
-
-    posts.forEach(post => feedEl.appendChild(createPostCard(post)));
-  } catch (err) {
-    feedEl.innerHTML = '';
-    UI.showToast('Erro ao carregar o feed.', 'err')
-  }
   }
 
   // Renderiza os posts na aba de perfil.
@@ -647,6 +674,7 @@ async function handleCreateComment(conteudo) {
  
   return {
     renderFeed,
+    loadMoreFeed,
     renderProfilePosts,
     renderExternalPosts,
     updateStats,
