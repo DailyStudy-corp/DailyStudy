@@ -513,7 +513,7 @@ const Posts = (() => {
 
             const originalPostContainer = document.getElementById('commentModalOriginalPost');
       if (originalPostContainer) {
-        // ALT 11 CLAUDE - Reutiliza createPostCard() (mesma função usada no feed e nas
+        // ALT  CLAUDE - Reutiliza createPostCard() (mesma função usada no feed e nas
         // respostas) em vez de montar HTML manual, que nunca incluía o footer com
         // likes/comentários. Evita lógica duplicada e garante consistência visual.
         originalPostContainer.innerHTML = '';

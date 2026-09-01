@@ -586,3 +586,11 @@
   font-size: 0.82rem;
   white-space: nowrap;
 }
+
+.like-btn.active {
+  color: var(--danger);
+}
+
+.like-btn.active svg {
+  fill: var(--danger);
+}
