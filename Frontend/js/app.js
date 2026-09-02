@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   //Autenticacao validada no backend.
     try {
-       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
+       const response = await fetch('/api/usuarios/me', {
         method: 'GET',
         headers: {...Auth.headers()}
       });
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --Logout
    async function handleLogout() {
     try {
-      await fetch('http://127.0.0.1:8080/api/usuarios/logout', {
+      await fetch('/api/usuarios/logout', {
         method: 'POST',
         headers: { ...Auth.headers() }
       });
@@ -363,6 +363,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
     }, 320);
+  }
+
+  const feedSentinel = document.getElementById('feedSentinel');
+
+  if (feedSentinel) {
+    const feedObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+        const buscaAtiva = document.getElementById('feedSearchInput').value.trim().length > 0;
+        if (!buscaAtiva) Posts.loadMoreFeed();
+        
+        }
+      });
+    }, {
+      root: null,         // viewport como referencia para carregar o feed
+      rootMargin: '200px',// dispara um pouco antes do fim para ter a sensacao de scroll
+      threshold: 0
+    });
+
+    feedObserver.observe(feedSentinel);
   }
 
 

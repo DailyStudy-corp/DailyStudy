@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -26,8 +25,6 @@ public class SecurityFilter extends OncePerRequestFilter {
     private final TokenService tokenService;
 
     private final UsuarioRepository usuarioRepository;
-
-    private static final String COOKIE_NAME = "access_token";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

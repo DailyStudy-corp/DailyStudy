@@ -5,9 +5,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface CurtidaRepository extends MongoRepository<Curtida, String> {
+public interface CurtidaRepository extends MongoRepository<Curtida, String>, CurtidaRepositoryCustom {
 
     long countByPostId(String postId);
 
-    Optional<Curtida> findByPostIdAndAutorId(String postId, String autorId);
+    Optional<Curtida> findByPostIdAndAutorId(String postId, Long autorId);
 }

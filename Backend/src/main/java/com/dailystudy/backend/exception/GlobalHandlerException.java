@@ -57,4 +57,12 @@ public class GlobalHandlerException {
 
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(erro);
     }
+
+    @ExceptionHandler(CursorInvalidoException.class)
+    public ResponseEntity<ExceptionDTO> handleCursorInvalidoException(CursorInvalidoException ex) {
+
+        ExceptionDTO erro = new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), "Erro na página", "Tente mais tarde", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
 }

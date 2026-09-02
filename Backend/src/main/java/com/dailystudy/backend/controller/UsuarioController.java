@@ -4,13 +4,13 @@ import com.dailystudy.backend.service.TokenService;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
-import jakarta.servlet.http.HttpServletResponse;
+import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -56,9 +56,13 @@ public class UsuarioController {
     }
 
     @PutMapping("/me/img_perfil")
-    public ResponseEntity<Void> uploadImagemPerfil(@AuthenticationPrincipal Usuario usuarioLogado, @RequestBody ImagemPerfil dto){
+    public ResponseEntity<Void> uploadImagemPerfil(@Valid @AuthenticationPrincipal Usuario usuarioLogado, @RequestBody ImagemPerfil dto){
         if (usuarioLogado == null){
             return ResponseEntity.status(401).build();
+        }
+
+        if (!MediaValidator.isSafeImage(dto.img_perfil())) {
+            return ResponseEntity.badRequest().build();
         }
 
         usuarioService.atualizarImgPerfil(usuarioLogado.getId(), dto);
@@ -69,7 +73,7 @@ public class UsuarioController {
     @PutMapping("/me/perfil")
     public ResponseEntity<Map<String, String>> editarPerfil(
         @AuthenticationPrincipal Usuario usuarioLogado,
-        @RequestBody DadosPerfil dto) {
+        @Valid @RequestBody DadosPerfil dto) {
 
     if (usuarioLogado == null) {
         return ResponseEntity.status(401).build();

@@ -4,6 +4,7 @@ import com.dailystudy.backend.dto.CurtidaDTO;
 import com.dailystudy.backend.model.Curtida;
 import com.dailystudy.backend.repository.CurtidaRepository;
 import com.dailystudy.backend.repository.PostRepository;
+import com.mongodb.DuplicateKeyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,20 +18,24 @@ public class CurtidaService {
     private final PostRepository postRepository;
     private final CurtidaRepository curtidaRepository;
 
-    public CurtidaDTO toggleCurtida(String postId, String username){
+    public CurtidaDTO toggleCurtida(String postId, Long autorId){
         postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        Optional<Curtida> curtidaExistente = curtidaRepository.findByPostIdAndAutorId(postId, username);
+        Optional<Curtida> curtidaExistente = curtidaRepository.findByPostIdAndAutorId(postId, autorId);
 
         boolean curtido;
         if (curtidaExistente.isPresent()) {
             curtidaRepository.delete(curtidaExistente.get());
             curtido = false;
         } else {
-            Curtida novaCurtida = new Curtida(null, username, postId, LocalDateTime.now());
-            curtidaRepository.save(novaCurtida);
-            curtido = true;
+            try {
+                Curtida novaCurtida = new Curtida(null, autorId, postId, LocalDateTime.now());
+                curtidaRepository.save(novaCurtida);
+                curtido = true;
+            } catch (DuplicateKeyException e) {
+                curtido = true;
+            }
         }
 
         long total = curtidaRepository.countByPostId(postId);
@@ -38,8 +43,8 @@ public class CurtidaService {
 
         }
 
-        public CurtidaDTO statusCurtida(String postId, String username){
-        boolean curtido = curtidaRepository.findByPostIdAndAutorId(postId, username).isPresent();
+        public CurtidaDTO statusCurtida(String postId, Long autorId){
+        boolean curtido = curtidaRepository.findByPostIdAndAutorId(postId, autorId).isPresent();
         long total = curtidaRepository.countByPostId(postId);
 
         return new CurtidaDTO(curtido, total);

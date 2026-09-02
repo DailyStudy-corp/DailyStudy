@@ -8,7 +8,7 @@ public record PostFeedDTO(
         String id,
         String content,
         String mediaUrl,
-        String autorId,
+        Long autorId,
         String autorUsername,
         String autorImg,
         LocalDateTime dataCriacao,
