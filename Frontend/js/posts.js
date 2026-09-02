@@ -63,6 +63,9 @@ const Posts = (() => {
     const autorFoto = Security.safeImage(post.autorImg);
     const initials = Profile.getInitials(autorNome);
 
+     const meuUsername = Storage.getProfile()?.username;
+    const isOwner = post.autorUsername === meuUsername;
+
     const card = document.createElement('article');
     card.className  = 'post-card';
     card.dataset.id = post.id;  // usado para encontrar o card no DOM depois
@@ -93,11 +96,12 @@ const Posts = (() => {
     card.innerHTML = `
       <div class="post-head">
         <div class="post-ava" data-action="profile">${avatarHTML}</div>
-        <div class="post-meta">
+         <div class="post-meta">
           <div class="post-author">${escapeHTML(autorNome)}</div>
           <div class="post-date">${formatDate(post.dataCriacao)}</div>
         </div>
         <div class="post-actions">
+          ${isOwner ? `
           <button class="pa-btn"     data-action="edit"   title="Editar">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -110,6 +114,7 @@ const Posts = (() => {
               <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
             </svg>
           </button>
+          ` : ''}
         </div>
       </div>
       <p class="post-text">${escapeHTML(post.content)}</p>
@@ -420,7 +425,7 @@ const Posts = (() => {
   document.getElementById('commentModalBackBtn')?.addEventListener('click', () => {
     handleBackCommentModal();
   });
-  
+
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
