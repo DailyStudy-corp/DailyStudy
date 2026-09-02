@@ -60,16 +60,17 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    public List<PostFeedDTO> listarFeed() {
+    // ALT 1  - Adicionado parâmetro usuarioLogadoUsername para calcular curtido
+    public List<PostFeedDTO> listarFeed(String usuarioLogadoUsername) {
         List<Post> posts = postRepository.findByComentPostIdIsNullOrderByDataCriacaoDesc();
 
-        return mapearFeedDTO(posts);
+        return mapearFeedDTO(posts, usuarioLogadoUsername);
     }
 
     public List<PostFeedDTO> listarFeedAutor(Long autorId){
         List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(autorId);
 
-        return mapearFeedDTO(posts);
+    return mapearFeedDTO(posts, usuarioLogadoUsername);
     }
 
     public Post criarComentario(String comentPostId, ComentarioDTO dto, Long autorId){
@@ -81,17 +82,19 @@ public class PostService {
     comentario.setMediaUrl(dto.mediaUrl());
     comentario.setDataCriacao(LocalDateTime.now());
     comentario.setComentPostId(comentPostId);
-    // ALTERAÇÃO 2 - Claude: Adicionado setAutorId — estava faltando,
+
+    // ALTERAÇÃO 2 -  Adicionado setAutorId — estava faltando,
     // causando autor nulo nos comentários e exibindo "Usuario removido" na tela.
     comentario.setAutorId(autorId);
 
     return postRepository.save(comentario);
     }
 
-    public List<PostFeedDTO> listarComentarios(String comentPostId){
+    // ALT 3  - Adicionado parâmetro usuarioLogadoUsername para calcular curtido
+    public List<PostFeedDTO> listarComentarios(String comentPostId, String usuarioLogadoUsername){
         List<Post> comentarios = postRepository.findByComentPostIdOrderByDataCriacaoDesc(comentPostId);
 
-        return mapearFeedDTO(comentarios);
+        return mapearFeedDTO(comentarios, usuarioLogadoUsername);
     }
 
     private List<PostFeedDTO> mapearFeedDTO(List<Post> posts){
@@ -122,17 +125,21 @@ public class PostService {
             long totalCurtidas = curtidasPorPost.getOrDefault(post.getId(), 0L);
             long totalComentarios = comentariosPorPost.getOrDefault(post.getId(), 0L);
 
-            return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios);
+            return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios, curtido);
         }).toList();
 
     }
 
-    public PostDetalhesDTO buscarDetalhes(String id) {
+    // ALT 5  - Adicionado parâmetro usuarioLogadoUsername para calcular curtido
+    public PostDetalhesDTO buscarDetalhes(String id, String usuarioLogadoUsername) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
 
-        PostFeedDTO postDTO = mapearFeedDTO(List.of(post)).get(0);
-        List<PostFeedDTO> comentariosDTO = listarComentarios(id);
+        PostFeedDTO postDTO = mapearFeedDTO(List.of(post), usuarioLogadoUsername).get(0);
+        List<PostFeedDTO> comentariosDTO = mapearFeedDTO(
+            postRepository.findByComentPostIdOrderByDataCriacaoDesc(id),
+            usuarioLogadoUsername
+        );
 
         return new PostDetalhesDTO(postDTO, comentariosDTO);
     }

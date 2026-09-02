@@ -15,9 +15,10 @@ public record PostFeedDTO(
         LocalDateTime dataEdicao,
         String comentPostId,
         long totalCurtidas,
-        long totalComentarios) {
+        long totalComentarios,
+        boolean curtido) {
 
-    public PostFeedDTO(Post post, String autorUsername, String autorImg, long totalCurtidas, long totalComentarios){
+    public PostFeedDTO(Post post, String autorUsername, String autorImg, long totalCurtidas, long totalComentarios, boolean curtido){
         this(
                 post.getId(),
                 post.getContent(),
@@ -29,7 +30,8 @@ public record PostFeedDTO(
                 post.getDataEdicao(),
                 post.getComentPostId(),
                 totalCurtidas,
-                totalComentarios
+                totalComentarios,
+                curtido
         );
     }
 }
