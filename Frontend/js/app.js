@@ -239,6 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Clique no avatar grande abre o seletor de arquivo
   document.getElementById('profileAvaBig').addEventListener('click', () => {
+    if (document.getElementById('profileAvaBig').classList.contains('readOnly-ava')) return;
     document.getElementById('avatarInput').click();
   });
 
@@ -252,8 +253,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Upload de banner ─────────────────────────────────────────
 
   // Clique na zona do banner abre o seletor de arquivo
-  document.getElementById('bannerZone').addEventListener('click', event => {
-    // Evita abrir o seletor se o clique foi direto no input (não deve acontecer, mas por segurança)
+   document.getElementById('bannerZone').addEventListener('click', event => {
+    if (document.getElementById('bannerZone').classList.contains('readOnly-banner')) return;
     if (event.target.tagName !== 'INPUT') {
       document.getElementById('bannerInput').click();
     }

@@ -18,6 +18,7 @@ const Posts = (() => {
   let editingPostId = null;
   let pendingImageUrl = null;
   let activeCommentPostId = null;
+  let commentModalHistory = []; // Histórico de posts abertos no modal de comentários 
  
   // ── Helpers ──────────────────────────────────────────────────
 
@@ -62,6 +63,9 @@ const Posts = (() => {
     const autorFoto = Security.safeImage(post.autorImg);
     const initials = Profile.getInitials(autorNome);
 
+     const meuUsername = Storage.getProfile()?.username;
+    const isOwner = post.autorUsername === meuUsername;
+
     const card = document.createElement('article');
     card.className  = 'post-card';
     card.dataset.id = post.id;  // usado para encontrar o card no DOM depois
@@ -92,11 +96,12 @@ const Posts = (() => {
     card.innerHTML = `
       <div class="post-head">
         <div class="post-ava" data-action="profile">${avatarHTML}</div>
-        <div class="post-meta">
+         <div class="post-meta">
           <div class="post-author">${escapeHTML(autorNome)}</div>
           <div class="post-date">${formatDate(post.dataCriacao)}</div>
         </div>
         <div class="post-actions">
+          ${isOwner ? `
           <button class="pa-btn"     data-action="edit"   title="Editar">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -109,32 +114,31 @@ const Posts = (() => {
               <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
             </svg>
           </button>
+          ` : ''}
         </div>
       </div>
       <p class="post-text">${escapeHTML(post.content)}</p>
       ${imageHTML}
       ${editedHTML}
-       <div class="post-footer">
-        <time class="post-ts">${fullDate}</time>
-        <!-- ALTERAÇÃO 1 - Claude: Recolocado bloco de interações removido anteriormente -->
-        <div class="post-interactions">
-          <button class="action-btn like-btn ${post.curtido ? 'active' : ''}" data-action="like">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            <span class="int-count">${post.totalCurtidas || 0}</span>
-          </button>
-          <button class="action-btn comment-btn" data-action="comment">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span class="int-count">${post.totalComentarios || 0}</span>
-          </button>
-        </div>
-      </div>
+<div class="post-footer">
+  <time class="post-ts">${fullDate}</time>
+  <div class="post-interactions">
+    <button class="action-btn like-btn ${post.curtido ? 'active' : ''}" data-action="like">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <span class="int-count">${post.totalCurtidas || 0}</span>
+    </button>
+    <button class="action-btn comment-btn" data-action="comment">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span class="int-count">${post.totalComentarios || 0}</span>
+    </button>
+  </div>
+</div>
      `;
 
-    
     card.addEventListener('click', event => {
         const button = event.target.closest('[data-action]');
   // ALTERAÇÃO 2 - Se clicar fora de qualquer botão de ação,
@@ -423,8 +427,20 @@ const Posts = (() => {
    document.getElementById('deleteModalConfirmBtn')?.addEventListener('click', executePostDeletion);
 
   // Função para fechar o modal de comentário e restaurar o scroll via UI
+   // ALT 15 - Volta para o post anterior da pilha de navegação
+  
+   function handleBackCommentModal() {
+    const previousId = commentModalHistory.pop();
+    if (previousId) {
+      handleOpenPostModal(previousId, false);
+    }
+  }
+
+  // Função para fechar o modal de comentário e restaurar o scroll via UI
   function closeCommentModal() {
     activeCommentPostId = null;
+    // ALT  - Limpa o histórico de navegação ao fechar o modal
+    commentModalHistory = [];
     UI.closeCommentModal();
   }
   
@@ -432,6 +448,11 @@ const Posts = (() => {
   document.getElementById('closeCommentModalBtn')?.addEventListener('click', () => {
   UI.closeCommentModal();
 });
+
+  document.getElementById('commentModalBackBtn')?.addEventListener('click', () => {
+    handleBackCommentModal();
+  });
+
   async function confirmAndDelete(postId) {
     const confirmed = window.confirm('Deseja excluir esta postagem? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
@@ -528,8 +549,14 @@ const Posts = (() => {
     posts.forEach(post => container.appendChild(createPostCard(post)));
   }
   // ── Modal de comentários ─────────────────────────────────────
-  async function handleOpenPostModal(postId) {
-    activeCommentPostId = postId;
+  async function handleOpenPostModal(postId, pushToHistory = true) {
+  if (pushToHistory && activeCommentPostId && activeCommentPostId !== postId) {
+    commentModalHistory.push(activeCommentPostId);
+  }
+  activeCommentPostId = postId;
+   
+  const backBtn = document.getElementById('commentModalBackBtn');
+    if (backBtn) backBtn.classList.toggle('hidden', commentModalHistory.length === 0);
 
     try {
       const response = await fetch(`/api/posts/${postId}/detalhes`, {
@@ -540,29 +567,15 @@ const Posts = (() => {
 
       const { post, comentarios } = await response.json();
 
-      const originalPostContainer = document.getElementById('commentModalOriginalPost');
+            const originalPostContainer = document.getElementById('commentModalOriginalPost');
       if (originalPostContainer) {
-        const autorImg = Security.safeImage(post.autorImg)
-          ? `<img src="${escapeHTML(post.autorImg)}" alt="Foto de ${escapeHTML(post.autorUsername)}"/>`
-          : escapeHTML(Profile.getInitials(post.autorUsername));
-
-        const imageHTML = Security.safeImage(post.mediaUrl)
-          ? `<div class="post-image"><img src="${escapeHTML(post.mediaUrl)}" alt="Imagem do post"/></div>`
-          : '';
-
-        originalPostContainer.innerHTML = `
-          <article class="post-card modal-post">
-            <div class="post-head">
-              <div class="post-ava">${autorImg}</div>
-              <div class="post-meta">
-                <div class="post-author">${escapeHTML(post.autorUsername)}</div>
-                <div class="post-date">${formatDate(post.dataCriacao)}</div>
-              </div>
-            </div>
-            <p class="post-text">${escapeHTML(post.content)}</p>
-            ${imageHTML}
-          </article>
-        `;
+        // ALT  CLAUDE - Reutiliza createPostCard() (mesma função usada no feed e nas
+        // respostas) em vez de montar HTML manual, que nunca incluía o footer com
+        // likes/comentários. Evita lógica duplicada e garante consistência visual.
+        originalPostContainer.innerHTML = '';
+        const originalCardEl = createPostCard(post);
+        originalCardEl.classList.add('modal-post');
+        originalPostContainer.appendChild(originalCardEl);
       }
 
       const repliesContainer = document.getElementById('commentModalRepliesList');
@@ -663,6 +676,14 @@ async function handleCreateComment(conteudo) {
  
       buttonEl.classList.toggle('active', data.curtido);
       if (countEl) countEl.textContent = data.total;
+
+      //ALT SINCRONIZA OS OUTROS CARDS DO MESMO POST (feed, perfil, modal de comentários)
+      document.querySelectorAll(`[data-id="${postId}"] .like-btn`).forEach(otherBtn => {
+        if (otherBtn === buttonEl) return;
+        otherBtn.classList.toggle('active', data.curtido);
+        const otherCount = otherBtn.querySelector('.int-count');
+        if (otherCount) otherCount.textContent = data.total;
+      });
  
     } catch (err) {
       console.error('Erro ao curtir post:', err);

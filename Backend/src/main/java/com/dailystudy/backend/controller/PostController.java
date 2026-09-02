@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,13 +75,17 @@ public class PostController {
         return ResponseEntity.ok(comentario);
     }
 
-    @GetMapping("/{id}/comentarios")
-    public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id){
+      @GetMapping("/{id}/comentarios")
+    public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id, Authentication authentication) {
+        // ALT 5  - Passar username do usuário logado para calcular curtido nos comentários
+        String username = authentication != null ? authentication.getName() : null;
         return ResponseEntity.ok(postService.listarComentarios(id));
-    }
+      }
 
-    @GetMapping("/{id}/detalhes")
-    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id) {
+      @GetMapping("/{id}/detalhes")
+    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id, Authentication authentication) {
+        // ALT 6  - Passar username do usuário logado para calcular curtido no post e comentários
+        String username = authentication != null ? authentication.getName() : null;
         PostDetalhesDTO detalhes = postService.buscarDetalhes(id);
         return ResponseEntity.ok(detalhes);
     }

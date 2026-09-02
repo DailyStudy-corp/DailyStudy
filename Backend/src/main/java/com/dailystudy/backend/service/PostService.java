@@ -60,18 +60,6 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    public List<PostFeedDTO> listarFeed() {
-        List<Post> posts = postRepository.findByComentPostIdIsNullOrderByDataCriacaoDesc();
-
-        return mapearFeedDTO(posts);
-    }
-
-    public List<PostFeedDTO> listarFeedAutor(Long autorId){
-        List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(autorId);
-
-        return mapearFeedDTO(posts);
-    }
-
     public Post criarComentario(String comentPostId, ComentarioDTO dto, Long autorId){
     postRepository.findById(comentPostId)
             .orElseThrow(() -> new RuntimeException("Post não encontrado"));
@@ -81,11 +69,18 @@ public class PostService {
     comentario.setMediaUrl(dto.mediaUrl());
     comentario.setDataCriacao(LocalDateTime.now());
     comentario.setComentPostId(comentPostId);
-    // ALTERAÇÃO 2 - Claude: Adicionado setAutorId — estava faltando,
+
+    // ALTERAÇÃO 2 -  Adicionado setAutorId — estava faltando,
     // causando autor nulo nos comentários e exibindo "Usuario removido" na tela.
     comentario.setAutorId(autorId);
 
     return postRepository.save(comentario);
+    }
+
+    public List<PostFeedDTO> listarFeedAutor(Long autorId){
+        List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(autorId);
+
+        return mapearFeedDTO(posts);
     }
 
     public List<PostFeedDTO> listarComentarios(String comentPostId){
@@ -127,6 +122,7 @@ public class PostService {
 
     }
 
+    // ALT 5  - Adicionado parâmetro usuarioLogadoUsername para calcular curtido
     public PostDetalhesDTO buscarDetalhes(String id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
