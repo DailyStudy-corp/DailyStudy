@@ -2,6 +2,7 @@ package com.dailystudy.backend.service;
 
 import com.dailystudy.backend.model.HistoricoBusca;
 import com.dailystudy.backend.repository.HistoricoBuscaRepository;
+import com.dailystudy.backend.util.Normalizador;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ public class HistoricoBuscaService {
     @Transactional
     public void registrarBusca(Long usuarioId, String termoBruto) {
 
-        String termo = normalizar(termoBruto);
+        String termo = Normalizador.normalizar(termoBruto);
 
         if (termo.isBlank()) {
             return;
