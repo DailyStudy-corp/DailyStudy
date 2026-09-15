@@ -2,7 +2,9 @@ package com.dailystudy.backend.service;
 
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.exception.PermissaoNegadaException;
+import com.dailystudy.backend.model.CampoIndexado;
 import com.dailystudy.backend.model.Post;
+import com.dailystudy.backend.model.TipoReferencia;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.repository.*;
 import com.dailystudy.backend.util.CursorCodec;
@@ -20,9 +22,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
 
+    private final IndexadorService indexadorService;
+
     private final PostRepository postRepository;
-    private final AtividadeRepository atividadeRepository;
+
     private final UsuarioRepository usuarioRepository;
+
     private final CurtidaRepository curtidaRepository;
 
     public Post criarPost(PostCreateDTO dto, Long autorId) {
@@ -34,6 +39,7 @@ public class PostService {
         post.setDataCriacao(LocalDateTime.now());
 
         Post salvo = postRepository.save(post);
+        indexadorService.reindexar(salvo.getId(), TipoReferencia.POST, Map.of(CampoIndexado.CONTEUDO, salvo.getContent()));
         log.info("Post criado: id{}, autorId={}", salvo.getId(), autorId);
 
         return salvo;
@@ -56,7 +62,9 @@ public class PostService {
         post.setMediaUrl(dto.mediaUrl());
         post.setDataEdicao(LocalDateTime.now());
 
-        return postRepository.save(post);
+        Post salvo = postRepository.save(post);
+        indexadorService.reindexar(salvo.getId(), TipoReferencia.POST, Map.of(CampoIndexado.CONTEUDO, salvo.getContent()));
+        return salvo;
     }
 
     public void deletarPost(String id, Long autorId){
@@ -72,6 +80,7 @@ public class PostService {
         }
 
         postRepository.deleteById(id);
+        indexadorService.removerIndice(id);
         log.info("Post deletado: id={}, autorId={}", id, autorId);
     }
 
@@ -92,7 +101,9 @@ public class PostService {
     // causando autor nulo nos comentários e exibindo "Usuario removido" na tela.
     comentario.setAutorId(autorId);
 
-    return postRepository.save(comentario);
+    Post salvo = postRepository.save(comentario);
+        indexadorService.reindexar(salvo.getId(), TipoReferencia.COMENTARIO, Map.of(CampoIndexado.CONTEUDO, salvo.getContent()));
+        return salvo;
     }
 
     public List<PostFeedDTO> listarFeedAutor(Long autorId){

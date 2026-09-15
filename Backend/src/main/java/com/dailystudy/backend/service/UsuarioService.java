@@ -1,12 +1,12 @@
 package com.dailystudy.backend.service;
 
 import com.dailystudy.backend.exception.CredenciaisInvalidasException;
-import com.dailystudy.backend.model.Post;
+import com.dailystudy.backend.model.*;
 import com.dailystudy.backend.repository.PostRepository;
+
+import java.util.HashMap;
 import java.util.List;
 import com.dailystudy.backend.dto.*;
-import com.dailystudy.backend.model.Usuario;
-import com.dailystudy.backend.model.UsuarioRole;
 import com.dailystudy.backend.repository.UsuarioRepository;
 import com.dailystudy.backend.exception.UsuarioException;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,14 @@ import org.springframework.stereotype.Service;
 
 import javax.swing.undo.CannotRedoException;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class UsuarioService {
+
+    private final IndexadorService indexadorService;
 
     private final TokenService tokenService;
 
@@ -50,6 +53,8 @@ public class UsuarioService {
         novoUsuario.setRole(UsuarioRole.USER);
 
         usuarioRepository.save(novoUsuario);
+
+        indexadorService.reindexar(String.valueOf(novoUsuario.getId()), TipoReferencia.USUARIO, Map.of(CampoIndexado.USERNAME, novoUsuario.getUsername()));
 
         log.info("Novo usuário registrado: username={}", novoUsuario.getUsername());
     }
@@ -102,6 +107,8 @@ public class UsuarioService {
 
     usuarioRepository.save(usuario);
 
+    indexadorService.reindexar(String.valueOf(usuario.getId()), TipoReferencia.USUARIO, construirCamposIndexaveis(usuario));
+
     }
 
     public PerfilPublicoDTO buscarPerfilPublico(String username) {
@@ -118,5 +125,22 @@ public class UsuarioService {
                 usuario.getBio(),
                 posts
         );
+    }
+
+    // Criamos esse HashMap pois nem sempre o usuario tem Cargo e Bio, podem ser brancos
+    // e o Map não aceita null, HashMaps aceitam
+    private Map<CampoIndexado, String> construirCamposIndexaveis(Usuario usuario) {
+        Map<CampoIndexado, String> campos = new HashMap<>();
+        campos.put(CampoIndexado.USERNAME, usuario.getUsername());
+
+        if (usuario.getCargo() != null) {
+            campos.put(CampoIndexado.CARGO, usuario.getCargo());
+        }
+
+        if (usuario.getBio() != null) {
+            campos.put(CampoIndexado.BIO, usuario.getBio());
+        }
+
+        return campos;
     }
 }
