@@ -34,14 +34,14 @@ public class SecurityFilter extends OncePerRequestFilter {
         String token = recuperarToken(request);
 
         if (token != null){
-            String username = tokenService.validateToken(token);
-            if (username != null) {
-                UserDetails usuario = usuarioRepository.findByUsername(username).orElse(null);
+            Long usuarioId = tokenService.validateToken(token);
+            if (usuarioId != null) {
+                UserDetails usuario = usuarioRepository.findById(usuarioId).orElse(null);
                 if(usuario != null){
                     var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
-                    log.warn("Token válido para usuário inexistente: username={})", username);
+                    log.warn("Token válido para usuário inexistente: usuarioId={})", usuarioId);
                 }
             }
         }

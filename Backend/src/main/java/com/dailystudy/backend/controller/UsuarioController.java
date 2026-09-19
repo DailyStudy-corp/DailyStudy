@@ -82,12 +82,7 @@ public class UsuarioController {
     // Salva as alterações no banco
     usuarioService.atualizarDadosPerfil(usuarioLogado.getId(), dto);
 
-    // Busca o usuário atualizado para gerar o token com o username novo
-    Usuario usuarioAtualizado = usuarioService.buscarPorId(usuarioLogado.getId());
-
-    // Gera e retorna o novo token
-    String novoToken = tokenService.gerarToken(usuarioAtualizado);
-    return ResponseEntity.ok(Map.of("token", novoToken));
+    return ResponseEntity.noContent().build();
 
     }
 
