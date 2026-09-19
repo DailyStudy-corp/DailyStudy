@@ -56,7 +56,7 @@ const Search = (() => {
   }
 
 
-  // ── Scoring (relevância) ─────────────────────────────────────
+  // ── Chama no backend (relevância) ─────────────────────────────────────
 
   // Calcula uma pontuação para um texto em relação à query.
   // Quanto maior o score, mais relevante é o resultado.
@@ -66,75 +66,210 @@ const Search = (() => {
   //   2 → encontrou em algum lugar do texto
   //   5 → texto começa com a query
   //   3 → query aparece no início de alguma palavra
-  function calculateScore(text, query) {
-    if (!text || !query) return 0;
-    if (!text.includes(query)) return 0;  // otimização: sai rápido se não há match
 
-    let score = 2;  // base: encontrou em algum lugar
+  //curica: Lógica é parecida com isso, so que agora uma busca de verdade
+  async function buscarBackend(query) {
+    const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+      headers: {...Auth.headers()} ,
+    });
 
-    if (text.startsWith(query)) {
-      score += 5;  // começa com a query: mais relevante
+    if (!response.ok) {
+      throw new Error(`Sem resposta: ${response.status}`);
     }
 
-    // Verifica se a query aparece no início de alguma palavra
-    // \b é "word boundary" (fronteira de palavra)
-    const wordStartRegex = new RegExp(`\\b${escapeRegex(query)}`);
-    if (wordStartRegex.test(text)) {
-      score += 3;
-    }
+    return response.json();
+  }
 
-    return score;
+  async function buscarPosts(query) {
+    
+    const resultado = await buscarBackend(query);
+    return resultado.posts;
+  }
+
+  // Descobre em qual campo a query bateu, só pra escolher o badge do card.
+  // Aproximação (substring, não a mesma tokenização do índice)
+  function campoCorrespondente(usuario, query) {
+
+    const q = normalize(query);
+
+    if (normalize(usuario.username).includes(q))
+      return {classe: 'match-name', label: 'usuário'};
+
+    if (normalize(usuario.cargo).includes(q))
+      return {classe: 'match-bio', label: 'cargo'};
+
+    return {classe: 'match-bio', label: 'bio'};
   }
 
 
-  // ── Busca de posts ───────────────────────────────────────────
-
-  // Retorna posts cujo texto contenha a query, ordenados por relevância.
-  // Cada item do array retornado tem: { post, score, query }
-  function searchPosts(rawQuery) {
-    const query = normalize(rawQuery);
-
-    // Sem query: retorna todos os posts sem pontuação
-    if (!query) {
-      return Storage.getPosts().map(post => ({ post, score: 0, query: '' }));
-    }
-
-    return Storage.getPosts()
-      .map(post => {
-        const normalizedText = normalize(post.text);
-        const score = calculateScore(normalizedText, query);
-        return { post, score, query };
-      })
-      .filter(item => item.score > 0)         // apenas posts com match
-      .sort((a, b) => b.score - a.score);     // mais relevante primeiro
-  }
-
-
-  // ── Busca de perfil ──────────────────────────────────────────
+  // ── Renderiza os resultados ──────────────────────────────────────────
 
   // Busca no nome e bio do usuário.
   // O nome tem peso dobrado por ser a informação principal.
   // Retorna array com 0 ou 1 resultado (só há um usuário atualmente).
-  function searchProfiles(rawQuery) {
-    const query = normalize(rawQuery);
+  async function executeSearch(rawQuery) {
 
-    if (!query) return [];
+    const query = rawQuery.trim();
+    const resultsEl = document.getElementById('searchResults');
+    const placeholder = document.getElementById('searchPlaceholder');
+    const countEl = document.getElementById('searchResultCount');
 
-    const profile = Storage.getProfile();
-    const nameScore = calculateScore(normalize(profile.name), query) * 2;
-    const bioScore  = calculateScore(normalize(profile.bio || ''), query);
-    const totalScore = nameScore + bioScore;
+    if (!resultsEl) return;
 
-    if (totalScore === 0) return [];
+    // Campo vazio: mostra o placeholder com as sugestões
+    if (!query) {
+      placeholder?.classList.remove('hidden');
+      resultsEl.innerHTML = '';
+      countEl?.classList.add('hidden');
+      return;
+    }
 
-    // Registra em quais campos o match aconteceu (usado para exibir o badge)
-    const matchedFields = [];
-    if (nameScore > 0) matchedFields.push('name');
-    if (bioScore  > 0) matchedFields.push('bio');
+    placeholder?.classList.add('hidden');
+    resultsEl.innerHTML = '';
 
-    return [{ profile, score: totalScore, query, matchedFields }];
+    let resultado;
+    try {
+      resultado = await buscarBackend(query);
+    } catch (err) {
+      console.error('Erro na busca:', err);
+      resultsEl.innerHTML = `
+        <div class="search-empty">
+          <div class="search-empty-icon">⚠️</div>
+          <p>Não foi possível buscar agora.</p>
+          <span>Tente novamente em instantes.</span>
+        </div>
+      `;
+      countEl?.classList.add('hidden');
+      return;
+    }
+
+    const { usuarios, posts } = resultado;
+    const totalResults = usuarios.length + posts.length;
+
+    // Atualiza o contador de resultados
+    if (countEl) {
+      countEl.textContent = totalResults === 0
+        ? 'Sem resultados'
+        : `${totalResults} resultado${totalResults !== 1 ? 's' : ''}`;
+      countEl.classList.remove('hidden');
+    }
+
+    // Nenhum resultado encontrado
+    if (totalResults === 0) {
+      resultsEl.innerHTML = `
+        <div class="search-empty">
+          <div class="search-empty-icon">🔍</div>
+          <p>Nenhum resultado para <strong>"${escapeHTML(query)}"</strong></p>
+          <span>Tente palavras diferentes ou verifique a ortografia.</span>
+        </div>
+      `;
+      return;
+    }
+
+    // Renderiza seção de usuários (aparecem primeiro)
+    if (usuarios.length > 0) {
+      const section = document.createElement('div');
+      section.className = 'search-section';
+      section.innerHTML = `<h3 class="search-section-title">Usuários</h3>`;
+
+      usuarios.forEach(usuario => {
+        section.appendChild(createProfileCard({ usuario, query }));
+      });
+
+      resultsEl.appendChild(section);
+    }
+
+    // Renderiza seção de posts
+    if (posts.length > 0) {
+      const section = document.createElement('div');
+      section.className = 'search-section';
+      section.innerHTML = `<h3 class="search-section-title">Postagens (${posts.length})</h3>`;
+
+      posts.forEach(post => {
+        section.appendChild(createPostCard({ post, query }));
+      });
+
+      resultsEl.appendChild(section);
+    }
   }
 
+  function createProfileCard({usuario, query}) {
+
+    const card = document.createElement('div');
+    card.className = 'search-result-card search-result-profile';
+
+    const initials = Profile.getInitials(usuario.username);
+    const avatarHTML = usuario.img_perfil
+    ? `<img src="${usuario.img_perfil}" alt="Foto de ${escapeHTML(usuario.username)}"/>`
+      : escapeHTML(initials);
+
+    const campo = campoCorrespondente(usuario, query);
+    const matchBadge = `<span class="match-badge ${campo.classe}">${campo.label}</span>`;
+
+    card.innerHTML = `
+      <div class="result-ava">${avatarHTML}</div>
+      <div class="result-body">
+        <div class="result-name">
+          ${highlight(usuario.username, query)}
+          ${matchBadge}
+        </div>
+        ${usuario.bio
+          ? `<div class="result-bio">${highlight(usuario.bio, query)}</div>`
+          : ''}
+      </div>
+      <div class="result-arrow">→</div>
+    `;
+
+    card.addEventListener('click', () => {
+      clearSearch();
+      Profile.openProfile(usuario.username);
+    });
+
+    return card;
+  }
+
+  function createPostCard({post, query}) {
+
+    const card = document.createElement('div');
+    card.className = 'search-result-card search-result-post';
+
+    const snippet = extractSnippet(post.content, query);
+    const dateStr = new Date(post.dataCriacao).toLocaleDateString('pt-BR', {
+      day: 'numeric', month: 'short',
+    });
+
+    card.innerHTML = `
+      <div class="result-post-body">
+        <div class="result-post-text">${highlight(snippet, query)}</div>
+        <div class="result-post-meta">
+          <span>${escapeHTML(post.autorUsername)}</span>
+          <span class="result-dot">·</span>
+          <time>${dateStr}</time>
+          ${post.mediaUrl ? '<span class="result-has-img">📷</span>' : ''}
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      UI.activateTab('feed');
+      clearSearch();
+      // Aguarda o feed renderizar antes de destacar o post
+      setTimeout(() => highlightPostInFeed(post.id), 100);
+    });
+
+    return card;
+  }
+
+  // Rola até o post no feed e aplica animação de destaque.
+  function highlightPostInFeed(postId) {
+    const postElement = document.querySelector(`[data-id="${postId}"]`);
+    if (!postElement) return;
+
+    postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    postElement.classList.add('post-search-highlight');
+
+    setTimeout(() => postElement.classList.remove('post-search-highlight'), 2000);
+  }
 
   // ── Highlight ────────────────────────────────────────────────
 
@@ -179,161 +314,6 @@ const Search = (() => {
     return prefix + snippet + suffix;
   }
 
-
-  // ── Renderização dos resultados ──────────────────────────────
-
-  // Executa a busca e atualiza a área de resultados na aba de busca.
-  function executeSearch(rawQuery) {
-    const query       = rawQuery.trim();
-    const resultsEl   = document.getElementById('searchResults');
-    const placeholder = document.getElementById('searchPlaceholder');
-    const countEl     = document.getElementById('searchResultCount');
-
-    if (!resultsEl) return;
-
-    // Campo vazio: mostra o placeholder com as sugestões
-    if (!query) {
-      placeholder?.classList.remove('hidden');
-      resultsEl.innerHTML = '';
-      countEl?.classList.add('hidden');
-      return;
-    }
-
-    placeholder?.classList.add('hidden');
-    resultsEl.innerHTML = '';
-
-    const postResults    = searchPosts(query);
-    const profileResults = searchProfiles(query);
-    const totalResults   = postResults.length + profileResults.length;
-
-    // Atualiza o contador de resultados
-    if (countEl) {
-      countEl.textContent = totalResults === 0
-        ? 'Sem resultados'
-        : `${totalResults} resultado${totalResults !== 1 ? 's' : ''}`;
-      countEl.classList.remove('hidden');
-    }
-
-    // Nenhum resultado encontrado
-    if (totalResults === 0) {
-      resultsEl.innerHTML = `
-        <div class="search-empty">
-          <div class="search-empty-icon">🔍</div>
-          <p>Nenhum resultado para <strong>"${escapeHTML(query)}"</strong></p>
-          <span>Tente palavras diferentes ou verifique a ortografia.</span>
-        </div>
-      `;
-      return;
-    }
-
-    // Renderiza seção de perfis (aparecem primeiro)
-    if (profileResults.length > 0) {
-      const section = document.createElement('div');
-      section.className   = 'search-section';
-      section.innerHTML   = `<h3 class="search-section-title">Usuários</h3>`;
-
-      profileResults.forEach(result => {
-        section.appendChild(createProfileCard(result));
-      });
-
-      resultsEl.appendChild(section);
-    }
-
-    // Renderiza seção de posts
-    if (postResults.length > 0) {
-      const section = document.createElement('div');
-      section.className   = 'search-section';
-      section.innerHTML   = `<h3 class="search-section-title">Postagens (${postResults.length})</h3>`;
-
-      postResults.forEach(result => {
-        section.appendChild(createPostCard(result));
-      });
-
-      resultsEl.appendChild(section);
-    }
-  }
-
-  // Cria o card de resultado para um perfil.
-  function createProfileCard({ profile, query, matchedFields }) {
-    const card = document.createElement('div');
-    card.className = 'search-result-card search-result-profile';
-
-    const initials   = Profile.getInitials(profile.name);
-    const avatarHTML = profile.avatarUrl
-      ? `<img src="${profile.avatarUrl}" alt="Foto de ${escapeHTML(profile.name)}"/>`
-      : escapeHTML(initials);
-
-    // Badge indica onde o match aconteceu
-    const matchBadge = matchedFields.includes('name')
-      ? '<span class="match-badge match-name">nome</span>'
-      : '<span class="match-badge match-bio">bio</span>';
-
-    card.innerHTML = `
-      <div class="result-ava">${avatarHTML}</div>
-      <div class="result-body">
-        <div class="result-name">
-          ${highlight(profile.name, query)}
-          ${matchBadge}
-        </div>
-        ${profile.bio
-          ? `<div class="result-bio">${highlight(profile.bio, query)}</div>`
-          : ''}
-      </div>
-      <div class="result-arrow">→</div>
-    `;
-
-    card.addEventListener('click', () => {
-      UI.activateTab('profile');
-      clearSearch();
-    });
-
-    return card;
-  }
-
-  // Cria o card de resultado para um post.
-  function createPostCard({ post, query }) {
-    const card = document.createElement('div');
-    card.className = 'search-result-card search-result-post';
-
-    const snippet = extractSnippet(post.text, query);
-    const dateStr = new Date(post.createdAt).toLocaleDateString('pt-BR', {
-      day: 'numeric', month: 'short',
-    });
-
-    card.innerHTML = `
-      <div class="result-post-body">
-        <div class="result-post-text">${highlight(snippet, query)}</div>
-        <div class="result-post-meta">
-          <span>${escapeHTML(Profile.get().name)}</span>
-          <span class="result-dot">·</span>
-          <time>${dateStr}</time>
-          ${post.image ? '<span class="result-has-img">📷</span>' : ''}
-        </div>
-      </div>
-    `;
-
-    card.addEventListener('click', () => {
-      UI.activateTab('feed');
-      clearSearch();
-      // Aguarda o feed renderizar antes de destacar o post
-      setTimeout(() => highlightPostInFeed(post.id), 100);
-    });
-
-    return card;
-  }
-
-  // Rola até o post no feed e aplica animação de destaque.
-  function highlightPostInFeed(postId) {
-    const postElement = document.querySelector(`[data-id="${postId}"]`);
-    if (!postElement) return;
-
-    postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    postElement.classList.add('post-search-highlight');
-
-    setTimeout(() => postElement.classList.remove('post-search-highlight'), 2000);
-  }
-
-
   // ── Debounce e handler principal ─────────────────────────────
 
   // Recebe o texto digitado, aplica debounce e executa a busca.
@@ -367,12 +347,9 @@ const Search = (() => {
     if (countEl)     countEl.classList.add('hidden');
   }
 
-
   // ── API pública ──────────────────────────────────────────────
 
   return {
-    searchPosts,
-    searchProfiles,
     normalize,
     highlight,
     handleSearchInput,

@@ -2,7 +2,6 @@ package com.dailystudy.backend.service;
 
 import com.dailystudy.backend.dto.PostResultadoDTO;
 import com.dailystudy.backend.dto.ResultadoBuscaDTO;
-import com.dailystudy.backend.dto.UsuarioResponseDTO;
 import com.dailystudy.backend.dto.UsuarioResultadoDTO;
 import com.dailystudy.backend.model.IndiceBusca;
 import com.dailystudy.backend.model.Post;
@@ -12,7 +11,6 @@ import com.dailystudy.backend.repository.IndiceBuscaRepository;
 import com.dailystudy.backend.repository.PostRepository;
 import com.dailystudy.backend.repository.UsuarioRepository;
 import com.dailystudy.backend.util.Tokenizador;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
