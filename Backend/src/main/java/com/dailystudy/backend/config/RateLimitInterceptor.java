@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Slf4j
@@ -21,7 +20,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String ip = resolveClientIp(request);
+        String ip = request.getRemoteAddr();
         String path = request.getRequestURI();
 
         Bucket bucket = switch (path) {
@@ -47,15 +46,5 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         log.warn("Rate limit atingido: ip={}, path={}, aguardar={}s", ip, path, secondsAwait);
 
         throw new RateLimitException("Muitas tentativas. Tente novamente em " + secondsAwait + "segundos");
-    }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-
-        return request.getRemoteAddr();
     }
 }
