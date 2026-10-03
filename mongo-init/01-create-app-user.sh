@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 echo "Criando usuário de aplicação '$MONGO_APP_USER' no banco '$MONGO_INITDB_DATABASE'..."
