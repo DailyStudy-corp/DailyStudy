@@ -21,6 +21,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    restart: unless-stopped
     volumes:
       - certbot-etc:/etc/letsencrypt
       - certbot-webroot:/var/www/certbot
