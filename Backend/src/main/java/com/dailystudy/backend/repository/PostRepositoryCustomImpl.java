@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 ));
     }
 
-    public List<Post> ordenarFeedCursor(LocalDateTime cursorData, String cursorId, int limit){
+    public List<Post> ordenarFeedCursor(Instant cursorData, String cursorId, int limit){
         Criteria filtro = Criteria.where("comentPostId").is(null);
 
         if (cursorData != null && cursorId != null) {
