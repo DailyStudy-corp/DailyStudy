@@ -4,10 +4,9 @@ import com.dailystudy.backend.exception.CursorInvalidoException;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Base64;
 
 @Slf4j
@@ -15,9 +14,9 @@ public class CursorCodec {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    public record CursorData(LocalDateTime dataCriacao, String id) {}
+    public record CursorData(Instant dataCriacao, String id) {}
 
-    public static String encode(LocalDateTime dataCriacao, String id) {
+    public static String encode(Instant dataCriacao, String id) {
         try {
             String json = MAPPER.writeValueAsString(new CursorData(dataCriacao, id));
             return Base64.getUrlEncoder().withoutPadding()
