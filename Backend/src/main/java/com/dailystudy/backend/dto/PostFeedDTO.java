@@ -2,7 +2,7 @@ package com.dailystudy.backend.dto;
 
 import com.dailystudy.backend.model.Post;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PostFeedDTO(
         String id,
@@ -11,8 +11,8 @@ public record PostFeedDTO(
         Long autorId,
         String autorUsername,
         String autorImg,
-        LocalDateTime dataCriacao,
-        LocalDateTime dataEdicao,
+        Instant dataCriacao,
+        Instant dataEdicao,
         String comentPostId,
         long totalCurtidas,
         long totalComentarios) {
