@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 
 @Document(collection = "posts")
 @CompoundIndex(name = "autorId_dataCriacao_idx", def = "{'autorId': 1, 'dataCriacao': -1}")
@@ -20,8 +21,8 @@ public class Post {
     private String content;
     private String mediaUrl;
     private String visibility;
-    private LocalDateTime dataCriacao;
-    private LocalDateTime dataEdicao;
+    private Instant dataCriacao;
+    private Instant dataEdicao;
     private Long autorId;
 
     private String comentPostId;

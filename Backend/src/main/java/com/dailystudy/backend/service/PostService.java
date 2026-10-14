@@ -11,7 +11,8 @@ import com.dailystudy.backend.util.CursorCodec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,7 +37,7 @@ public class PostService {
         post.setContent(dto.content());
         post.setMediaUrl(dto.mediaUrl());
         post.setAutorId(autorId);
-        post.setDataCriacao(LocalDateTime.now());
+        post.setDataCriacao(Instant.now());
 
         Post salvo = postRepository.save(post);
         indexadorService.reindexar(salvo.getId(), TipoReferencia.POST, Map.of(CampoIndexado.CONTEUDO, salvo.getContent()));
@@ -60,7 +61,7 @@ public class PostService {
 
         post.setContent(dto.content());
         post.setMediaUrl(dto.mediaUrl());
-        post.setDataEdicao(LocalDateTime.now());
+        post.setDataEdicao(Instant.now());
 
         Post salvo = postRepository.save(post);
         indexadorService.reindexar(salvo.getId(), TipoReferencia.POST, Map.of(CampoIndexado.CONTEUDO, salvo.getContent()));
@@ -94,7 +95,7 @@ public class PostService {
     Post comentario = new Post();
     comentario.setContent(dto.content());
     comentario.setMediaUrl(dto.mediaUrl());
-    comentario.setDataCriacao(LocalDateTime.now());
+    comentario.setDataCriacao(Instant.now());
     comentario.setComentPostId(comentPostId);
 
     // ALTERAÇÃO 2 -  Adicionado setAutorId — estava faltando,

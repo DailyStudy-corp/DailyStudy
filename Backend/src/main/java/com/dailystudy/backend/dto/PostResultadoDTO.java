@@ -2,13 +2,13 @@ package com.dailystudy.backend.dto;
 
 import com.dailystudy.backend.model.Post;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PostResultadoDTO(
         String id,
         String content,
         String mediaUrl,
-        LocalDateTime dataCriacao,
+        Instant dataCriacao,
         Long autorId,
         String autorUsername,
         int score
