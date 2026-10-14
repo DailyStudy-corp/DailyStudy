@@ -173,42 +173,69 @@ const Posts = (() => {
 
   /*curica: Implementei o endpoint do post, coloquei o token para autorizar
             o fetch ja vem com metodo GET padrao, entao nao tive que declarar
+            
+            Agora o renderFeed tem paginacao por cursor
   */
-  async function renderFeed() {
-    const feedEl   = document.getElementById('feedList');
-    const emptyEl  = document.getElementById('feedEmpty');
-    const badgeEl  = document.getElementById('postBadge');
+  let feedCursor = null;
+  let feedHasMore = true;
+  let feedLoading = false;
 
-    feedEl.innerHTML = '';
+  async function renderFeed(reset = true) {
+    if (reset) {
+      const feedEl = document.getElementById('feedList');
+      feedEl.innerHTML = '';
+      feedCursor = null;
+      feedHasMore = true;
+      window.allPosts = [];
+    }
+    await loadMoreFeed();
+  }
+
+  async function loadMoreFeed() {
+    if (feedLoading || !feedHasMore) return;
+    feedLoading = true;
+
+    const feedEl  = document.getElementById('feedList');
+    const emptyEl = document.getElementById('feedEmpty');
+    const badgeEl = document.getElementById('postBadge');
+    const loadingEl = document.getElementById('feedLoadingIndicator');
+
+    if (loadingEl) loadingEl.classList.remove('hidden');
 
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
-        headers: {...Auth.headers()}
+      const params = new URLSearchParams({ limit: 20 });
+      if (feedCursor) params.set('cursor', feedCursor);
+
+      const response = await fetch(`/api/posts?${params}`, {
+        headers: { ...Auth.headers() }
       });
 
-      if (!response.ok) throw new Error('Erro ao carregar feed');
+      if (!response.ok) throw new Error('Erro ao carregar o feed');
 
-      const posts = await response.json();
+      const { posts, nextCursor, hasMore } = await response.json();
 
-      window.allPosts = posts; //aqui ele guarda na memoria os posts
+      window.allPosts = (window.allPosts || []).concat(posts);
+      feedCursor  = nextCursor;
+      feedHasMore = hasMore;
 
-      feedEl.innerHTML = '';
-    
+      if (window.allPosts.length === 0) {
+        emptyEl.classList.remove('hidden');
+        badgeEl.textContent = '0 posts';
+        return;
+      }
 
-    if (posts.length === 0) {
-      emptyEl.classList.remove('hidden');
-      badgeEl.textContent = '0 posts';
-      return;
+      emptyEl.classList.add('hidden');
+      badgeEl.textContent = `${window.allPosts.length} post${window.allPosts.length !== 1 ? 's' : ''}`;
+
+      posts.forEach(post => feedEl.appendChild(createPostCard(post)));
+
+    } catch (err) {
+      console.error('Erro no loadMoreFeed:', err);
+      UI.showToast('Erro ao carregar o feed.', 'err');
+    } finally {
+      feedLoading = false;
+      if (loadingEl) loadingEl.classList.add('hidden');
     }
-
-    emptyEl.classList.add('hidden');
-    badgeEl.textContent = `${posts.length} post${posts.length !== 1 ? 's' : ''}`;
-
-    posts.forEach(post => feedEl.appendChild(createPostCard(post)));
-  } catch (err) {
-    feedEl.innerHTML = '';
-    UI.showToast('Erro ao carregar o feed.', 'err')
-  }
   }
 
   // Renderiza os posts na aba de perfil.
@@ -221,7 +248,7 @@ const Posts = (() => {
     const emptyEl   = document.getElementById('profileEmpty');
 
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts/mine', {
+      const response = await fetch('/api/posts/mine', {
         headers: {...Auth.headers()}
       });
 
@@ -273,7 +300,7 @@ const Posts = (() => {
     if (!text) return;
 
     try {
-      const response = await fetch ('http://127.0.0.1:8080/api/posts', {
+      const response = await fetch ('/api/posts', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -334,7 +361,7 @@ const Posts = (() => {
     }
 
     try {
-      const response = await fetch (`http://127.0.0.1:8080/api/posts/${editingPostId}`, {
+      const response = await fetch (`/api/posts/${editingPostId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -378,7 +405,7 @@ const Posts = (() => {
 
       const token = localStorage.getItem('token');
       try {
-    const response = await fetch(`http://127.0.0.1:8080/api/posts/${postIdToDelete}`, {
+    const response = await fetch(`/api/posts/${postIdToDelete}`, {
       method: 'DELETE',
       headers: { ...Auth.headers() }
     });
@@ -431,7 +458,7 @@ const Posts = (() => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8080/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}`, {
         method: 'DELETE',
         headers: {...Auth.headers()}
       });
@@ -532,7 +559,7 @@ const Posts = (() => {
     if (backBtn) backBtn.classList.toggle('hidden', commentModalHistory.length === 0);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/detalhes`, {
+      const response = await fetch(`/api/posts/${postId}/detalhes`, {
         headers: { ...Auth.headers() }
       });
 
@@ -567,7 +594,7 @@ if (commentFormAva) {
   commentFormAva.innerHTML = '';
 
   try {
-    const meResponse = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
+    const meResponse = await fetch('/api/usuarios/me', {
       headers: { ...Auth.headers() }
     });
 
@@ -605,7 +632,7 @@ async function handleCreateComment(conteudo) {
   if (!activeCommentPostId || !conteudo.trim()) return;
 
   try {
-     const response = await fetch(`http://127.0.0.1:8080/api/posts/${activeCommentPostId}/comentarios`, {
+    const response = await fetch(`/api/posts/${activeCommentPostId}/comentarios`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -634,7 +661,7 @@ async function handleCreateComment(conteudo) {
     const countEl = buttonEl.querySelector('.int-count');
  
     try {
-      const response = await fetch(`http://127.0.0.1:8080/api/posts/${postId}/curtida`, {
+      const response = await fetch(`/api/posts/${postId}/curtida`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -668,6 +695,7 @@ async function handleCreateComment(conteudo) {
  
   return {
     renderFeed,
+    loadMoreFeed,
     renderProfilePosts,
     renderExternalPosts,
     updateStats,

@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // --- INÍCIO DO TESTE DE CONFIRMAÇÃO ---
-            const response = await fetch('http://127.0.0.1:8080/api/usuarios/registro', {
+            const response = await fetch('/api/usuarios/registro', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

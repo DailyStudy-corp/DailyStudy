@@ -1,0 +1,7 @@
+FROM nginx:1.27-alpine
+
+# No futuro, em produção, os arquivos do frontend são copiados no build (imutável).
+# Em dev, esse COPY é sobrescrito por um bind mount (ver docker-compose.override.yml).
+COPY Frontend /usr/share/nginx/html
+
+EXPOSE 80 443

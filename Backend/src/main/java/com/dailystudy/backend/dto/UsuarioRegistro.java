@@ -1,5 +1,6 @@
 package com.dailystudy.backend.dto;
 
+import com.dailystudy.backend.util.Normalizador;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -12,12 +13,16 @@ public class UsuarioRegistro {
     @NotBlank
     private String username;
 
-    @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}")
+    @Email(message = "Cadastrar um email válido")
     private String email;
 
-    @Size(min = 8)
+    @Size(min = 8, max = 30)
     @NotBlank()
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+=.,<>?])(?=\\S+$).{8,}$",
                 message = "A senha deve conter letras maiúsculas, minúsculas, números e caracteres especiais")
     private String senha;
+
+    public void setEmail(String email) {
+        this.email = Normalizador.normalizarEmail(email);
+    }
 }

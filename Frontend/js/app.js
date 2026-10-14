@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   //Autenticacao validada no backend.
     try {
-       const response = await fetch('http://127.0.0.1:8080/api/usuarios/me', {
+       const response = await fetch('/api/usuarios/me', {
         method: 'GET',
         headers: {...Auth.headers()}
       });
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --Logout
    async function handleLogout() {
     try {
-      await fetch('http://127.0.0.1:8080/api/usuarios/logout', {
+      await fetch('/api/usuarios/logout', {
         method: 'POST',
         headers: { ...Auth.headers() }
       });
@@ -327,11 +327,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Filtra os posts do feed com base na query e atualiza o contador.
   // Estratégia: renderiza todos os posts e remove os que não batem.
-  function filterFeedPosts(query) {
+    async function filterFeedPosts(query) {
     // Aguarda 320ms (ligeiramente acima do debounce de 300ms do Search)
     // para garantir que a busca já terminou antes de renderizar
-    setTimeout(() => {
-      const results   = Search.searchPosts(query);
+    setTimeout(async () => {
+      let results;
+      try {
+        results = await Search.buscarPosts(query);
+      } catch (err) {
+        console.error('Erro ao filtrar o feed:', err);
+        return;
+      }
+
       const feedEl    = document.getElementById('feedList');
       const emptyEl   = document.getElementById('feedEmpty');
       const countEl   = document.getElementById('feedSearchCount');
@@ -363,6 +370,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
     }, 320);
+  }
+
+  const feedSentinel = document.getElementById('feedSentinel');
+
+  if (feedSentinel) {
+    const feedObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+        const buscaAtiva = document.getElementById('feedSearchInput').value.trim().length > 0;
+        if (!buscaAtiva) Posts.loadMoreFeed();
+        
+        }
+      });
+    }, {
+      root: null,         // viewport como referencia para carregar o feed
+      rootMargin: '200px',// dispara um pouco antes do fim para ter a sensacao de scroll
+      threshold: 0
+    });
+
+    feedObserver.observe(feedSentinel);
   }
 
 

@@ -146,7 +146,7 @@ const Profile = (() => {
     UI.showToast('Salvando alterações…');
     
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/perfil', {
+      const response = await fetch('/api/usuarios/me/perfil', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -162,13 +162,6 @@ const Profile = (() => {
       if (!response.ok) {
         const erroServidor = await response.json().catch(() => null);
         throw new Error(erroServidor?.message || 'Falha ao atualizar o perfil no servidor.');
-      }
-
-      const data = await response.json().catch(() => null);
-
-      // Se o backend devolver um novo JWT com o username atualizado, atualizamos o Auth
-      if (data && data.token) {
-        Auth.setToken(data.token);
       }
 
       // Passamos 'username' junto com 'name' para sincronizar com o storage.js
@@ -216,7 +209,7 @@ const Profile = (() => {
         banner_perfil: type === 'banner_perfil' ? dataUrl : (currentProfile.banner_perfil || null)
       };
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
-      const response = await fetch('http://127.0.0.1:8080/api/usuarios/me/img_perfil', {
+      const response = await fetch('/api/usuarios/me/img_perfil', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -271,7 +264,7 @@ const Profile = (() => {
   async function loadProfileVisited(username) {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/api/usuarios/perfil/${encodeURIComponent(username)}`,
+        `/api/usuarios/perfil/${encodeURIComponent(username)}`,
         {
           headers: { ...Auth.headers() }
         }

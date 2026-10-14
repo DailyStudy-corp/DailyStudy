@@ -1,5 +1,6 @@
 package com.dailystudy.backend.model;
 
+import com.dailystudy.backend.util.Normalizador;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -50,6 +51,12 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UsuarioRole role;
+
+    @PrePersist
+    @PreUpdate
+    public void normalizarEmail() {
+        this.email = Normalizador.normalizarEmail(this.email);
+    }
 
 
 

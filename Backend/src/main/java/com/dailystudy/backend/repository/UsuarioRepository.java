@@ -3,6 +3,9 @@ package com.dailystudy.backend.repository;
 import com.dailystudy.backend.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +16,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     //Aqui da mesma forma porém trocando pelo username: SELECT * FROM usuarios WHERE username = ?
     Optional<Usuario> findByUsername(String username);
+
+    //Faz o SELECT * FROM usuarios WHERE username IN
+    List<Usuario> findByUsernameIn(Collection<String> usernames);
 }

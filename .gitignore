@@ -3,3 +3,6 @@ app.jar
 app.zip
 app_extracted/
 .idea/
+nginx/certs/dev
+*.pem
+.oci/

@@ -171,6 +171,14 @@
       <!-- Lista de posts (preenchida pelo JS) -->
       <div class="feed-list" id="feedList" role="feed" aria-label="Postagens"></div>
 
+      <!-- Indicador de "carregando mais" -->
+      <div class="feed-loading hidden" id="feedLoadingIndicator" aria-live="polite">
+        Carregando mais posts…
+      </div>
+
+      <!-- Sentinela: quando isso entra na tela, carrega a próxima página -->
+      <div id="feedSentinel" aria-hidden="true"></div>
+
       <!-- Exibido quando não há posts -->
       <div class="empty-state hidden" id="feedEmpty" role="status">
         <div class="empty-ico" aria-hidden="true">📚</div>
