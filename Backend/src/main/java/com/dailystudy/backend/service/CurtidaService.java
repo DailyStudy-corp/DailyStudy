@@ -6,11 +6,13 @@ import com.dailystudy.backend.repository.CurtidaRepository;
 import com.dailystudy.backend.repository.PostRepository;
 import com.mongodb.DuplicateKeyException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CurtidaService {
@@ -20,7 +22,10 @@ public class CurtidaService {
 
     public CurtidaDTO toggleCurtida(String postId, Long autorId){
         postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post não encontrado"));
+                .orElseThrow(() -> {
+                    log.warn("Curtida falhou: post não encontrado (id={})", postId);
+                    return new RuntimeException("Post não encontrado");
+                });
 
         Optional<Curtida> curtidaExistente = curtidaRepository.findByPostIdAndAutorId(postId, autorId);
 
@@ -34,6 +39,7 @@ public class CurtidaService {
                 curtidaRepository.save(novaCurtida);
                 curtido = true;
             } catch (DuplicateKeyException e) {
+                log.warn("Corrida detectada ao curtir post (postId={}, autorId={}): curtida já existia", postId, autorId);
                 curtido = true;
             }
         }

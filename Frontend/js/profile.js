@@ -164,13 +164,6 @@ const Profile = (() => {
         throw new Error(erroServidor?.message || 'Falha ao atualizar o perfil no servidor.');
       }
 
-      const data = await response.json().catch(() => null);
-
-      // Se o backend devolver um novo JWT com o username atualizado, atualizamos o Auth
-      if (data && data.token) {
-        Auth.setToken(data.token);
-      }
-
       // Passamos 'username' junto com 'name' para sincronizar com o storage.js
       Storage.patchProfile({ username: name, name, role, bio });
       

@@ -1,6 +1,6 @@
 services:
   backend:
-    profiles: []          # remove a restrição de profile em produção — sempre sobe
+    profiles: !reset []          # remove a restrição de profile em produção — sempre sobe
     restart: unless-stopped
 
   nginx:
@@ -21,6 +21,7 @@ services:
 
   certbot:
     image: certbot/certbot
+    restart: unless-stopped
     volumes:
       - certbot-etc:/etc/letsencrypt
       - certbot-webroot:/var/www/certbot

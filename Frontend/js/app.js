@@ -327,11 +327,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Filtra os posts do feed com base na query e atualiza o contador.
   // Estratégia: renderiza todos os posts e remove os que não batem.
-  function filterFeedPosts(query) {
+    async function filterFeedPosts(query) {
     // Aguarda 320ms (ligeiramente acima do debounce de 300ms do Search)
     // para garantir que a busca já terminou antes de renderizar
-    setTimeout(() => {
-      const results   = Search.searchPosts(query);
+    setTimeout(async () => {
+      let results;
+      try {
+        results = await Search.buscarPosts(query);
+      } catch (err) {
+        console.error('Erro ao filtrar o feed:', err);
+        return;
+      }
+
       const feedEl    = document.getElementById('feedList');
       const emptyEl   = document.getElementById('feedEmpty');
       const countEl   = document.getElementById('feedSearchCount');
