@@ -594,3 +594,51 @@
 .like-btn.active svg {
   fill: var(--danger);
 }
+
+/* Att w gemini para dispositivos mobiles */
+
+/* ── Ajustes estruturais para evitar que o rodapé vaze o modal ── */
+.modal.modal-comments {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Garante que a área de listagem de comentários role adequadamente sem forçar tamanhos fixos indesejados */
+.modal.modal-comments .comments-list {
+  flex: 1 1 auto;
+  max-height: 45vh;
+}
+
+/* ── Responsivo para Dispositivos Mobile (max-width: 640px) ── */
+@media (max-width: 640px) {
+  .modal.modal-comments {
+    width: 95% !important;
+    max-width: 100% !important;
+    max-height: 90vh;
+    border-radius: var(--r-lg, 16px);
+  }
+
+  .modal.modal-comments .comments-list {
+    max-height: 50vh;
+    padding: 12px 16px;
+  }
+
+  .comment-form {
+    padding: 12px 16px;
+  }
+
+  .comment-input-wrap {
+    padding: 4px 6px 4px 12px;
+  }
+
+  .comment-input {
+    font-size: 0.95rem;
+    padding: 10px 0;
+  }
+
+  .comment-form .btn-primary {
+    padding: 7px 5px;
+    font-size: 0.8rem;
+  }
+}
