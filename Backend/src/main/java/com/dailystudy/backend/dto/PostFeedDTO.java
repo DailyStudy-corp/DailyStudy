@@ -1,9 +1,9 @@
 package com.dailystudy.backend.dto;
-
+ 
 import com.dailystudy.backend.model.Post;
-
+ 
 import java.time.Instant;
-
+ 
 public record PostFeedDTO(
         String id,
         String content,
@@ -15,9 +15,10 @@ public record PostFeedDTO(
         Instant dataEdicao,
         String comentPostId,
         long totalCurtidas,
-        long totalComentarios) {
-
-    public PostFeedDTO(Post post, String autorUsername, String autorImg, long totalCurtidas, long totalComentarios){
+        long totalComentarios,
+        boolean curtidoPorUsuario) {
+ 
+    public PostFeedDTO(Post post, String autorUsername, String autorImg, long totalCurtidas, long totalComentarios, boolean curtidoPorUsuario){
         this(
                 post.getId(),
                 post.getContent(),
@@ -29,7 +30,8 @@ public record PostFeedDTO(
                 post.getDataEdicao(),
                 post.getComentPostId(),
                 totalCurtidas,
-                totalComentarios
+                totalComentarios,
+                curtidoPorUsuario
         );
     }
 }
