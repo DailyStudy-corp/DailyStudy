@@ -75,23 +75,47 @@ public class PostController {
         return ResponseEntity.ok(comentario);
     }
 
-      @GetMapping("/{id}/comentarios")
-    public ResponseEntity<List<PostFeedDTO>> listarComentarios(@PathVariable String id, Authentication authentication) {
-        // ALT 5  - Passar username do usuário logado para calcular curtido nos comentários
-        String username = authentication != null ? authentication.getName() : null;
-        return ResponseEntity.ok(postService.listarComentarios(id));
-      }
+    @GetMapping("/{id}/comentarios")
+    public ResponseEntity<List<PostFeedDTO>> listarComentarios(
+        @PathVariable String id,
+        Authentication authentication
+    ) {
+        Long usuarioLogadoId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Usuario) {
+            Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+            usuarioLogadoId = usuarioLogado.getId();
+        }
+      
+        return ResponseEntity.ok(postService.listarComentarios(id, usuarioLogadoId));
+    }
 
-      @GetMapping("/{id}/detalhes")
-    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(@PathVariable String id, Authentication authentication) {
-        // ALT 6  - Passar username do usuário logado para calcular curtido no post e comentários
-        String username = authentication != null ? authentication.getName() : null;
-        PostDetalhesDTO detalhes = postService.buscarDetalhes(id);
+    @GetMapping("/{id}/detalhes")
+    public ResponseEntity<PostDetalhesDTO> buscarDetalhes(
+        @PathVariable String id,
+        Authentication authentication
+    ) {
+        Long usuarioLogadoId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Usuario) {
+            Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+            usuarioLogadoId = usuarioLogado.getId();
+        }
+        
+        PostDetalhesDTO detalhes = postService.buscarDetalhes(id, usuarioLogadoId);
         return ResponseEntity.ok(detalhes);
     }
 
     @GetMapping
-    public ResponseEntity<FeedPageDTO> listarPosts(@RequestParam(required = false) String cursor, @RequestParam(defaultValue = "20") @Max(50) int limit) {
-        return ResponseEntity.ok(postService.listarFeedCursor(cursor, limit));
+    public ResponseEntity<FeedPageDTO> listarPosts(
+        @RequestParam(required = false) String cursor,
+        @RequestParam(defaultValue = "20") @Max(50) int limit,
+        Authentication authentication
+    ) {
+        Long usuarioLogadoId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Usuario) {
+            Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+            usuarioLogadoId = usuarioLogado.getId();
+        }
+        
+        return ResponseEntity.ok(postService.listarFeedCursor(cursor, limit, usuarioLogadoId));
     }
 }
