@@ -104,19 +104,36 @@ public class PostService {
         return salvo;
     }
  
-    // ✅ ALTERADO: Agora recebe usuarioLogadoId
+    
     public List<PostFeedDTO> listarFeedAutor(Long usuarioLogadoId){
         List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(usuarioLogadoId);
         return mapearFeedDTO(posts, usuarioLogadoId);
     }
  
-    // ✅ ALTERADO: Agora recebe usuarioLogadoId
+   
     public List<PostFeedDTO> listarComentarios(String comentPostId, Long usuarioLogadoId){
         List<Post> comentarios = postRepository.findByComentPostIdOrderByDataCriacaoDesc(comentPostId);
         return mapearFeedDTO(comentarios, usuarioLogadoId);
     }
+    //Novos metodos para postagem 
+
+    public list<Post> obterPostagensDoUsuario(String emailUsuario) {
+        return postRepository
+        .findByAutorAndComentPostIdIsNullOrderByDataCriacaoDesc(emailUsuario);
+    }
+     
+    public list <Post> obterRespostasDoUsuario(String emailUsuario) {
+        return postRepository
+        .findByAutorAndComentPostIdIsNotNullOrderByDataCriacaoDesc(emailUsuario);
+    }
  
-    // ✅ ALTERADO: Agora recebe usuarioLogadoId como segundo parâmetro
+    public list <Post> obterComentariosDoPost(String postId) {
+        return postRepository
+        .findByComentPostIdOrderByDataCriacaoDesc(postId);
+    }
+
+   // Final dos metodos novos para postagem
+
     private List<PostFeedDTO> mapearFeedDTO(List<Post> posts, Long usuarioLogadoId){
         if (posts.isEmpty()) {
             return List.of();
@@ -137,7 +154,7 @@ public class PostService {
         Map<String, Long> curtidasPorPost = curtidaRepository.countGroupedByPostId(postIds);
         Map<String, Long> comentariosPorPost = postRepository.countGroupedByComentPostId(postIds);
  
-        // ✅ Computar o Set final ANTES de usar em lambdas
+        
         final Set<String> postIdsQueSoForamCurtidos;
  
         if (usuarioLogadoId != null) {
@@ -157,14 +174,14 @@ public class PostService {
             long totalCurtidas = curtidasPorPost.getOrDefault(post.getId(), 0L);
             long totalComentarios = comentariosPorPost.getOrDefault(post.getId(), 0L);
  
-            // ✅ Verifica se este post está na lista de curtidos pelo usuário
+            //  Verifica se este post está na lista de curtidos pelo usuário
             boolean curtidoPorEsteUsuario = postIdsQueSoForamCurtidos.contains(post.getId());
  
             return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios, curtidoPorEsteUsuario);
         }).toList();
     }
  
-    // ✅ ALTERADO: Agora recebe usuarioLogadoId
+   
     public PostDetalhesDTO buscarDetalhes(String id, Long usuarioLogadoId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
@@ -175,7 +192,7 @@ public class PostService {
         return new PostDetalhesDTO(postDTO, comentariosDTO);
     }
  
-    // ✅ ALTERADO: Agora recebe usuarioLogadoId
+   
     public FeedPageDTO listarFeedCursor(String cursorCodificado, int limit, Long usuarioLogadoId) {
         var cursor = CursorCodec.decode(cursorCodificado);
  
