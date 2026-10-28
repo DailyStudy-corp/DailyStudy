@@ -24,6 +24,5 @@ public class Post {
     private Instant dataCriacao;
     private Instant dataEdicao;
     private Long autorId;
-
-    private String comentPostId;
+    private String comentPostId; //Provavel alt do claude
 }

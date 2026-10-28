@@ -332,21 +332,21 @@
 
 
         <!-- Posts do usuário no perfil -->
-        <div role="region" aria-label="Suas postagens">
-          <div class="section-head">
-            <span class="section-title">Suas postagens</span>
-            <div class="section-divider" aria-hidden="true"></div>
-          </div>
-          <div class="feed-list" id="profileFeed" role="feed"></div>
-          <div class="empty-state hidden" id="profileEmpty" role="status">
-            <div class="empty-ico" aria-hidden="true">✏️</div>
-            <h3>Sem postagens ainda</h3>
-            <p>Publique algo no feed!</p>
-          </div>
+         <div class = "profile-tabs-container">
+         <div class="profile-tabs">
+           <button class ="tab=btn-active" data-tab="postagens">
+             Postagens
+           </button>
+         <button class="tab-btn" data-tab="respostas">
+             Respostas
+           </button>
+         </div>
+         
+         <div class ="profile-content">
+          <!-- Conteudo dinamicamente att-->
+         </div>
         </div>
-
-
-      </div>
+        
     </section>
 
 
