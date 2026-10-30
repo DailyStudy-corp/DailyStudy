@@ -96,6 +96,31 @@ class ImageValidatorTest {
         assertEquals("Imagem corrompida ou inválida", erro.getMessage());
     }
 
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = {
+            "/imagens/acima-4001x4000.png",
+            "/imagens/bomba-20000x20000.png",
+            "/imagens/estouro-65536x65536.png"
+    })
+    void validar_imagemComDimensoesAcimaDoLimite_lancaExcecaoComMotivo(String caminho) throws IOException {
+        byte[] conteudo = lerRecurso(caminho);
+
+        InvalidImageException erro = assertThrows(
+                InvalidImageException.class,
+                () -> ImageValidator.validar(conteudo));
+
+        assertEquals("Imagem com dimensões grandes demais", erro.getMessage());
+    }
+
+    @Test
+    void validar_imagemNoLimiteDePixels_aceita() throws IOException {
+        byte[] conteudo = lerRecurso("/imagens/limite-4000x4000.png");
+
+        String tipo = ImageValidator.validar(conteudo);
+
+        assertEquals("image/png", tipo);
+    }
+
     private static byte[] lerRecurso(String caminho) throws IOException {
         try (InputStream in = ImageValidatorTest.class.getResourceAsStream(caminho)) {
             assertNotNull(in, "arquivo de teste não encontrado: " + caminho);
