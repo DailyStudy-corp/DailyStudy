@@ -98,4 +98,14 @@ public class GlobalHandlerException {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ExceptionDTO> handleInvalidImage(InvalidImageException ex) {
+
+        log.debug("InvalidImageException tratado: {}", ex.getMessage());
+
+        ExceptionDTO erro = new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), "Imagem inválida", ex.getMessage(), LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
 }
