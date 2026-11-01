@@ -50,6 +50,20 @@ public class ImageUploadServiceTest {
         verifyNoInteractions(ociStorageService);
     }
 
+    @Test
+    void upload_arquivoVazio_lancaExcecaoComMensagemEspecificaESemChamarBucket() {
+        // Arrange: arquivo de 0 bytes, como se o usuário enviasse o formulário sem escolher nada
+        MockMultipartFile arquivo = new MockMultipartFile("arquivo", "foto.png", "image/png", new byte[0]);
+        ImageUploadService servico = new ImageUploadService(ociStorageService);
+
+        // Act
+        InvalidImageException excecao = assertThrows(InvalidImageException.class, () -> servico.upload(arquivo));
+
+        // Assert
+        assertEquals("Arquivo vazio", excecao.getMessage());
+        verifyNoInteractions(ociStorageService);
+    }
+
     private static byte[] lerRecurso(String caminho) throws IOException {
         try (InputStream in = ImageUploadServiceTest.class.getResourceAsStream(caminho)) {
             assertNotNull(in, "arquivo de teste não encontrado: " + caminho);
