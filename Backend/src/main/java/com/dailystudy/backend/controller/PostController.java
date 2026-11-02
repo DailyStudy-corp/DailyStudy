@@ -5,6 +5,7 @@ import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
+import com.dailystudy.backend.util.ImageUrlValidator;
 import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -24,11 +25,12 @@ public class PostController {
 
     private final PostService postService;
     private final CurtidaService curtidaService;
+    private final ImageUrlValidator imageUrlValidator;
 
     @PostMapping
     public ResponseEntity<Post> postar(@Valid @RequestBody PostCreateDTO dto, @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        if (!MediaValidator.isSafeImage(dto.mediaUrl())){
+        if (!imageUrlValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
         }
 
