@@ -6,7 +6,6 @@ import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
 import com.dailystudy.backend.util.ImageUrlValidator;
-import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +41,7 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<Post> editarPost(@Valid @PathVariable String id, @RequestBody EditarPostDTO dto, @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        if (!MediaValidator.isSafeImage(dto.mediaUrl())){
+        if (!imageUrlValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
         }
 

@@ -23,8 +23,10 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -92,5 +94,46 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.id").value("p1"));
 
         verify(postService).criarPost(any(), eq(1L));
+    }
+
+    @Test
+    void editarPost_comImagemInvalida_retorna400ENaoEdita() throws Exception {
+        Usuario autor = new Usuario();
+        autor.setId(1L);
+        autor.setRole(UsuarioRole.USER);
+
+        when(imageUrlValidator.isSafeImage("https://evil.com/x.png")).thenReturn(false);
+
+        mockMvc.perform(put("/api/posts/p1")
+                        .with(logadoComo(autor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"content":"oi","mediaUrl":"https://evil.com/x.png"}"""))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(postService);
+    }
+
+    @Test
+    void editarPost_comImagemValida_retorna200EEditaOPost() throws Exception {
+        Usuario autor = new Usuario();
+        autor.setId(1L);
+        autor.setRole(UsuarioRole.USER);
+
+        String url = "https://exemplo.test/o/abc";   // o valor não importa: o validador é mock
+        Post editado = new Post();
+        editado.setId("p1");
+        when(imageUrlValidator.isSafeImage(url)).thenReturn(true);
+        when(postService.editarPost(eq("p1"), any(), eq(1L))).thenReturn(editado);
+
+        mockMvc.perform(put("/api/posts/p1")
+                        .with(logadoComo(autor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"content":"oi","mediaUrl":"https://exemplo.test/o/abc"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("p1"));
+
+        verify(postService).editarPost(eq("p1"), any(), eq(1L));
     }
 }
