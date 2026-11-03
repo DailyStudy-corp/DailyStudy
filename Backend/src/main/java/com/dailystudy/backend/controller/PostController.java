@@ -71,6 +71,11 @@ public class PostController {
 
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@Valid @PathVariable String id, @RequestBody ComentarioDTO dto, @AuthenticationPrincipal Usuario usuarioLogado){
+
+        if (!imageUrlValidator.isSafeImage(dto.mediaUrl())){
+            return ResponseEntity.badRequest().build();
+        }
+
         Post comentario = postService.criarComentario(id, dto, usuarioLogado.getId());
 
         return ResponseEntity.ok(comentario);

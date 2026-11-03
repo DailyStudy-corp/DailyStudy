@@ -136,4 +136,66 @@ class PostControllerTest {
 
         verify(postService).editarPost(eq("p1"), any(), eq(1L));
     }
+
+    @Test
+    void comentar_comImagemInvalida_retorna400ENaoCria() throws Exception {
+        Usuario autor = new Usuario();
+        autor.setId(1L);
+        autor.setRole(UsuarioRole.USER);
+
+        when(imageUrlValidator.isSafeImage("https://evil.com/x.png")).thenReturn(false);
+
+        mockMvc.perform(post("/api/posts/p1/comentarios")
+                        .with(logadoComo(autor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"content":"oi","mediaUrl":"https://evil.com/x.png"}"""))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(postService);
+    }
+
+    @Test
+    void comentar_comImagemValida_retorna200EOCriaComentario() throws Exception {
+        Usuario autor = new Usuario();
+        autor.setId(1L);
+        autor.setRole(UsuarioRole.USER);
+
+        String url = "https://exemplo.test/o/abc";
+        Post comentario = new Post();
+        comentario.setId("c1");
+        when(imageUrlValidator.isSafeImage(url)).thenReturn(true);
+        when(postService.criarComentario(eq("p1"), any(), eq(1L))).thenReturn(comentario);
+
+        mockMvc.perform(post("/api/posts/p1/comentarios")
+                        .with(logadoComo(autor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"content":"oi","mediaUrl":"https://exemplo.test/o/abc"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("c1"));
+
+        verify(postService).criarComentario(eq("p1"), any(), eq(1L));
+    }
+
+    @Test
+    void comentar_semImagem_retorna200() throws Exception {
+        Usuario autor = new Usuario();
+        autor.setId(1L);
+        autor.setRole(UsuarioRole.USER);
+
+        Post comentario = new Post();
+        comentario.setId("c2");
+        // o validador real aceita null; o mock precisa dizer a mesma coisa
+        when(imageUrlValidator.isSafeImage(null)).thenReturn(true);
+        when(postService.criarComentario(eq("p1"), any(), eq(1L))).thenReturn(comentario);
+
+        mockMvc.perform(post("/api/posts/p1/comentarios")
+                        .with(logadoComo(autor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"content":"so texto"}"""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("c2"));
+    }
 }
