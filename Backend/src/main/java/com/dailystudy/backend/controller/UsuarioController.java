@@ -4,6 +4,7 @@ import com.dailystudy.backend.service.TokenService;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
+import com.dailystudy.backend.util.ImageUrlValidator;
 import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,8 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
+    private final ImageUrlValidator imageUrlValidator;
 
-    private static final String COOKIE_NAME = "access_token";
-    private static final Duration COOKIE_MAX_AGE = Duration.ofHours(2);
 
     @PostMapping("/registro") // Mapeia a requisicao HTTP para criar um novo usuario no banco de dados
     public ResponseEntity<String> registrar(@Valid @RequestBody UsuarioRegistro dto) {
@@ -61,7 +61,7 @@ public class UsuarioController {
             return ResponseEntity.status(401).build();
         }
 
-        if (!MediaValidator.isSafeImage(dto.img_perfil())) {
+        if (!imageUrlValidator.isSafeImage(dto.img_perfil())) {
             return ResponseEntity.badRequest().build();
         }
 
