@@ -61,7 +61,8 @@ public class UsuarioController {
             return ResponseEntity.status(401).build();
         }
 
-        if (!imageUrlValidator.isSafeImage(dto.img_perfil())) {
+        if (!imageUrlValidator.isSafeImage(dto.img_perfil())
+                || !imageUrlValidator.isSafeImage(dto.banner_perfil())) {
             return ResponseEntity.badRequest().build();
         }
 

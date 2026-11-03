@@ -1,6 +1,7 @@
 package com.dailystudy.backend.controller;
 
 import com.dailystudy.backend.config.SecurityConfig;
+import com.dailystudy.backend.dto.ImagemPerfil;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.model.UsuarioRole;
 import com.dailystudy.backend.repository.UsuarioRepository;
@@ -18,8 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,5 +62,46 @@ public class UsuarioControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(usuarioService);
+    }
+
+    @Test
+    void uploadImagemPerfil_comBannerInvalido_retorna400ENaoAtualiza() throws Exception {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setRole(UsuarioRole.USER);
+
+        String imgBoa = "https://exemplo.test/o/abc";
+        when(imageUrlValidator.isSafeImage(imgBoa)).thenReturn(true);
+        when(imageUrlValidator.isSafeImage("https://evil.com/b.png")).thenReturn(false);
+
+        mockMvc.perform(put("/api/usuarios/me/img_perfil")
+                        .with(logadoComo(usuario))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"img_perfil":"https://exemplo.test/o/abc","banner_perfil":"https://evil.com/b.png"}"""))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(usuarioService);
+    }
+
+    @Test
+    void uploadImagemPerfil_comImagensValidas_retorna204EAtualiza() throws Exception {
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setRole(UsuarioRole.USER);
+
+        String img = "https://exemplo.test/o/abc";
+        String banner = "https://exemplo.test/o/def";
+        when(imageUrlValidator.isSafeImage(img)).thenReturn(true);
+        when(imageUrlValidator.isSafeImage(banner)).thenReturn(true);
+
+        mockMvc.perform(put("/api/usuarios/me/img_perfil")
+                        .with(logadoComo(usuario))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"img_perfil":"https://exemplo.test/o/abc","banner_perfil":"https://exemplo.test/o/def"}"""))
+                .andExpect(status().isNoContent());
+
+        verify(usuarioService).atualizarImgPerfil(eq(1L), eq(new ImagemPerfil(img, banner)));
     }
 }
