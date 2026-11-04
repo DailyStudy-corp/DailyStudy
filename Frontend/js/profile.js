@@ -200,13 +200,13 @@ const Profile = (() => {
 
     //ALTERACAO 6 - CAPTURA DE IMAGEM E  PAYLOAD UNIFICADO PARA AVATAR E BANNER
     try {
-      const dataUrl = await readFileAsDataUrl(file);
+      const url = await ImageUpload.upload(file);
       const currentProfile = Storage.getProfile();
            
       // alt 5 - Passou de ava e banner para - img perfil e banner_perfil
       const payload = {
-        img_perfil: type === 'img_perfil' ? dataUrl : (currentProfile.img_perfil || null),
-        banner_perfil: type === 'banner_perfil' ? dataUrl : (currentProfile.banner_perfil || null)
+        img_perfil: type === 'img_perfil' ? url : (currentProfile.img_perfil || null),
+        banner_perfil: type === 'banner_perfil' ? url : (currentProfile.banner_perfil || null)
       };
                                       //localhost:8080/api/usuarios/me - Caso nao seja o caminho abaixo da API, alterar para este
       const response = await fetch('/api/usuarios/me/img_perfil', {
@@ -223,10 +223,10 @@ const Profile = (() => {
       }
       //Alterado de avatar para img_perfil
       if (type === 'img_perfil') {
-        Storage.patchProfile({ img_perfil: dataUrl });
+        Storage.patchProfile({ img_perfil: url });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
       } else if (type === 'banner_perfil') {
-        Storage.patchProfile({ banner_perfil: dataUrl });
+        Storage.patchProfile({ banner_perfil: url });
         UI.showToast('Banner updated! 🖼️', 'ok');
       }
 
