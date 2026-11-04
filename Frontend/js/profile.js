@@ -45,16 +45,6 @@ const Profile = (() => {
     }
   }
 
-  // Lê um arquivo de imagem e retorna uma Promise com a Data URL (Base64).
-  // Necessário para salvar imagens no localStorage.
-  function readFileAsDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload  = event => resolve(event.target.result);
-      reader.onerror = ()    => reject(new Error('Falha ao ler o arquivo.'));
-      reader.readAsDataURL(file);
-    });
-  }
 
 
   // ── Sincronização da UI ──────────────────────────────────────
@@ -313,7 +303,6 @@ const Profile = (() => {
   return {
     get:               Storage.getProfile,
     getInitials,
-    readFileAsDataUrl,
     fillimg_perfil,
     syncUI,
     openEditForm,
