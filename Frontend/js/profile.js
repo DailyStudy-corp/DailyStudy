@@ -35,9 +35,11 @@ const Profile = (() => {
 
     element.innerHTML = '';  // limpa conteúdo anterior
 
-    if (imageUrl) {
+    const safe = Security.safeImage(imageUrl);
+
+    if (safe) {
       const img = document.createElement('img');
-      img.src = imageUrl;
+      img.src = safe;
       img.alt = `Foto de ${name}`;
       element.appendChild(img);
     } else {
@@ -83,9 +85,10 @@ const Profile = (() => {
     // Alt 3 - Nova logica para renderizar o banner.
     const bannerZone = document.getElementById('bannerZone');
     if (bannerZone) {
-      if (profile.banner_perfil) {
+      const banner = Security.safeImage(profile.banner_perfil);
+      if (banner) {
         // Aplica o Base64 direto como fundo do bannerZone
-        bannerZone.style.backgroundImage = `url('${profile.banner_perfil}')`;
+        bannerZone.style.backgroundImage = `url('${banner}')`;
         bannerZone.style.backgroundSize = 'cover';
         bannerZone.style.backgroundPosition = 'center';
       } else {
@@ -281,8 +284,9 @@ const Profile = (() => {
     fillimg_perfil(document.getElementById('profileAvaBig'), perfil.username, perfil.img_perfil);
 
     const bannerZone = document.getElementById('bannerZone');
-    if (perfil.banner_perfil) {
-      bannerZone.style.backgroundImage = `url('${perfil.banner_perfil}')`;
+    const banner = Security.safeImage(perfil.banner_perfil);
+    if (banner) {
+      bannerZone.style.backgroundImage = `url('${banner}')`;
     bannerZone.style.backgroundSize = 'cover';
     bannerZone.style.backgroundPosition = 'center';
   } else {
