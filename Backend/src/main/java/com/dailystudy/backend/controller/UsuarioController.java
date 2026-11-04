@@ -5,16 +5,12 @@ import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
 import com.dailystudy.backend.util.ImageUrlValidator;
-import com.dailystudy.backend.util.MediaValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
 import java.util.Map;
 
 @RestController
