@@ -12,7 +12,7 @@ public interface CurtidaRepository extends MongoRepository<Curtida, String>, Cur
  
     Optional<Curtida> findByPostIdAndAutorId(String postId, Long autorId);
  
-    // ✅ NOVO MÉTODO - Busca curtidas do usuário em vários posts
+    //  Busca curtidas do usuário em vários posts
     List<Curtida> findAllByPostIdInAndAutorId(List<String> postIds, Long autorId);
 }
  

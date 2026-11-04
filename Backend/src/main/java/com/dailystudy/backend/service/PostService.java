@@ -1,4 +1,3 @@
-
 package com.dailystudy.backend.service;
  
 import com.dailystudy.backend.dto.*;
@@ -46,6 +45,7 @@ public class PostService {
         post.setMediaUrl(dto.mediaUrl());
         post.setAutorId(autorId);
         post.setDataCriacao(Instant.now());
+        post.setComentPostId(null);
  
         Post salvo = postRepository.save(post);
         indexadorService.reindexar(salvo.getId(), TipoReferencia.POST, Map.of(CampoIndexado.CONTEUDO, salvo.getContent()));
@@ -120,19 +120,13 @@ public class PostService {
         List<Post> comentarios = postRepository.findByComentPostIdOrderByDataCriacaoDesc(comentPostId);
         return mapearFeedDTO(comentarios, usuarioLogadoId);
     }
- 
-    public List<Post> obterPostagensDoUsuario(Long usuarioId) {
-        return postRepository
-                .findByAutorIdAndComentPostIdIsNullOrderByDataCriacaoDesc(usuarioId);
-    }
+   
+    public List <Post> obterRespostasDoUsuario(Long usuarioId) {
+    return postRepository
+    .findByAutorAndComentPostIdIsNotNullOrderByDataCriacaoDesc(usuarioId);
 
-    
-    public List<Post> obterRespostasDoUsuario(Long usuarioId) {
-        return postRepository
-                .findByAutorIdAndComentPostIdIsNotNullOrderByDataCriacaoDesc(usuarioId);
     }
  
-     
     public List<Post> obterRespostasDePost(String postId) {
         return postRepository.findByComentPostIdOrderByDataCriacaoDesc(postId);
     }

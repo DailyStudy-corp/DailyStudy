@@ -14,6 +14,7 @@ import java.time.Instant;
 
 @Slf4j
 @Service
+
 public class TokenService {
 
     @Value("${api.security.token.secret}")
