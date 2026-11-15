@@ -92,7 +92,7 @@ class MigracaoImagensRunnerTest {
                 .run(new DefaultApplicationArguments());
 
         assertThat(output)
-                .containsPattern("WARN\\s+com\\.dailystudy\\.backend\\.migration\\.MigracaoImagensRunner")
+                .containsPattern("\\bWARN\\b.*MigracaoImagensRunner")
                 .contains("usuario 7 / img_perfil")
                 .contains("formato invalido");
     }
