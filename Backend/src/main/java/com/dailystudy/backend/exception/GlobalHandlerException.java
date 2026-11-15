@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 
@@ -97,5 +98,25 @@ public class GlobalHandlerException {
         ExceptionDTO erro = new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), "Erro na página", "Tente mais tarde", LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ExceptionDTO> handleInvalidImage(InvalidImageException ex) {
+
+        log.debug("InvalidImageException tratado: {}", ex.getMessage());
+
+        ExceptionDTO erro = new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), "Imagem inválida", ex.getMessage(), LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ExceptionDTO> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+
+        log.debug("MaxUploadSizeExceededException tratado: {}", ex.getMessage());
+
+        ExceptionDTO erro = new ExceptionDTO(HttpStatus.CONTENT_TOO_LARGE.value(), "Imagem grande demais", "Imagem grande demais, tamanho máximo 5MB", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).body(erro);
     }
 }

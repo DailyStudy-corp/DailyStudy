@@ -4,16 +4,13 @@ import com.dailystudy.backend.service.TokenService;
 import com.dailystudy.backend.dto.*;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
-import com.dailystudy.backend.util.MediaValidator;
+import com.dailystudy.backend.util.ImageUrlValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
 import java.util.Map;
 
 @RestController
@@ -23,9 +20,8 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final TokenService tokenService;
+    private final ImageUrlValidator imageUrlValidator;
 
-    private static final String COOKIE_NAME = "access_token";
-    private static final Duration COOKIE_MAX_AGE = Duration.ofHours(2);
 
     @PostMapping("/registro") // Mapeia a requisicao HTTP para criar um novo usuario no banco de dados
     public ResponseEntity<String> registrar(@Valid @RequestBody UsuarioRegistro dto) {
@@ -61,7 +57,8 @@ public class UsuarioController {
             return ResponseEntity.status(401).build();
         }
 
-        if (!MediaValidator.isSafeImage(dto.img_perfil())) {
+        if (!imageUrlValidator.isSafeImage(dto.img_perfil())
+                || !imageUrlValidator.isSafeImage(dto.banner_perfil())) {
             return ResponseEntity.badRequest().build();
         }
 

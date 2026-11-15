@@ -5,7 +5,7 @@ import com.dailystudy.backend.model.Post;
 import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.CurtidaService;
 import com.dailystudy.backend.service.PostService;
-import com.dailystudy.backend.util.MediaValidator;
+import com.dailystudy.backend.util.ImageUrlValidator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +24,12 @@ public class PostController {
 
     private final PostService postService;
     private final CurtidaService curtidaService;
+    private final ImageUrlValidator imageUrlValidator;
 
     @PostMapping
     public ResponseEntity<Post> postar(@Valid @RequestBody PostCreateDTO dto, @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        if (!MediaValidator.isSafeImage(dto.mediaUrl())){
+        if (!imageUrlValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
         }
 
@@ -40,7 +41,7 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<Post> editarPost(@Valid @PathVariable String id, @RequestBody EditarPostDTO dto, @AuthenticationPrincipal Usuario usuarioLogado) {
 
-        if (!MediaValidator.isSafeImage(dto.mediaUrl())){
+        if (!imageUrlValidator.isSafeImage(dto.mediaUrl())){
             return ResponseEntity.badRequest().build();
         }
 
@@ -70,6 +71,11 @@ public class PostController {
 
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentar(@Valid @PathVariable String id, @RequestBody ComentarioDTO dto, @AuthenticationPrincipal Usuario usuarioLogado){
+
+        if (!imageUrlValidator.isSafeImage(dto.mediaUrl())){
+            return ResponseEntity.badRequest().build();
+        }
+
         Post comentario = postService.criarComentario(id, dto, usuarioLogado.getId());
 
         return ResponseEntity.ok(comentario);

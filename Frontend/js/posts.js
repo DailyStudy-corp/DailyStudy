@@ -489,19 +489,20 @@ const Posts = (() => {
     UI.showToast('Carregando imagem…');
 
     try {
-      const dataUrl    = await Profile.readFileAsDataUrl(file);
-      pendingImageUrl  = dataUrl;
+      const url    = await ImageUpload.upload(file);
+      pendingImageUrl  = url;
 
       // Mostra a pré-visualização
-      document.getElementById('composePreviewImg').src = dataUrl;
+      document.getElementById('composePreviewImg').src = url;
       document.getElementById('composeImgPreview').classList.remove('hidden');
       document.querySelector('.img-tool-btn').classList.add('has-image');
 
       UI.showToast('Imagem pronta para publicar!', 'ok');
 
     } catch (err) {
-      console.error('Erro ao carregar imagem:', err);
-      UI.showToast('Erro ao carregar a imagem.', 'err');
+      console.error(err.message);
+      UI.showToast(err.message);
+      document.getElementById('imgInput').value = '';
     }
   }
 

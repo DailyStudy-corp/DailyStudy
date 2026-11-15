@@ -2,7 +2,16 @@ services:
   backend:
     profiles: !reset []          # remove a restrição de profile em produção — sempre sobe
     restart: unless-stopped
-
+    environment:
+      OCI_STORAGE_BUCKET: ${OCI_STORAGE_BUCKET:?defina OCI_STORAGE_BUCKET no .env}
+      OCI_STORAGE_CONFIGFILE: /oci/config
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60
+    volumes:
+      - /opt/dailystudy-oci:/oci:ro
+    deploy:
+      resources:
+        limits:
+          memory: 1g  
   nginx:
     build:
       context: .
