@@ -79,8 +79,8 @@ class ImageUrlValidatorTest {
     }
 
     @Test
-    void isSafeImage_dataUriDeImagemPermitida_continuaAceitaNaTransicao() {
-        assertTrue(criarValidador().isSafeImage("data:image/png;base64,iVBORw0KGgo="));
+    void isSafeImage_dataUriDeImagem_naoEAceita() {
+        assertFalse(criarValidador().isSafeImage("data:image/png;base64,iVBORw0KGgo="));
     }
 
     @ParameterizedTest
@@ -100,7 +100,17 @@ class ImageUrlValidatorTest {
             "data:image/webp;base64,UklGRg==",
             "data:image/gif;base64,R0lGODlh"
     })
-    void isSafeImage_dataUriDeFormatoPermitido_ehValido(String url) {
-        assertTrue(criarValidador().isSafeImage(url));
+    void isSafeImage_dataUriDeFomato_ehRecusado(String url) {
+        assertFalse(criarValidador().isSafeImage(url));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "data:image/png;base64,AAAA",
+            "data:image/jpeg;base64,/9j/4AAQSkZJRg==",
+            "DATA:IMAGE/PNG;BASE64,AAAA"     // o padrão antigo ignorava maiúsculas
+    })
+    void isSafeImage_base64_eRecusado(String url) {
+        assertFalse(criarValidador().isSafeImage(url));
     }
 }
